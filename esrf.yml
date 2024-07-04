@@ -1,0 +1,14 @@
+name: esrf
+channels:
+  - defaults
+dependencies:
+  - pip=24.0
+  - python=3.11.9
+  - pip:
+      - matplotlib==3.9.0
+      - numpy==1.26.4
+      - opencv-python==4.10.0.82
+      - pyimagej==1.4.1
+      - pyquaternion==0.9.9
+      - tifffile==2024.5.22
+
