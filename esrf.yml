@@ -11,4 +11,5 @@ dependencies:
       - pyimagej==1.4.1
       - pyquaternion==0.9.9
       - tifffile==2024.5.22
+      - tqdm
 
