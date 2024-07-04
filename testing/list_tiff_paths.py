@@ -8,16 +8,19 @@ subfolder = 'recs_2024_04/'
 file_list = []
 c = 0
 
-for tomo in os.listdir(main_folder + sample):
-    e = False
-    c += 1
-    for f in os.listdir(main_folder + sample + tomo + '/' + subfolder):
-        if f[-4:] == 'tiff':
-            file_list.append(main_folder + sample + tomo + '/' + subfolder + f)
-            e = True
-            break
-    if not e:
-        print(tomo)
+with open('missing_files_zf13_hr2.txt', 'w') as f:
+    for tomo in os.listdir(main_folder + sample):
+        e = False
+        c += 1
+        for f in os.listdir(main_folder + sample + tomo + '/' + subfolder):
+            if f[-4:] == 'tiff':
+                file_list.append(main_folder + sample + tomo + '/' + subfolder + f)
+                e = True
+                break
+        if not e:
+            print(tomo)
+            f.writelines(tomo)
+        
     
 
 print(c)
