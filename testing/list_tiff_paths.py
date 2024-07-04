@@ -2,13 +2,13 @@ import os
 import json
 
 main_folder = '/cajal/scratch/projects/xray/bm05/20230913/PROCESSED_DATA/'
-sample = 'zf13_hr_series2/'
+sample = 'zf13_hr_series3/'
 subfolder = 'recs_2024_04/'
 
 file_list = []
 c = 0
 
-with open('missing_files_zf13_hr_series2.txt', 'w') as file:
+with open('missing_files_zf13_hr_series3.txt', 'w') as file:
     for tomo in os.listdir(main_folder + sample):
         e = False
         c += 1
