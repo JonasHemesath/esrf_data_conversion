@@ -5,4 +5,5 @@ sample = 'zf11_hr/'
 subfolder = 'recs_2024_04/'
 
 for tomo in os.listdir(main_folder + sample):
-    print(tomo)
+    for f in os.listdir(main_folder + sample + tomo + '/' + subfolder):
+        print(f[-4:])
