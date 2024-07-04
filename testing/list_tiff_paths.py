@@ -8,7 +8,7 @@ subfolder = 'recs_2024_04/'
 file_list = []
 c = 0
 
-with open('missing_files_zf13_hr2.txt', 'w') as f:
+with open('missing_files_zf13_hr2.txt', 'w') as file:
     for tomo in os.listdir(main_folder + sample):
         e = False
         c += 1
@@ -19,7 +19,7 @@ with open('missing_files_zf13_hr2.txt', 'w') as f:
                 break
         if not e:
             print(tomo)
-            f.write(tomo + '\n')
+            file.write(tomo + '\n')
         
     
 
