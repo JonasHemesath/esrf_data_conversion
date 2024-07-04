@@ -19,7 +19,7 @@ with open('missing_files_zf13_hr2.txt', 'w') as f:
                 break
         if not e:
             print(tomo)
-            f.writelines(tomo)
+            f.write(tomo + '\n')
         
     
 
