@@ -9,12 +9,16 @@ file_list = []
 c = 0
 
 for tomo in os.listdir(main_folder + sample):
+    e = False
     c += 1
     for f in os.listdir(main_folder + sample + tomo + '/' + subfolder):
         if f[-4:] == 'tiff':
             file_list.append(main_folder + sample + tomo + '/' + subfolder + f)
+            e = True
             break
-    print(tomo)
+    if not e:
+        print(tomo)
+    
 
 print(c)
 print(len(file_list))
