@@ -2,6 +2,7 @@ import os
 import tifffile
 import json
 import numpy as np
+from multiprocessing import Pool
 
 percentiles = {}
 
@@ -9,7 +10,13 @@ main_folder = '/cajal/scratch/projects/xray/bm05/20230913/PROCESSED_DATA/'
 samples = ['zf13_hr2', 'zf11_hr']
 subfolder = 'recs_2024_04/'
 
+def load_and_calc():
+    im = tifffile.imread(main_folder + sample + '/' + tomo + '/' + subfolder + f, key=i)
+    p1 = np.percentile(im, 0.39)
 
+    p2 = np.percentile(im, 99.61)
+
+    return p1, p2
 
 for sample in samples:
     c = 0
@@ -31,10 +38,10 @@ for sample in samples:
                         np.percentile(im, 99.61)
 
                     )
-    with open('percentiles_esrf_data.json', 'w') as f:
-        json.dump(percentiles, f)
 
-print(percentiles)
+    print(percentiles)
 
+with open('percentiles_esrf_data.json', 'w') as f:
+    json.dump(percentiles, f)
 
 
