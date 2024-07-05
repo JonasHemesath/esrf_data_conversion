@@ -31,8 +31,8 @@ for sample in samples:
                         np.percentile(im, 99.61)
 
                     )
-    with open('percentiles_esrf_data.json', 'w') as f:
-        json.dump(percentiles, f)
+        with open('percentiles_esrf_data.json', 'w') as json_file:
+            json.dump(percentiles, json_file)
 
 print(percentiles)
 
