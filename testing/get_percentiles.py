@@ -21,6 +21,7 @@ for sample in samples:
             if f[-4:] == 'tiff':
 
                 for i in range(0,1990,100):
+                    print(i)
                     im = tifffile.imread(main_folder + sample + '/' + tomo + '/' + subfolder + f, key=i)
                     percentiles[sample]['0.39% percentile'].append(
                         np.percentile(im, 0.39)
