@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import json
 
 with open('percentiles_esrf_data.json', 'r') as f:
+    print(f)
     plt.hist(f['zf13_hr2']['0.39% percentile'], title='0.39% percentile')
     print('0.39% percentile', min(f['zf13_hr2']['0.39% percentile']))
     plt.savefig('zf13_hr2_0_39% percentile.png')
