@@ -2,7 +2,7 @@ import os
 import json
 
 main_folder = '/cajal/scratch/projects/xray/bm05/20230913/PROCESSED_DATA/'
-sample = 'zf13_hr2/'
+sample = 'zf11_hr/'
 subfolder = 'recs_2024_04/'
 
 
