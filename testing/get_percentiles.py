@@ -6,7 +6,8 @@ import numpy as np
 percentiles = {}
 
 main_folder = '/cajal/scratch/projects/xray/bm05/20230913/PROCESSED_DATA/'
-samples = ['zf13_hr2', 'zf11_hr']
+#samples = ['zf13_hr2', 'zf11_hr']
+samples = ['zf11_hr']
 subfolder = 'recs_2024_04/'
 
 
@@ -31,7 +32,7 @@ for sample in samples:
                         np.percentile(im, 99.61)
 
                     )
-        with open('percentiles_esrf_data.json', 'w') as json_file:
+        with open('percentiles_esrf_data_zf11.json', 'w') as json_file:
             json.dump(percentiles, json_file)
 
 print(percentiles)
