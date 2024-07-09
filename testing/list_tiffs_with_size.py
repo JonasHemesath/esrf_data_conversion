@@ -14,7 +14,7 @@ with open('tiff_files_zf11_hr.txt', 'w') as file:
         for f in os.listdir(main_folder + sample + tomo + '/' + subfolder):
             if f[-4:] == 'tiff':
                 size = os.path.getsize(main_folder + sample + tomo + '/' + subfolder + f)
-                if size < 190000000000:
+                if size < 194000000000:
                     print(tomo)
                     print(f)
                     print(size)
