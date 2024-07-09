@@ -7,12 +7,15 @@ subfolder = 'recs_2024_04/'
 
 
 
-with open('tiff_files_zf13_hr2.txt', 'w') as file:
+with open('tiff_files_zf11_hr.txt', 'w') as file:
     for tomo in os.listdir(main_folder + sample):
-        print(tomo)
+        
         file.write(tomo + '\n')
         for f in os.listdir(main_folder + sample + tomo + '/' + subfolder):
             if f[-4:] == 'tiff':
-                print(f)
-                print(os.path.getsize(main_folder + sample + tomo + '/' + subfolder + f))
-                file.write(f + ': ' + str(os.path.getsize(main_folder + sample + tomo + '/' + subfolder + f)) + '\n')
+                size = os.path.getsize(main_folder + sample + tomo + '/' + subfolder + f)
+                if size < 190000000000:
+                    print(tomo)
+                    print(f)
+                    print(size)
+                file.write(tomo + '\n' + f + ': ' + str(os.path.getsize(main_folder + sample + tomo + '/' + subfolder + f)) + '\n')
