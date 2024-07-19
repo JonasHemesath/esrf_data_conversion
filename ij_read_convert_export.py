@@ -5,6 +5,26 @@ import tifffile
 import os
 from tqdm import tqdm
 
+sample = 'zf14_s1_hr'
+
+value_range = [-0.64, 3.44]
+z = 1990
+
+load_path = '/cajal/scratch/projects/xray/bm05/20230913/PROCESSED_DATA/'
+subfolder = 'recs_2024_04/'
+save_path = '/cajal/scratch/projects/xray/bm05/converted_data/' + sample + '/'
+if not os.path.isdir(save_path):
+    os.makedirs(save_path)
+    print('made directory:', save_path)
+
+path_list = []
+
+for tomo in os.listdir(load_path + sample):
+    for f in os.listdir(load_path + sample + '/' + tomo + '/' + subfolder):
+        if f[-4:] == 'tiff':
+            path_list.append([load_path + sample + '/' + tomo + '/' + subfolder + '/', f])
+            break
+
 def create_circular_mask(h, w, center=None, radius=None):
 
     if center is None: # use the middle of the image
@@ -15,7 +35,7 @@ def create_circular_mask(h, w, center=None, radius=None):
     Y, X = np.ogrid[:h, :w]
     dist_from_center = np.sqrt((X - center[0])**2 + (Y-center[1])**2)
 
-    mask = dist_from_center <= radius
+    mask = dist_from_center <= radius - 1
     #mask3d = np.stack([mask for i in range(z)])
     return mask
 
@@ -23,8 +43,7 @@ scyjava.config.add_option('-Xmx500g')
 ij = imagej.init()
 print('ij loaded')
 
-files = ['zf13_hr2_x12130_y-30880_z-918920__1_1_0000pag_db0100', 
-         'zf13_hr2_x35410_y-19120_z-918920__1_1_0000pag_db0100']
+
 
 #files = ['zf13_hr2_x12130_y-07600_z-905720__1_1_0000pag_db0100', 
 #         'zf13_hr2_x12130_y-07600_z-918920__1_1_0000pag_db0100', 
@@ -32,15 +51,12 @@ files = ['zf13_hr2_x12130_y-30880_z-918920__1_1_0000pag_db0100',
 #         'zf13_hr2_x35410_y-19120_z-918920__1_1_0000pag_db0100']
 #files = ['zf13hr22_4950x4950x1990']
 
-load_path = 'D:\\ESRF_test_data\\'
-save_path = 'D:\\ESRF_test_data\\results\\'
 
-value_range = [-2, 2.6]
-z = 1990
 
-for f in files:
+
+for f in path_list:
     print(f)
-    im = tifffile.imread(load_path + f + '.tiff', key=range(0,z))
+    im = tifffile.imread(f[0] + f[1], key=range(0,z))
 
     mask = create_circular_mask(im.shape[1], im.shape[2])
     print('mask created')
@@ -67,7 +83,7 @@ for f in files:
     im_ij = ij.py.to_dataset(im_new, dim_order=['pln', 'row', 'col'])
     print('ij conversion done')
 
-    ij.io().save(im_ij, save_path+f+'_02.tiff')
+    ij.io().save(im_ij, save_path+f[1])
     print('ImageJ: image saved')
 
     #os.remove(load_path + f + '_8bit.tiff')
