@@ -35,7 +35,7 @@ for f in os.listdir(full_path):
                 else:
                     print('length does not match', f, p)
 
-            if p[0] == 'z':
+            if p[0] == 'z' and p[1] != 'f':
                 if len(p) == 8:
                     z = float(p[1:4] + '.' + p[4:])
                 else:
