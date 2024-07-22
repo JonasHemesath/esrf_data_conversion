@@ -52,9 +52,9 @@ for f in os.listdir(full_path):
 
 with open(full_path + '.txt', 'w') as txt_file:
     for key, val in pos_dict.items():
-        x_str = str((max_x - val[0])//voxel_size)
-        y_str = str((max_y - val[1])//voxel_size)
-        z_str = str((max_z - val[2])//voxel_size)
+        x_str = str(int((max_x - val[0])//voxel_size))
+        y_str = str(int((max_y - val[1])//voxel_size))
+        z_str = str(int((max_z - val[2])//voxel_size))
 
         line = key + ' = ' + y_str + ', ' + x_str + ', ' + z_str + '\n'
         txt_file.write(line)
