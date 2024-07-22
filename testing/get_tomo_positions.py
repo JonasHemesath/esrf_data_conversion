@@ -36,8 +36,10 @@ for f in os.listdir(full_path):
                     print('length does not match', f, p)
 
             if p[0] == 'z':
-                if len(p) == 6:
+                if len(p) == 8:
                     z = float(p[1:4] + '.' + p[4:])
+                else:
+                        print('length does not match', f, p)
 
         if x > max_x:
             max_x = x
