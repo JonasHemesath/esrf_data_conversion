@@ -1,0 +1,62 @@
+import os
+
+sample = 'zf14_s1_hr'
+
+voxel_size = 0.0007278      # in mm
+
+path = '/cajal/scratch/projects/xray/bm05/converted_data/'
+
+full_path = path + sample
+
+max_x = -1000
+max_y = -1000
+max_z = -1000
+
+pos_dict = {}
+
+for f in os.listdir(full_path):
+    if f[-4:] == 'tiff':
+        f_p = f.split('_')
+
+        for p in f_p:
+            if p[0] == 'x':
+                if len(p) == 6:
+                    x = float(p[1] + '.' + p[2:])
+                elif len(p) == 7:
+                    x = float(p[1:3] + '.' + p[3:])
+                else:
+                    print('length does not match', f, p)
+
+            if p[0] == 'y':
+                if len(p) == 6:
+                    y = float(p[1] + '.' + p[2:])
+                elif len(p) == 7:
+                    y = float(p[1:3] + '.' + p[3:])
+                else:
+                    print('length does not match', f, p)
+
+            if p[0] == 'z':
+                if len(p) == 6:
+                    z = float(p[1:4] + '.' + p[4:])
+
+        if x > max_x:
+            max_x = x
+        if y > max_y:
+            max_y = y
+        if z > max_z:
+            max_z = z
+
+        pos_dict[f] = [x, y, z]
+
+with open(full_path + '.txt', 'w') as txt_file:
+    for key, val in pos_dict.items():
+        x_str = str((max_x - val[0])//voxel_size)
+        y_str = str((max_y - val[1])//voxel_size)
+        z_str = str((max_z - val[2])//voxel_size)
+
+        line = key + ' = ' + y_str + ', ' + x_str + ', ' + z_str + '\n'
+        txt_file.write(line)
+
+                
+
+
