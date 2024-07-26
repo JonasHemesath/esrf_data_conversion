@@ -18,7 +18,7 @@ im = ij.py.to_xarray(ij.io().open(file))
 print('im load', im.shape)
 print(im.dtype)
 
-im_d = skimage.transform.resize(im[0:16,:,:], (im.shape[0]//4, im.shape[1]//4, im.shape[2]//4), anti_aliasing=True)
+im_d = skimage.transform.resize(im, (im.shape[0]//4, im.shape[1]//4, im.shape[2]//4), anti_aliasing=True)
 print('im transformed', im_d.shape, type(im_d))
 print(im_d.dtype)
 print(np.min(im_d))
