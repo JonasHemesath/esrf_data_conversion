@@ -4,8 +4,13 @@ import numpy as np
 import tifffile
 import os
 from tqdm import tqdm
+import json
 
 samples = ['zf11_hr']
+
+scyjava.config.add_option('-Xmx500g')
+ij = imagej.init()
+print('ij loaded')
 
 for sample in samples:
 
@@ -20,6 +25,7 @@ for sample in samples:
         print('made directory:', save_path)
 
     path_list = []
+    missing_volumes = []
 
     for tomo in os.listdir(load_path + sample):
         tomo_tiffs = []
@@ -36,8 +42,13 @@ for sample in samples:
                 path_list.append(im_accept)
             else:
                 path_list.append(tomo_tiffs[0])
+        elif not tomo_tiffs:
+            missing_volumes.append(tomo)
         else:
             path_list.append(tomo_tiffs[0])
+    print('missing volumes:', missing_volumes)
+    with open(save_path + 'missing_volumes.json', 'w') as miss_f:
+        json.dump(missing_volumes, miss_f)
 
     def create_circular_mask(h, w, center=None, radius=None):
 
@@ -52,19 +63,6 @@ for sample in samples:
         mask = dist_from_center <= radius - 1
         #mask3d = np.stack([mask for i in range(z)])
         return mask
-
-    scyjava.config.add_option('-Xmx500g')
-    ij = imagej.init()
-    print('ij loaded')
-
-
-
-    #files = ['zf13_hr2_x12130_y-07600_z-905720__1_1_0000pag_db0100', 
-    #         'zf13_hr2_x12130_y-07600_z-918920__1_1_0000pag_db0100', 
-    #         'zf13_hr2_x12130_y-30880_z-918920__1_1_0000pag_db0100', 
-    #         'zf13_hr2_x35410_y-19120_z-918920__1_1_0000pag_db0100']
-    #files = ['zf13hr22_4950x4950x1990']
-
 
 
 
