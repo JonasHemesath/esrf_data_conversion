@@ -14,7 +14,7 @@ print('ij loaded')
 
 for sample in samples:
 
-    value_range = [-0.64, 3.44]
+    value_range = [-2, 3.4]
     z = 1990
 
     load_path = '/cajal/scratch/projects/xray/bm05/20230913/PROCESSED_DATA/'
@@ -67,35 +67,36 @@ for sample in samples:
 
 
     for f in path_list:
-        print(f)
-        im = tifffile.imread(f[0] + f[1], key=range(0,z))
+        if f[1] not in os.listdir(save_path):
+            print(f)
+            im = tifffile.imread(f[0] + f[1], key=range(0,z))
 
-        mask = create_circular_mask(im.shape[1], im.shape[2])
-        print('mask created')
-        
+            mask = create_circular_mask(im.shape[1], im.shape[2])
+            print('mask created')
+            
 
-        print('start mapping')
-        for i in tqdm(range(z)):
-            im[i,:,:][mask==0] = 0
-            im[i,:,:][mask==1] = np.interp(im[i,:,:][mask==1], value_range, [1, 255])
-        print('mapping finished')
+            print('start mapping')
+            for i in tqdm(range(z)):
+                im[i,:,:][mask==0] = 0
+                im[i,:,:][mask==1] = np.interp(im[i,:,:][mask==1], value_range, [1, 255])
+            print('mapping finished')
 
-        im_new = im.astype(np.uint8)
-        print('conversion to 8bit done')
+            im_new = im.astype(np.uint8)
+            print('conversion to 8bit done')
 
-        #tifffile.imwrite(load_path + f + '_8bit.tiff', im_new)
-        #print('8bit image saved')
+            #tifffile.imwrite(load_path + f + '_8bit.tiff', im_new)
+            #print('8bit image saved')
 
-        im = 0
-        #im_new = 0
-        
-        #im = ij.io().open(load_path+f+'_8bit.tiff')
-        #print('ImageJ: image loaded')
+            im = 0
+            #im_new = 0
+            
+            #im = ij.io().open(load_path+f+'_8bit.tiff')
+            #print('ImageJ: image loaded')
 
-        im_ij = ij.py.to_dataset(im_new, dim_order=['pln', 'row', 'col'])
-        print('ij conversion done')
+            im_ij = ij.py.to_dataset(im_new, dim_order=['pln', 'row', 'col'])
+            print('ij conversion done')
 
-        ij.io().save(im_ij, save_path+f[1])
-        print('ImageJ: image saved')
+            ij.io().save(im_ij, save_path+f[1])
+            print('ImageJ: image saved')
 
-        #os.remove(load_path + f + '_8bit.tiff')
+            #os.remove(load_path + f + '_8bit.tiff')
