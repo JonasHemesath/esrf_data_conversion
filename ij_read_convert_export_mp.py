@@ -28,7 +28,16 @@ for sample in samples:
                 tomo_tiffs.append([load_path + sample + '/' + tomo + '/' + subfolder + '/', f])
 
         if len(tomo_tiffs) > 1:
-            mod_times = None
+            im_accept = None
+            for tomo_tiff in tomo_tiffs:
+                if tomo_tiff[1][-9:-5] == '0100':
+                    im_accept = tomo_tiff
+            if im_accept:
+                path_list.append(im_accept)
+            else:
+                path_list.append(tomo_tiffs[0])
+        else:
+            path_list.append(tomo_tiffs[0])
 
     def create_circular_mask(h, w, center=None, radius=None):
 
