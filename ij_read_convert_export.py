@@ -5,7 +5,7 @@ import tifffile
 import os
 from tqdm import tqdm
 
-samples = ['zf14_s1_hr', 'zf14_s2_hr']
+samples = ['zf11_hr']
 
 for sample in samples:
 
