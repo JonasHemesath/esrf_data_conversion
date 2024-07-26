@@ -15,7 +15,8 @@ print('ij loaded')
 
 im = ij.py.to_xarray(ij.io().open(file))
 print('im load', im.shape)
-
+print(im.dtype)
+"""
 im_d = skimage.transform.resize(im, (im.shape[0]//4, im.shape[1]//4, im.shape[2]//4), anti_aliasing=True)
 print('im transformed', im_d.shape, type(im_d))
 
@@ -26,4 +27,4 @@ for i in range(im_d.shape[0]):
     while len(idx) < 4:
         idx = '0' + idx
     tifffile.imwrite(save_path + idx + '.tiff', im_d[i,:,:])
-print('ImageJ: image saved')
+print('ImageJ: image saved')"""
