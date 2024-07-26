@@ -25,11 +25,17 @@ print(np.min(im_d))
 print(np.max(im_d))
 
 
-"""
+
 for i in range(im_d.shape[0]):
     print(i)
     idx = str(i)
     while len(idx) < 4:
         idx = '0' + idx
-    tifffile.imwrite(save_path + idx + '.tiff', im_d[i,:,:])
-print('ImageJ: image saved')"""
+
+    im_s = np.interp(im_d[i,:,:], [0, 1], [0, 255]).astype(np.uint8)
+    if i%100 == 0:
+        print(np.min(im_s))
+        print(np.max(im_s))
+
+    tifffile.imwrite(save_path + idx + '.tiff', im_s)
+print('ImageJ: image saved')
