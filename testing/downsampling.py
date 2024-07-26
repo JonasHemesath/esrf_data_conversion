@@ -17,9 +17,9 @@ im = ij.py.to_xarray(ij.io().open(file))
 print('im load', im.shape)
 
 im_d = skimage.transform.rescale(im, (0.5, 0.5, 0.5), anti_aliasing=True)
-print('im transformed', im_d.shape)
+print('im transformed', im_d.shape, type(im_d))
 
 
 
-tifffile.imwrite(save_path, im_d, imagej=True)
+tifffile.imwrite(save_path, im_d)
 print('ImageJ: image saved')
