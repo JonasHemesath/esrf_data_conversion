@@ -15,10 +15,13 @@ print('ij loaded')
 
 
 im = ij.py.to_xarray(ij.io().open(file))
+print('im load', im.shape)
 
 im_d = skimage.transform.rescale(im, (0.5, 0.5, 0.5), anti_aliasing=True)
+print('im transformed', im_d.shape)
 
 im_ij = ij.py.to_dataset(im_d)
+print('im to imagj')
 
 ij.io().save(im_ij, save_path)
 print('ImageJ: image saved')
