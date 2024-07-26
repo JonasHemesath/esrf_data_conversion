@@ -1,8 +1,7 @@
 import imagej
 import scyjava
 
-import numpy as np
-import cv2
+import tifffile
 import skimage
 
 file = '/cajal/scratch/projects/xray/bm05/converted_data/zf14_s1_hr_example_data/zf14_s1_hr_x03880_y04180_z-898700_1_1_0000pag_db0020.tiff'
@@ -20,8 +19,7 @@ print('im load', im.shape)
 im_d = skimage.transform.rescale(im, (0.5, 0.5, 0.5), anti_aliasing=True)
 print('im transformed', im_d.shape)
 
-im_ij = ij.py.to_dataset(im_d)
-print('im to imagj')
 
-ij.io().save(im_ij, save_path)
+
+tifffile.imwrite(save_path, im_d, imagej=True)
 print('ImageJ: image saved')
