@@ -19,27 +19,30 @@ for f in os.listdir(full_path):
         f_p = f.split('_')
 
         for p in f_p:
-            if p[0] == 'x':
-                if len(p) == 6:
-                    x = float(p[1] + '.' + p[2:])
-                elif len(p) == 7:
-                    x = float(p[1:3] + '.' + p[3:])
-                else:
-                    print('length does not match', f, p)
-
-            if p[0] == 'y':
-                if len(p) == 6:
-                    y = float(p[1] + '.' + p[2:])
-                elif len(p) == 7:
-                    y = float(p[1:3] + '.' + p[3:])
-                else:
-                    print('length does not match', f, p)
-
-            if p[0] == 'z' and p[1] != 'f':
-                if len(p) == 8:
-                    z = float(p[1:4] + '.' + p[4:])
-                else:
+            try:
+                if p[0] == 'x':
+                    if len(p) == 6:
+                        x = float(p[1] + '.' + p[2:])
+                    elif len(p) == 7:
+                        x = float(p[1:3] + '.' + p[3:])
+                    else:
                         print('length does not match', f, p)
+
+                if p[0] == 'y':
+                    if len(p) == 6:
+                        y = float(p[1] + '.' + p[2:])
+                    elif len(p) == 7:
+                        y = float(p[1:3] + '.' + p[3:])
+                    else:
+                        print('length does not match', f, p)
+
+                if p[0] == 'z' and p[1] != 'f':
+                    if len(p) == 8:
+                        z = float(p[1:4] + '.' + p[4:])
+                    else:
+                            print('length does not match', f, p)
+            except IndexError:
+                print('string skipped:', f)
 
         if x > max_x:
             max_x = x
