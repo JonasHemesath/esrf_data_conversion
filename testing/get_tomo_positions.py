@@ -1,6 +1,6 @@
 import os
 
-sample = 'zf14_s1_hr'
+sample = 'zf11_hr'
 
 voxel_size = 0.0007278      # in mm
 
