@@ -10,7 +10,7 @@ full_path = path + sample
 
 max_x = -1000
 max_y = -1000
-max_z = -1000
+min_z = 10000000000
 
 pos_dict = {}
 
@@ -48,8 +48,8 @@ for f in os.listdir(full_path):
             max_x = x
         if y > max_y:
             max_y = y
-        if z > max_z:
-            max_z = z
+        if z < min_z:
+            min_z = z
 
         pos_dict[f] = [x, y, z]
 
@@ -57,7 +57,7 @@ with open(full_path + '.txt', 'w') as txt_file:
     for key, val in pos_dict.items():
         x_str = str(int((max_x - val[0])//voxel_size))
         y_str = str(int((max_y - val[1])//voxel_size))
-        z_str = str(int((max_z - val[2])//voxel_size))
+        z_str = str(int(abs(min_z - val[2])//voxel_size))
 
         line = key + ' = ' + y_str + ', ' + x_str + ', ' + z_str + '\n'
         txt_file.write(line)
