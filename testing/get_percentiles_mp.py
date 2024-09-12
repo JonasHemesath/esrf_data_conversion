@@ -14,7 +14,7 @@ samples = ['zf13_hr2', 'zf11_hr']
 subfolder = 'recs_2024_04/'
 
 def fourier_filter(im):
-    im = im + abs(np.min(im)) + 0.1
+    im = im + 20
 
     linear_range = 500
     linear_width = 2
