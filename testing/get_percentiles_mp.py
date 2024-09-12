@@ -53,7 +53,6 @@ def calc_percs(fp):
         percentiles = {'0.39% percentile': [], '99.61% percentile': []}
         try:
 
-            print(i)
             im = tifffile.imread(fp, key=i)
             im = fourier_filter(im)
             percentiles['0.39% percentile'].append(
@@ -67,12 +66,12 @@ def calc_percs(fp):
     return percentiles
 
 for sample in samples:
+    print(sample)
     c = 0
     percentiles[sample] = {'0.39% percentile': [], '99.61% percentile':[]}
     files = []
     for tomo in os.listdir(main_folder + sample):
         c += 1
-        print(sample, '->', c)
 
         for f in os.listdir(main_folder + sample + '/' + tomo + '/' + subfolder):
             if f[-4:] == 'tiff':
