@@ -78,6 +78,7 @@ for sample in samples:
         for f in os.listdir(main_folder + sample + '/' + tomo + '/' + subfolder):
             if f[-4:] == 'tiff':
                 files.append(main_folder + sample + '/' + tomo + '/' + subfolder + f)
+                break
 
     with Pool(processes=25) as mp_pool: #
         sim_results = mp_pool.map(calc_percs, files)
