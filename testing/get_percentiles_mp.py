@@ -80,9 +80,15 @@ for sample in samples:
 
     with Pool(processes=25) as mp_pool: #
         sim_results = mp_pool.map(calc_percs, files)
+
+    percentiles = {'0.39% percentile': [], '99.61% percentile': []}
+    for d in sim_results:
+        percentiles['0.39% percentile'] = percentiles['0.39% percentile'] + d['0.39% percentile']
+        percentiles['99.61% percentile'] = percentiles['99.61% percentile'] + d['99.61% percentile']
+
                 
     with open('percentiles_esrf_data_' + sample + '.json', 'w') as json_file:
-        json.dump(sim_results, json_file)
+        json.dump(percentiles, json_file)
 
-    print(sim_results)
+    print(percentiles)
 
