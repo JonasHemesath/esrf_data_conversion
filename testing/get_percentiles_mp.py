@@ -4,6 +4,7 @@ import json
 import numpy as np
 import polarTransform
 import math
+from multiprocessing import Pool
 
 percentiles = {}
 
@@ -13,7 +14,7 @@ samples = ['zf13_hr2', 'zf11_hr']
 subfolder = 'recs_2024_04/'
 
 def fourier_filter(im):
-    im = im + abs(np.min(im))
+    im = im + abs(np.min(im)) + 0.1
 
     linear_range = 500
     linear_width = 2
@@ -56,10 +57,10 @@ def calc_percs(fp):
             im = tifffile.imread(fp, key=i)
             im = fourier_filter(im)
             percentiles['0.39% percentile'].append(
-                np.percentile(im, 0.39)
+                np.percentile(im[im>0], 0.39)
             )
             percentiles['99.61% percentile'].append(
-                np.percentile(im, 99.61)
+                np.percentile(im[im>0], 99.61)
             )
         except IndexError:
             return percentiles
@@ -76,6 +77,9 @@ for sample in samples:
         for f in os.listdir(main_folder + sample + '/' + tomo + '/' + subfolder):
             if f[-4:] == 'tiff':
                 files.append(main_folder + sample + '/' + tomo + '/' + subfolder + f)
+
+        with Pool(processes=25) as mp_pool: #
+            sim_results = mp_pool.map(calc_percs, files)
                 
         with open('percentiles_esrf_data_' + sample + '.json', 'w') as json_file:
             json.dump(percentiles, json_file)
