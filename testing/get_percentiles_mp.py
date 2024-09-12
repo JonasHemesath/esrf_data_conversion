@@ -49,8 +49,9 @@ def fourier_filter(im):
     return cartesianImage
 
 def calc_percs(fp):
+    percentiles = {'0.39% percentile': [], '99.61% percentile': []}
     for i in range(1900, 0, -100):
-        percentiles = {'0.39% percentile': [], '99.61% percentile': []}
+        
         try:
 
             im = tifffile.imread(fp, key=i)
@@ -68,7 +69,7 @@ def calc_percs(fp):
 for sample in samples:
     print(sample)
     c = 0
-    percentiles[sample] = {'0.39% percentile': [], '99.61% percentile':[]}
+    
     files = []
     for tomo in os.listdir(main_folder + sample):
         c += 1
@@ -81,7 +82,7 @@ for sample in samples:
         sim_results = mp_pool.map(calc_percs, files)
                 
     with open('percentiles_esrf_data_' + sample + '.json', 'w') as json_file:
-        json.dump(percentiles, json_file)
+        json.dump(sim_results, json_file)
 
-print(percentiles)
+    print(sim_results)
 
