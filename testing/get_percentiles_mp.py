@@ -49,11 +49,12 @@ def fourier_filter(im):
     return cartesianImage
 
 def calc_percs(fp):
+    print(fp)
     percentiles = {'0.39% percentile': [], '99.61% percentile': []}
     for i in range(1900, 0, -100):
         
         try:
-            print(fp)
+            
             im = tifffile.imread(fp, key=i)
             im = fourier_filter(im)
             percentiles['0.39% percentile'].append(
