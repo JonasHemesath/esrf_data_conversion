@@ -77,11 +77,11 @@ for sample in samples:
             if f[-4:] == 'tiff':
                 files.append(main_folder + sample + '/' + tomo + '/' + subfolder + f)
 
-        with Pool(processes=25) as mp_pool: #
-            sim_results = mp_pool.map(calc_percs, files)
+    with Pool(processes=25) as mp_pool: #
+        sim_results = mp_pool.map(calc_percs, files)
                 
-        with open('percentiles_esrf_data_' + sample + '.json', 'w') as json_file:
-            json.dump(percentiles, json_file)
+    with open('percentiles_esrf_data_' + sample + '.json', 'w') as json_file:
+        json.dump(percentiles, json_file)
 
 print(percentiles)
 
