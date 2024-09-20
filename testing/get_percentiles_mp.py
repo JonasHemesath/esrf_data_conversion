@@ -50,7 +50,7 @@ def fourier_filter(im):
 
 def calc_percs(fp):
     print(fp)
-    percentiles = {'0.39% percentile': [], '99.61% percentile': []}
+    percentiles = {'0.39% percentile': [], '99.61% percentile': [], 'file': []}
     for i in range(1900, 0, -100):
         
         try:
@@ -63,6 +63,7 @@ def calc_percs(fp):
             percentiles['99.61% percentile'].append(
                 np.percentile(im[im>0], 99.61)
             )
+            percentiles['file'].append(fp)
         except IndexError:
             return percentiles
     return percentiles
@@ -83,10 +84,11 @@ for sample in samples:
     with Pool(processes=25) as mp_pool: #
         sim_results = mp_pool.map(calc_percs, files)
 
-    percentiles = {'0.39% percentile': [], '99.61% percentile': []}
+    percentiles = {'0.39% percentile': [], '99.61% percentile': [], 'file': []}
     for d in sim_results:
         percentiles['0.39% percentile'] = percentiles['0.39% percentile'] + d['0.39% percentile']
         percentiles['99.61% percentile'] = percentiles['99.61% percentile'] + d['99.61% percentile']
+        percentiles['file'] = percentiles['file'] + d['file']
 
                 
     with open('percentiles_esrf_data_' + sample + '.json', 'w') as json_file:
