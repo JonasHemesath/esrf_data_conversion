@@ -63,7 +63,7 @@ def calc_percs(fp):
             percentiles['99.61% percentile'].append(
                 np.percentile(im[im>0], 99.61)
             )
-            percentiles['file'].append(fp)
+            percentiles['file'].append(fp + '_' + str(i))
         except IndexError:
             return percentiles
     return percentiles
