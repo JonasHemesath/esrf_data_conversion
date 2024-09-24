@@ -104,7 +104,7 @@ for sample in samples:
                 f_mask = fourier_mask(polarImage)       
                 ft = np.fft.fft2(polarImage)
                 ft = np.fft.fftshift(ft)
-                ft[mask==1] = 0
+                ft[f_mask==1] = 0
                 ift = np.fft.ifft2(ft)
                 ift_a = abs(ift)
                 im[i,:,:] = ptSettings.convertToCartesianImage(ift_a)   #fourier filtering end
