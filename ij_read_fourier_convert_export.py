@@ -1,3 +1,4 @@
+import sys
 import imagej
 import scyjava
 import numpy as np
@@ -8,7 +9,11 @@ import json
 import math
 import polarTransform
 
-samples = ['zf11_hr']
+
+
+samples = [sys.argv[1]]
+f1 = (int(sys.argv[2])-1)/int(sys.argv[3])
+f2 = int(sys.argv[2])/int(sys.argv[3])
 
 scyjava.config.add_option('-Xmx500g')
 ij = imagej.init()
@@ -34,7 +39,7 @@ for sample in samples:
         for f in os.listdir(load_path + sample + '/' + tomo + '/' + subfolder):
             if f[-4:] == 'tiff':
                 tomo_tiffs.append([load_path + sample + '/' + tomo + '/' + subfolder + '/', f])
-
+        tomo_tiffs.sort()
         if len(tomo_tiffs) > 1:
             im_accept = None
             for tomo_tiff in tomo_tiffs:
@@ -48,6 +53,8 @@ for sample in samples:
             missing_volumes.append(tomo)
         else:
             path_list.append(tomo_tiffs[0])
+    path_list.sort()
+    path_list = path_list[round(len(path_list)*f1):round(len(path_list)*f2)]
     print('missing volumes:', missing_volumes)
     with open(save_path + 'missing_volumes.json', 'w') as miss_f:
         json.dump(missing_volumes, miss_f)
