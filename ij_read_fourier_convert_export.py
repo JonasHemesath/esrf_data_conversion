@@ -106,7 +106,7 @@ for sample in samples:
             print('start mapping')
             for i in tqdm(range(z)):
                 polarImage, ptSettings = polarTransform.convertToPolarImage(im[i,:,:], initialRadius=0,
-                                                            finalRadius=im.shape[0]//2, initialAngle=0,
+                                                            finalRadius=im.shape[1]//2, initialAngle=0,
                                                             finalAngle=2 * np.pi)       # fourier filtering start
                 f_mask = fourier_mask(polarImage)       
                 ft = np.fft.fft2(polarImage)
