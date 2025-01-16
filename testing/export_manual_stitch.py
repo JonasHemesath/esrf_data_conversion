@@ -2,7 +2,7 @@ import os
 import tifffile
 import skimage
 
-load_path = '/cajal/scratch/projects/xray/bm05/converted_data/zf11_hr/'
+load_path = '/cajal/scratch/projects/xray/bm05/converted_data/new_Sep_2024/zf11_hr/'
 
 save_path = '/cajal/scratch/projects/xray/bm05/converted_data/zf11_manual_stitch/'
 
