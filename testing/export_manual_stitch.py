@@ -10,9 +10,12 @@ filter1 = 'zf11'
 filter2 = 'tiff'
 
 idxs = [50, 1940]
+c = 1
 
 for f in os.listdir(load_path):
     if f[0:4] == filter1 and f[-4:] == filter2:
+        print(c)
+        c += 1
         for i in idxs:
             im = tifffile.imread(load_path + f, key=i)
             im_d = skimage.transform.resize(im, (im.shape[0]//2, im.shape[1]//2), anti_aliasing=True)
