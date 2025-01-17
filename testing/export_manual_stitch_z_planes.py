@@ -21,11 +21,11 @@ for f in os.listdir(load_path):
         im = tifffile.imread(load_path + f, key=range(0,z))
         for i in range(2):
             if i:
-                im_d = skimage.transform.resize(im[:,im.shape[1]//2,:], (im.shape[0]//2, im.shape[2]//2), anti_aliasing=True)
+                im_d = skimage.transform.resize(im[:,:,im.shape[1]//2], (im.shape[0]//2, im.shape[2]//2), anti_aliasing=True)
                 name = 'xz'
                 part_id = 'y'
             else:
-                im_d = skimage.transform.resize(im[im.shape[0]//2,:,:], (im.shape[1]//2, im.shape[2]//2), anti_aliasing=True)
+                im_d = skimage.transform.resize(im[:,im.shape[0]//2,:], (im.shape[1]//2, im.shape[2]//2), anti_aliasing=True)
                 name = 'yz'
                 part_id = 'x'
             parts = f.split('_')
