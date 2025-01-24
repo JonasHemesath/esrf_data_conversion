@@ -9,14 +9,20 @@ import matplotlib.pyplot as plt
 path = '/cajal/scratch/projects/xray/bm05/converted_data/new_Sep_2024/zf11_hr/stitched_1055.0_3198.0_1813.0_20384x18036x12857.raw'
 
 
-data = np.memmap(path, np.uint8, 'r', 2159999999999, (512,512,512), order='F')
+offset = 2159999999999
+orders = ['C', 'F', 'A', 'K']
 
-#data = pi.readrawblock('img', path, 5000, 5000, 5000, 512,512,512, 'unit8', 20384,18036,12857)
-#print(data.get_data_type())
-print(data[0,:,:])
-print(data[:,0,:])
-print(data.shape)
+for o in orders:
+    for i in range(8):
 
-plt.imshow(data[0,:,:])
+        data = np.memmap(path, np.uint8, 'r', offset + i, (512,512,512), order=o)
 
-plt.savefig('subvolume.png')
+        #data = pi.readrawblock('img', path, 5000, 5000, 5000, 512,512,512, 'unit8', 20384,18036,12857)
+        #print(data.get_data_type())
+        print(data[0,:,:])
+        print(data[:,0,:])
+        print(data.shape)
+
+        plt.imshow(data[0,:,:])
+
+        plt.savefig('subvolume_' + o + '_' + str(offset+i) + '.png')
