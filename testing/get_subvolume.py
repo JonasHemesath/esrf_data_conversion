@@ -11,8 +11,8 @@ path = '/cajal/scratch/projects/xray/bm05/converted_data/new_Sep_2024/zf11_hr/st
 
 #data = np.memmap(path, np.int8, 'r', 2160000000000, (512,512,512), order='C')
 
-data = pi.readrawblock('img', path, 5000, 5000, 5000, 512,512,512)
-print(data.get_data_type)
+data = pi.readrawblock('img', path, 5000, 5000, 5000, 512,512,512, 'unit8', 20384,18036,12857)
+print(data.get_data_type())
 print(data[0,:,:])
 print(data[:,0,:])
 print(data.shape)
