@@ -18,6 +18,6 @@ print(data[5000,5000:6000,5000:6000])
 print(data.shape)
 
 plt.imshow(data[5000,5000:6000,5000:6000])
-plt.imshow()
+plt.show()
 #plt.savefig('subvolume2.png')
 
