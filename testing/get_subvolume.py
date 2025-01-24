@@ -13,11 +13,11 @@ data = np.memmap(path, dtype=np.uint8, mode='r', shape=(20384,18036,12857), orde
 
 #data = pi.readrawblock('img', path, 5000, 5000, 5000, 512,512,512, 'unit8', 20384,18036,12857)
 #print(data.get_data_type())
-print(data[0,5000:6000,5000:6000])
+print(data[5000,5000:6000,5000:6000])
 
 print(data.shape)
 
-plt.imshow(data[0,:,:])
+plt.imshow(data[5000,5000:6000,5000:6000])
 
-plt.savefig('subvolume.png')
+plt.savefig('subvolume2.png')
 
