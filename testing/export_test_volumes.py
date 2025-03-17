@@ -23,11 +23,13 @@ postions_tissue = [(16000, 11750, 7750), (3880, 1400, 7750), (17100, 5600, 7750)
 postions_resin = [(6150, 10150, 7750), (6300, 3350, 7750), (11050, 6725, 7750), (12390, 13350, 7750)]
 
 for p in postions_tissue:
+    print(p)
     v = np.ascontiguousarray(data[p[0]:p[0]+size, p[1]:p[1]+size, p[2]:p[2]+size])
     name = 'tissue' + str(p[0]) + '_' + str(p[1]) + '_' + str(p[2]) + '.npy'
     np.save(save_path+'tissue/'+name, v)
 
 for p in postions_resin:
+    print(p)
     v = np.ascontiguousarray(data[p[0]:p[0]+size, p[1]:p[1]+size, p[2]:p[2]+size])
     name = 'resin' + str(p[0]) + '_' + str(p[1]) + '_' + str(p[2]) + '.npy'
     np.save(save_path+'resin/'+name, v)
