@@ -8,7 +8,7 @@ import math
 percentiles = {}
 
 main_folder = '/cajal/scratch/projects/xray/bm05/20230913/PROCESSED_DATA/'
-samples = ['zf13_hr2', 'zf11_hr']
+samples = ['zf13_0.3um_65keV']
 #samples = ['zf14_s1_hr', 'zf14_s2_hr', 'zf14_s3_hr']
 subfolder = 'recs_2024_04/'
 
@@ -62,7 +62,7 @@ for sample in samples:
 
                         print(i)
                         im = tifffile.imread(main_folder + sample + '/' + tomo + '/' + subfolder + f, key=i)
-                        im = fourier_filter(im)
+                        #im = fourier_filter(im)
                         percentiles[sample]['0.39% percentile'].append(
                             np.percentile(im, 0.39)
 
