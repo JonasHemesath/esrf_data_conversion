@@ -25,7 +25,7 @@ for sample in samples:
     z = 1990
 
     load_path = '/cajal/scratch/projects/xray/bm05/20230913/PROCESSED_DATA/'
-    subfolder = 'recs_2024_04/'
+    subfolder = 'rec_2024_05/'
     save_path = '/cajal/scratch/projects/xray/bm05/converted_data/new_Sep_2024/' + sample + '/'
     if not os.path.isdir(save_path):
         os.makedirs(save_path)
