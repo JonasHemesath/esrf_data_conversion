@@ -10,7 +10,7 @@ percentiles = {}
 main_folder = '/cajal/scratch/projects/xray/bm05/20230913/PROCESSED_DATA/'
 samples = ['zf13_0.3um_65keV']
 #samples = ['zf14_s1_hr', 'zf14_s2_hr', 'zf14_s3_hr']
-subfolder = 'recs_2024_04/'
+subfolder = 'recs_2024_05/'
 
 def fourier_filter(im):
     im = im + abs(np.min(im))
