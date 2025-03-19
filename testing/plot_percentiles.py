@@ -4,6 +4,7 @@ import json
 with open('percentiles_esrf_data_zf13_0_3um_65keV.json', 'r') as f:
     d = json.load(f)
     sample = 'zf13_0.3um_65keV'
+    d = d[sample]
     plt.hist(d['0.39% percentile'], bins=100)
     print('0.39% percentile', min(d['0.39% percentile']))
     plt.savefig(sample + '_0_39% percentile.png')
