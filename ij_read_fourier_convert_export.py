@@ -21,7 +21,7 @@ print('ij loaded')
 
 for sample in samples:
 
-    value_range = [18, 23]
+    value_range = [19, 21]
     z = 1990
 
     load_path = '/cajal/scratch/projects/xray/bm05/20230913/PROCESSED_DATA/'
