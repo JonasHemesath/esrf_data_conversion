@@ -105,16 +105,16 @@ for sample in samples:
 
             print('start mapping')
             for i in tqdm(range(z)):
-                #polarImage, ptSettings = polarTransform.convertToPolarImage(im[i,:,:], initialRadius=0,
-                #                                            finalRadius=im.shape[1]//2, initialAngle=0,
-                #                                            finalAngle=2 * np.pi)       # fourier filtering start
-                #f_mask = fourier_mask(polarImage)       
-                #ft = np.fft.fft2(polarImage)
-                #ft = np.fft.fftshift(ft)
-                #ft[f_mask==1] = 0
-                #ift = np.fft.ifft2(ft)
-                #ift_a = abs(ift)
-                #im[i,:,:] = ptSettings.convertToCartesianImage(ift_a)   #fourier filtering end
+                polarImage, ptSettings = polarTransform.convertToPolarImage(im[i,:,:], initialRadius=0,
+                                                            finalRadius=im.shape[1]//2, initialAngle=0,
+                                                            finalAngle=2 * np.pi)       # fourier filtering start
+                f_mask = fourier_mask(polarImage)       
+                ft = np.fft.fft2(polarImage)
+                ft = np.fft.fftshift(ft)
+                ft[f_mask==1] = 0
+                ift = np.fft.ifft2(ft)
+                ift_a = abs(ift)
+                im[i,:,:] = ptSettings.convertToCartesianImage(ift_a)   #fourier filtering end
                 im[i,:,:][mask==0] = 0                                                     # set all values outside the circle to 0
                 im[i,:,:][mask==1] = np.interp(im[i,:,:][mask==1], value_range, [1, 255])  # map all values in the circle to the new value range
             print('mapping finished')
