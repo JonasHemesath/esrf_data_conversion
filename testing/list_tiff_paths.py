@@ -6,6 +6,7 @@ sample = 'zf13_hr2/'
 subfolder = 'recs_2024_04/'
 
 file_list = []
+no_coor = []
 c = 0
 
 with open('missing_files_zf13_hr_autoabs.txt', 'w') as file:
@@ -15,6 +16,8 @@ with open('missing_files_zf13_hr_autoabs.txt', 'w') as file:
         for f in os.listdir(main_folder + sample + tomo + '/' + subfolder):
             if f[-4:] == 'tiff':
                 file_list.append(main_folder + sample + tomo + '/' + subfolder + f)
+                if 'x' not in f:
+                    no_coor.append(main_folder + sample + tomo + '/' + subfolder + f)
                 e = True
                 break
         if not e:
@@ -22,6 +25,6 @@ with open('missing_files_zf13_hr_autoabs.txt', 'w') as file:
             file.write(tomo + '\n')
         
     
-print(file_list)
+print(no_coor)
 print(c)
 print(len(file_list))
