@@ -21,11 +21,11 @@ print('ij loaded')
 
 for sample in samples:
 
-    value_range = [19, 21]
+    value_range = [18, 23]
     z = 1990
 
     load_path = '/cajal/scratch/projects/xray/bm05/20230913/PROCESSED_DATA/'
-    subfolder = 'rec_2024_05/'
+    subfolder = 'recs_2024_04/'
     save_path = '/cajal/scratch/projects/xray/bm05/converted_data/new_Sep_2024/' + sample + '/'
     if not os.path.isdir(save_path):
         os.makedirs(save_path)
