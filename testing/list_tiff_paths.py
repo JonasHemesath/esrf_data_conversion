@@ -22,6 +22,6 @@ with open('missing_files_zf13_hr_autoabs.txt', 'w') as file:
             file.write(tomo + '\n')
         
     
-
+print(file_list)
 print(c)
 print(len(file_list))
