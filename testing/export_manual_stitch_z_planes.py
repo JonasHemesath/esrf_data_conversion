@@ -2,11 +2,11 @@ import os
 import tifffile
 import skimage
 
-load_path = '/cajal/scratch/projects/xray/bm05/converted_data/new_Sep_2024/zf11_hr/'
+load_path = '/cajal/scratch/projects/xray/bm05/converted_data/new_Sep_2024/zf13_hr2/'
 
-save_path = '/cajal/scratch/projects/xray/bm05/converted_data/zf11_manual_stitch/'
+save_path = '/cajal/scratch/projects/xray/bm05/converted_data/zf13_hr2_manual_stitch/'
 
-filter1 = 'zf11'
+filter1 = 'zf13'
 filter2 = 'tiff'
 
 z = 1990
