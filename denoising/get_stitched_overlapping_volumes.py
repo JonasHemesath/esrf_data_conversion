@@ -32,19 +32,19 @@ def get_two_largest_raw_files():
     return [file[0] for file in raw_files[:2]]
 
 
-p = subprocess.Popen(['python', '/cajal/nvmescratch/users/johem/pi2_new/pi2/bin-linux64/release-nocl/nr_stitcher_jh.py', 'stitch_settings.txt'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+#p = subprocess.Popen(['python', '/cajal/nvmescratch/users/johem/pi2_new/pi2/bin-linux64/release-nocl/nr_stitcher_jh.py', 'stitch_settings.txt'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-p.communicate()
+#p.communicate()
 
 raw_files = get_two_largest_raw_files()
 
 dim1 = (int(c) for c in raw_files[0].split('_')[-1].split('.')[0].split('x'))
 
-#vol1 = np.memmap(raw_files[0], dtype=np.uint8, mode='r', shape=dim1, order='F')
+vol1 = np.memmap(raw_files[0], dtype=np.uint8, mode='r', shape=dim1, order='F')
 
 dim2 = (int(c) for c in raw_files[1].split('_')[-1].split('.')[0].split('x'))
 
-#vol2 = np.memmap(raw_files[1], dtype=np.uint8, mode='r', shape=dim1, order='F')
+vol2 = np.memmap(raw_files[1], dtype=np.uint8, mode='r', shape=dim1, order='F')
 print(dim1)
 print(raw_files[0])
 print(dim2)
