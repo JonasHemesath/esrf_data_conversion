@@ -38,7 +38,7 @@ def get_two_largest_raw_files():
 
 #p.communicate()
 
-cube_size = 128
+cube_size = 64
 
 raw_files = get_two_largest_raw_files()
 
