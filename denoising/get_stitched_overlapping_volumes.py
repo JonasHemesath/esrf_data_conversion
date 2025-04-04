@@ -60,6 +60,8 @@ if dim2 == dim1:
     for x in range(math.floor(dim1[0]/cube_size)):
         for y in range(math.floor(dim1[1]/cube_size)):
             for z in range(math.floor(dim1[2]/cube_size)):
+                print(np.sum(overlap_mask[x:x+cube_size, y:y+cube_size, z:z+cube_size]))
+                print(cube_size**3)
                 if np.sum(overlap_mask[x:x+cube_size, y:y+cube_size, z:z+cube_size]) == cube_size**3:
                     print('Writing:', f'{count}_split1.tiff')
                     tifffile.imwrite(f'{count}_split1.tiff', data=vol1[x:x+cube_size, y:y+cube_size, z:z+cube_size], imagej=True)
