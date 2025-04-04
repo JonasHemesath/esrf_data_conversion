@@ -40,12 +40,14 @@ raw_files = get_two_largest_raw_files()
 #print(raw_files[0].split('_')[-1].split('.')[0].split('x'))
 dim1 = tuple([int(c) for c in raw_files[0].split('_')[-1].split('.')[0].split('x')])
 
-#vol1 = np.memmap(raw_files[0], dtype=np.uint8, mode='r', shape=dim1, order='F')
+vol1 = np.memmap(raw_files[0], dtype=np.uint8, mode='r', shape=dim1, order='F')
 
 dim2 = tuple([int(c) for c in raw_files[1].split('_')[-1].split('.')[0].split('x')])
 
-#vol2 = np.memmap(raw_files[1], dtype=np.uint8, mode='r', shape=dim1, order='F')
+vol2 = np.memmap(raw_files[1], dtype=np.uint8, mode='r', shape=dim1, order='F')
 print(dim1)
 print(raw_files[0])
 print(dim2)
 print(raw_files[1])
+print(vol1.shape)
+print(vol2.shape)
