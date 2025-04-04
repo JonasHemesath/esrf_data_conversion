@@ -37,7 +37,7 @@ def get_two_largest_raw_files():
 #p.communicate()
 
 raw_files = get_two_largest_raw_files()
-
+print(raw_files[0].split('_')[-1].split('.')[0].split('x'))
 dim1 = (int(c) for c in raw_files[0].split('_')[-1].split('.')[0].split('x'))
 
 vol1 = np.memmap(raw_files[0], dtype=np.uint8, mode='r', shape=dim1, order='F')
