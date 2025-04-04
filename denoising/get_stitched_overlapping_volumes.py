@@ -38,7 +38,7 @@ def get_two_largest_raw_files():
 
 #p.communicate()
 
-cube_size = 64
+cube_size = 128
 
 raw_files = get_two_largest_raw_files()
 
@@ -61,14 +61,14 @@ if dim2 == dim1:
     for x in range(math.floor(dim1[0]/cube_size)):
         for y in range(math.floor(dim1[1]/cube_size)):
             for z in range(math.floor(dim1[2]/cube_size)):
-                overlap_list.append(np.sum(overlap_mask[x:x+cube_size, y:y+cube_size, z:z+cube_size]))
-                #print(np.sum(overlap_mask[x:x+cube_size, y:y+cube_size, z:z+cube_size]))
+                overlap_list.append(np.sum(overlap_mask[x*cube_size:x*cube_size+cube_size, y*cube_size:y*cube_size+cube_size, z*cube_size:z*cube_size+cube_size]))
+                #print(np.sum(overlap_mask[x*cube_size:x*cube_size+cube_size, y*cube_size:y*cube_size+cube_size, z*cube_size:z*cube_size+cube_size]))
                 #print(cube_size**3)
-                if np.sum(overlap_mask[x:x+cube_size, y:y+cube_size, z:z+cube_size]) == cube_size**3:
+                if np.sum(overlap_mask[x*cube_size:x*cube_size+cube_size, y*cube_size:y*cube_size+cube_size, z*cube_size:z*cube_size+cube_size]) == cube_size**3:
                     print('Writing:', f'{count}_split1.tiff')
-                    tifffile.imwrite(f'{count}_split1.tiff', data=vol1[x:x+cube_size, y:y+cube_size, z:z+cube_size], imagej=True)
+                    tifffile.imwrite(f'{count}_split1.tiff', data=vol1[x*cube_size:x*cube_size+cube_size, y*cube_size:y*cube_size+cube_size, z*cube_size:z*cube_size+cube_size], imagej=True)
                     print('Writing:', f'{count}_split2.tiff')
-                    tifffile.imwrite(f'{count}_split2.tiff', data=vol2[x:x+cube_size, y:y+cube_size, z:z+cube_size], imagej=True)
+                    tifffile.imwrite(f'{count}_split2.tiff', data=vol2[x*cube_size:x*cube_size+cube_size, y*cube_size:y*cube_size+cube_size, z*cube_size:z*cube_size+cube_size], imagej=True)
                     count += 1
 
     print(overlap_list)
