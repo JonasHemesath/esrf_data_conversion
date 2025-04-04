@@ -43,15 +43,18 @@ cube_size = 64
 raw_files = get_two_largest_raw_files()
 
 dim1 = tuple([int(c) for c in raw_files[0].split('_')[-1].split('.')[0].split('x')])
+print(raw_files[0])
 
 vol1 = np.memmap(raw_files[0], dtype=np.uint8, mode='r', shape=dim1, order='F')
 
 dim2 = tuple([int(c) for c in raw_files[1].split('_')[-1].split('.')[0].split('x')])
 
 if dim2 == dim1:
+    print(raw_files[1])
     vol2 = np.memmap(raw_files[1], dtype=np.uint8, mode='r', shape=dim1, order='F')
 
     overlap_mask = (vol1 > 0) & (vol2 > 0)
+    print('number of overlapping voxel:', np.sum(overlap_mask))
 
     count = 0
     for x in range(math.floor(dim1[0]/cube_size)):
