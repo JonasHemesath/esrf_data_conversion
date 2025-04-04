@@ -55,7 +55,7 @@ if dim2 == dim1:
 
     overlap_mask = (vol1 > 0) & (vol2 > 0)
     print('number of overlapping voxel:', np.sum(overlap_mask))
-    tifffile.imwrite('overlap_mask.tif', overlap_mask.astype(np.uint8)*255, imagej=True)
+    tifffile.imwrite('overlap_mask.tiff', overlap_mask.astype(np.uint8)*255, imagej=True)
     overlap_list = []
     count = 0
     for x in range(math.floor(dim1[0]/cube_size)):
