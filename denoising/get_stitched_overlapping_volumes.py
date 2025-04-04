@@ -47,6 +47,8 @@ def process_overlap_mask_efficient(overlap_mask, erosion_iterations=5, erosion_t
     
     # Step 3: Repeat the eroded 2D mask into the third dimension to form a 3D mask.
     new_mask = np.repeat(eroded_mask2d[:, :, np.newaxis], overlap_mask.shape[2], axis=2)
+    new_mask[:,:,0:5] = 0
+    new_mask[:,:,-5:] = 0
     return new_mask
 
 def get_two_largest_raw_files():
