@@ -55,7 +55,7 @@ if dim2 == dim1:
 
     overlap_mask = (vol1 > 0) & (vol2 > 0)
     print('number of overlapping voxel:', np.sum(overlap_mask))
-    tifffile.imwrite('overlap_mask.tiff', overlap_mask.astype(np.uint8)*255, imagej=True)
+    tifffile.imwrite('overlap_mask.tiff', overlap_mask.astype(np.uint8).T*255, imagej=True)
     overlap_list = []
     count = 0
     for x in range(math.floor(dim1[0]/cube_size)):
@@ -66,9 +66,9 @@ if dim2 == dim1:
                 #print(cube_size**3)
                 if np.sum(overlap_mask[x*cube_size:x*cube_size+cube_size, y*cube_size:y*cube_size+cube_size, z*cube_size:z*cube_size+cube_size]) == cube_size**3:
                     print('Writing:', f'{count}_split1.tiff')
-                    tifffile.imwrite(f'{count}_split1.tiff', data=vol1[x*cube_size:x*cube_size+cube_size, y*cube_size:y*cube_size+cube_size, z*cube_size:z*cube_size+cube_size], imagej=True)
+                    tifffile.imwrite(f'{count}_split1.tiff', data=vol1[x*cube_size:x*cube_size+cube_size, y*cube_size:y*cube_size+cube_size, z*cube_size:z*cube_size+cube_size].T, imagej=True)
                     print('Writing:', f'{count}_split2.tiff')
-                    tifffile.imwrite(f'{count}_split2.tiff', data=vol2[x*cube_size:x*cube_size+cube_size, y*cube_size:y*cube_size+cube_size, z*cube_size:z*cube_size+cube_size], imagej=True)
+                    tifffile.imwrite(f'{count}_split2.tiff', data=vol2[x*cube_size:x*cube_size+cube_size, y*cube_size:y*cube_size+cube_size, z*cube_size:z*cube_size+cube_size].T, imagej=True)
                     count += 1
 
     print(overlap_list)
