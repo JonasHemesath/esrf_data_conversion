@@ -1,6 +1,8 @@
 import os
 import subprocess
 import numpy as np
+import math
+import tifffile
 
 
 def get_two_largest_raw_files():
@@ -36,18 +38,31 @@ def get_two_largest_raw_files():
 
 #p.communicate()
 
+cube_size = 128
+
 raw_files = get_two_largest_raw_files()
-#print(raw_files[0].split('_')[-1].split('.')[0].split('x'))
+
 dim1 = tuple([int(c) for c in raw_files[0].split('_')[-1].split('.')[0].split('x')])
 
 vol1 = np.memmap(raw_files[0], dtype=np.uint8, mode='r', shape=dim1, order='F')
 
 dim2 = tuple([int(c) for c in raw_files[1].split('_')[-1].split('.')[0].split('x')])
 
-vol2 = np.memmap(raw_files[1], dtype=np.uint8, mode='r', shape=dim1, order='F')
-print(dim1)
-print(raw_files[0])
-print(dim2)
-print(raw_files[1])
-print(vol1.shape)
-print(vol2.shape)
+if dim2 == dim1:
+    vol2 = np.memmap(raw_files[1], dtype=np.uint8, mode='r', shape=dim1, order='F')
+
+    overlap_mask = (vol1 > 0) & (vol2 > 0)
+
+    count = 0
+    for x in range(math.floor(dim1[0]/cube_size)):
+        for y in range(math.floor(dim1[1]/cube_size)):
+            for z in range(math.floor(dim1[2]/cube_size)):
+                if np.sum(overlap_mask[x:x+cube_size, y:y+cube_size, z:z+cube_size]) == cube_size**3:
+                    tifffile.imwrite(f'{count}_split1.tiff', data=vol1[x:x+cube_size, y:y+cube_size, z:z+cube_size], imagej=True)
+                    tifffile.imwrite(f'{count}_split2.tiff', data=vol2[x:x+cube_size, y:y+cube_size, z:z+cube_size], imagej=True)
+                    count += 1
+
+else:
+    print(f'Error: Dimensions are not the same. Dim1: {dim1}, Dim2: {dim2}')
+
+
