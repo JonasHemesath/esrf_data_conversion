@@ -5,23 +5,49 @@ import math
 import tifffile
 from scipy.ndimage import binary_closing
 
-def fill_holes_in_mask(mask, structure=None):
+from scipy.ndimage import convolve
+
+def process_overlap_mask_efficient(overlap_mask, erosion_iterations=5, erosion_threshold=8):
     """
-    Applies a binary closing to fill in small holes in the binary mask.
+    Process the 3D overlap mask in an efficient way by:
+      1. Computing the mean projection along the 3rd dimension.
+      2. Creating a 2D binary mask (all pixels with a mean > 0 are set to True).
+      3. Eroding the 2D mask for a fixed number of iterations such that
+         every True pixel with fewer than erosion_threshold True neighbors (8-connected)
+         is set to False.
+      4. Replacing each slice (in the 3rd dimension) of the output with the eroded 2D mask.
     
     Parameters:
-        mask : np.ndarray
-            A 3D boolean array where True indicates a voxel is considered valid.
-        structure : np.ndarray or None
-            The structuring element used for the closing operation.
-            If None, a 3x3x3 cube is used.
-            
+        overlap_mask : np.ndarray
+            A 3D boolean array representing the overlap.
+        erosion_iterations : int
+            The number of erosion iterations to perform on the 2D mask.
+        erosion_threshold : int
+            Minimum number of True neighbors required to keep a pixel as True.
+    
     Returns:
-        np.ndarray: The processed mask with holes filled.
+        np.ndarray: A new 3D mask where each plane is the eroded 2D mask.
     """
-    if structure is None:
-        structure = np.ones((3, 3, 3), dtype=bool)
-    return binary_closing(mask, structure=structure)
+    # Step 1: Compute the mean projection (along axis=2) and create a 2D mask.
+    projection = np.mean(overlap_mask, axis=2)
+    mask2d = projection > 0  # Any pixel with a mean > 0 is considered part of the mask.
+    
+    # Step 2: Erode the 2D mask.
+    eroded_mask2d = mask2d.copy()
+    # Create a 3x3 kernel (for 8-connected neighbors) without including the center.
+    kernel = np.ones((3, 3), dtype=int)
+    kernel[1, 1] = 0
+    
+    for _ in range(erosion_iterations):
+        # Count True neighbors
+        neighbor_count = convolve(eroded_mask2d.astype(int), kernel, mode='constant', cval=0)
+        # Set pixels with fewer than erosion_threshold True neighbors to False.
+        eroded_mask2d = np.where((eroded_mask2d == True) & (neighbor_count < erosion_threshold), 
+                                 False, eroded_mask2d)
+    
+    # Step 3: Repeat the eroded 2D mask into the third dimension to form a 3D mask.
+    new_mask = np.repeat(eroded_mask2d[:, :, np.newaxis], overlap_mask.shape[2], axis=2)
+    return new_mask
 
 def get_two_largest_raw_files():
     """
@@ -72,11 +98,11 @@ if dim2 == dim1:
     vol2 = np.memmap(raw_files[1], dtype=np.uint8, mode='r', shape=dim1, order='F')
 
     overlap_mask = (vol1 > 0) & (vol2 > 0)
-    filled_mask = fill_holes_in_mask(overlap_mask)
+    filled_mask = process_overlap_mask_efficient(overlap_mask)
     diff_mask = ((filled_mask.astype(np.uint8).T+1)-(overlap_mask.astype(np.uint8).T+1))*122
     print('number of overlapping voxel:', np.sum(overlap_mask))
     tifffile.imwrite('overlap_mask.tiff', overlap_mask.astype(np.uint8).T*255, imagej=True)
-    tifffile.imwrite('overlap_mask.tiff', filled_mask.astype(np.uint8).T*255, imagej=True)
+    tifffile.imwrite('filled_mask.tiff', filled_mask.astype(np.uint8).T*255, imagej=True)
     tifffile.imwrite('subtract_mask.tiff', diff_mask, imagej=True)
     overlap_list = []
     count = 0
