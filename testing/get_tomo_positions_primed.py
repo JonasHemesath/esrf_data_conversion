@@ -4,11 +4,13 @@ sample = 'zf13_hr_autoabs'
 
 voxel_size = 0.0007278      # in mm
 
-prime_txt_fp = '/cajal/scratch/projects/xray/bm05/converted_data/new_Sep_2024/zf13_hr2.txt'
+prime_sample = 'zf13_hr2'
 
 path = '/cajal/scratch/projects/xray/bm05/converted_data/new_Sep_2024/'
 
 full_path = path + sample
+
+prime_full_path = path + prime_sample
 
 max_x = -1000
 max_y = -1000
@@ -18,23 +20,48 @@ pos_dict = {}
 
 
 
-with open(prime_txt_fp, 'r') as f:
-    prime_txt = f.readlines()
-
-for line in prime_txt:
-    p1 = line.strip('\n').split(' = ')
-    p2 = [int(c) for c in p1[1].split(', ')]
-    print(p1)
-    print(p2)
-    pos_dict[p1[0]] = p2
-    if p2[0] > max_x:
-        max_x = p2[0]
-    if p2[1] > max_y:
-        max_y = p2[1]
-    if p2[2] < min_z:
-        min_z = p2[2]
 
 for f in os.listdir(full_path):
+    if f[-4:] == 'tiff':
+        f_p = f.split('_')
+
+        for p in f_p:
+            try:
+                if p[0] == 'x':
+                    if len(p) == 6:
+                        x = float(p[1] + '.' + p[2:])
+                    elif len(p) == 7:
+                        x = float(p[1:3] + '.' + p[3:])
+                    else:
+                        print('length does not match', f, p)
+
+                if p[0] == 'y':
+                    if len(p) == 6:
+                        y = float(p[1] + '.' + p[2:])
+                    elif len(p) == 7:
+                        y = float(p[1:3] + '.' + p[3:])
+                    else:
+                        print('length does not match', f, p)
+
+                if p[0] == 'z' and p[1] != 'f':
+                    if len(p) == 8:
+                        z = float(p[1:4] + '.' + p[4:])
+                    else:
+                            print('length does not match', f, p)
+            except IndexError:
+                print('string skipped:', f)
+
+        if x > max_x:
+            max_x = x
+        if y > max_y:
+            max_y = y
+        if z < min_z:
+            min_z = z
+
+        pos_dict[f] = [x, y, z]
+
+
+for f in os.listdir(prime_full_path):
     if f[-4:] == 'tiff':
         f_p = f.split('_')
 
