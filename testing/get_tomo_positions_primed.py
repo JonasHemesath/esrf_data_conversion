@@ -27,6 +27,12 @@ for line in prime_txt:
     print(p1)
     print(p2)
     pos_dict[p1[0]] = p2
+    if p2[0] > max_x:
+        max_x = p2[0]
+    if p2[1] > max_y:
+        max_y = p2[1]
+    if p2[2] < min_z:
+        min_z = p2[2]
 
 for f in os.listdir(full_path):
     if f[-4:] == 'tiff':
