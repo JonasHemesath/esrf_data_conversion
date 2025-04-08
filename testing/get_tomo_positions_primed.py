@@ -16,6 +16,16 @@ min_z = 10000000000
 
 pos_dict = {}
 
+
+
+with open(prime_txt_fp, 'r') as f:
+    prime_txt = f.readlines()
+
+for line in prime_txt:
+    p1 = line.strip('\n').split(' = ')
+    p2 = [int(c) for c in p1[1].split(', ')]
+    pos_dict[p1[0]] = p2
+
 for f in os.listdir(full_path):
     if f[-4:] == 'tiff':
         f_p = f.split('_')
@@ -55,12 +65,8 @@ for f in os.listdir(full_path):
 
         pos_dict[f] = [x, y, z]
 
-with open(prime_txt_fp, 'r') as f:
-    prime_txt = f.read()
-    prime_txt = prime_txt + '\n'
 
 with open(full_path + '.txt', 'w') as txt_file:
-    txt_file.write(prime_txt)
     for key, val in pos_dict.items():
         x_str = str(int((max_x - val[0])//voxel_size))
         y_str = str(int((max_y - val[1])//voxel_size))
