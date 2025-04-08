@@ -24,6 +24,8 @@ with open(prime_txt_fp, 'r') as f:
 for line in prime_txt:
     p1 = line.strip('\n').split(' = ')
     p2 = [int(c) for c in p1[1].split(', ')]
+    print(p1)
+    print(p2)
     pos_dict[p1[0]] = p2
 
 for f in os.listdir(full_path):
