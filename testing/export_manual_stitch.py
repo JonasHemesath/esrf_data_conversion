@@ -2,14 +2,14 @@ import os
 import tifffile
 import skimage
 
-load_path = '/cajal/scratch/projects/xray/bm05/converted_data/new_Sep_2024/zf13_hr2/'
+load_path = '/cajal/scratch/projects/xray/bm05/converted_data/new_Sep_2024/zf13_hr_autoabs/'
 
 save_path = '/cajal/scratch/projects/xray/bm05/converted_data/zf13_hr2_manual_stitch/'
 
 filter1 = 'zf13'
 filter2 = 'tiff'
 
-idxs = [50, 1940]
+idxs = [50]
 c = 1
 
 for f in os.listdir(load_path):
