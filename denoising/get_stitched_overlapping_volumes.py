@@ -86,6 +86,8 @@ def get_two_largest_raw_files():
 
 cube_size = 128
 
+random_threshold = 0.1
+
 raw_files = get_two_largest_raw_files()
 
 dim1 = tuple([int(c) for c in raw_files[0].split('_')[-1].split('.')[0].split('x')])
@@ -111,15 +113,16 @@ if dim2 == dim1:
     for x in range(math.floor(dim1[0]/cube_size)):
         for y in range(math.floor(dim1[1]/cube_size)):
             for z in range(math.floor(dim1[2]/cube_size)):
-                overlap_list.append(np.sum(filled_mask[x*cube_size:x*cube_size+cube_size, y*cube_size:y*cube_size+cube_size, z*cube_size:z*cube_size+cube_size]))
-                #print(np.sum(filled_mask[x*cube_size:x*cube_size+cube_size, y*cube_size:y*cube_size+cube_size, z*cube_size:z*cube_size+cube_size]))
-                #print(cube_size**3)
-                if np.sum(filled_mask[x*cube_size:x*cube_size+cube_size, y*cube_size:y*cube_size+cube_size, z*cube_size:z*cube_size+cube_size]) == cube_size**3:
-                    print('Writing:', f'{count}_split1.tiff')
-                    tifffile.imwrite(f'{count}_split1.tiff', data=vol1[x*cube_size:x*cube_size+cube_size, y*cube_size:y*cube_size+cube_size, z*cube_size:z*cube_size+cube_size].T, imagej=True)
-                    print('Writing:', f'{count}_split2.tiff')
-                    tifffile.imwrite(f'{count}_split2.tiff', data=vol2[x*cube_size:x*cube_size+cube_size, y*cube_size:y*cube_size+cube_size, z*cube_size:z*cube_size+cube_size].T, imagej=True)
-                    count += 1
+                if np.random.random() < random_threshold:
+                    overlap_list.append(np.sum(filled_mask[x*cube_size:x*cube_size+cube_size, y*cube_size:y*cube_size+cube_size, z*cube_size:z*cube_size+cube_size]))
+                    #print(np.sum(filled_mask[x*cube_size:x*cube_size+cube_size, y*cube_size:y*cube_size+cube_size, z*cube_size:z*cube_size+cube_size]))
+                    #print(cube_size**3)
+                    if np.sum(filled_mask[x*cube_size:x*cube_size+cube_size, y*cube_size:y*cube_size+cube_size, z*cube_size:z*cube_size+cube_size]) == cube_size**3:
+                        print('Writing:', f'{count}_split1.tiff')
+                        tifffile.imwrite(f'{count}_split1.tiff', data=vol1[x*cube_size:x*cube_size+cube_size, y*cube_size:y*cube_size+cube_size, z*cube_size:z*cube_size+cube_size].T, imagej=True)
+                        print('Writing:', f'{count}_split2.tiff')
+                        tifffile.imwrite(f'{count}_split2.tiff', data=vol2[x*cube_size:x*cube_size+cube_size, y*cube_size:y*cube_size+cube_size, z*cube_size:z*cube_size+cube_size].T, imagej=True)
+                        count += 1
 
     print(overlap_list)
     print(max(overlap_list))
