@@ -76,11 +76,11 @@ def get_bounding_box(volume):
     return (x_min, x_max, y_min, y_max, z_min, z_max)
 
 # Registering the two tomograms
-print('Start stich subprocess')
-p = subprocess.Popen(['python', '/cajal/nvmescratch/users/johem/pi2_new/pi2/bin-linux64/release-nocl/nr_stitcher_jh.py', 'stitch_settings.txt'],
-                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-p.communicate()
-print('Finished stitching')
+#print('Start stich subprocess')
+#p = subprocess.Popen(['python', '/cajal/nvmescratch/users/johem/pi2_new/pi2/bin-linux64/release-nocl/nr_stitcher_jh.py', 'stitch_settings.txt'],
+#                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+#p.communicate()
+#print('Finished stitching')
 
 # Main processing
 cube_size = 512
