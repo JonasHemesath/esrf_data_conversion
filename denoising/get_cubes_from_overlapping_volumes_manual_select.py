@@ -46,7 +46,8 @@ def process_overlap_mask_efficient(overlap_mask, erosion_iterations=5, erosion_t
     eroded_mask2d = mask2d.copy()
     kernel = np.ones((3, 3), dtype=int)
     kernel[1, 1] = 0  # exclude the center
-    for _ in range(erosion_iterations):
+    for i in range(erosion_iterations):
+        print('Iteration:', i)
         neighbor_count = convolve(eroded_mask2d.astype(int), kernel, mode='constant', cval=0)
         eroded_mask2d = np.where((eroded_mask2d == True) & (neighbor_count < erosion_threshold),
                                  False, eroded_mask2d)
