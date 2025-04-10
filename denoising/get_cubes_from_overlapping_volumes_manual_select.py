@@ -5,8 +5,6 @@ import math
 import tifffile
 from scipy.ndimage import convolve
 import json
-import matplotlib
-matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
 
 
@@ -174,7 +172,8 @@ for x in range(num_x):
             axs[1].set_title("Volume 2 Cube (Middle Z Plane)")
             plt.tight_layout()
             #plt.imshow(cube_vol1[:, :, mid_slice], cmap='gray')
-            plt.show()
+            #plt.show()
+            plt.savefig('output.png')
             
             # Ask the user if they want to save this cube.
             user_input = input("Save this cube? (y/n): ").strip().lower()
