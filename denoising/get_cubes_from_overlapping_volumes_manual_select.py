@@ -102,7 +102,7 @@ if len(raw_files) < 2:
 # Determine the volume dimensions from the filename (assuming they are encoded as ..._WIDTHxHEIGHTxDEPTH.raw)
 dim1 = tuple([int(c) for c in raw_files[0].split('_')[-1].split('.')[0].split('x')])
 print("Using first raw file:", raw_files[0])
-vol1 = np.memmap(raw_files[0], dtype=np.uint8, mode='r', shape=dim1, order='F')
+vol1 = np.memmap(raw_files[0], dtype=np.float32, mode='r', shape=dim1, order='F')
 
 dim2 = tuple([int(c) for c in raw_files[1].split('_')[-1].split('.')[0].split('x')])
 if dim1 != dim2:
@@ -110,7 +110,7 @@ if dim1 != dim2:
     exit(1)
 
 print("Using second raw file:", raw_files[1])
-vol2 = np.memmap(raw_files[1], dtype=np.uint8, mode='r', shape=dim1, order='F')
+vol2 = np.memmap(raw_files[1], dtype=np.float32, mode='r', shape=dim1, order='F')
 
 # Create the overlap masks from the two volumes.
 overlap_mask = (vol1 > 0) & (vol2 > 0)
