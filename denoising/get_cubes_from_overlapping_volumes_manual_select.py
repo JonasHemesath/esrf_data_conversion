@@ -5,7 +5,10 @@ import math
 import tifffile
 from scipy.ndimage import convolve
 import json
+import matplotlib
+matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
+
 
 def get_two_largest_raw_files():
     """
