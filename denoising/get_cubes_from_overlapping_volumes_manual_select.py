@@ -85,6 +85,7 @@ def get_bounding_box(volume):
 
 # Main processing
 cube_size = 512
+bounding_box_calc = False
 # Note: random offsets are still computed; you may set them to 0 if you want systematic tiling.
 random_offset_x = np.random.randint(0, cube_size)
 random_offset_y = np.random.randint(0, cube_size)
@@ -116,13 +117,14 @@ filled_mask = process_overlap_mask_efficient(overlap_mask)
 print('Overlap mask generated')
 
 # Determine bounding boxes (the smallest box that contains all nonzero voxels).
-bb_vol1 = get_bounding_box(vol1)
-bb_vol2 = get_bounding_box(vol2)
-if bb_vol1 is None or bb_vol2 is None:
-    print("One of the volumes appears to be empty (no nonzero voxels).")
-    exit(1)
-else:
-    print('Bounding boxes generated')
+if bounding_box_calc:
+    bb_vol1 = get_bounding_box(vol1)
+    bb_vol2 = get_bounding_box(vol2)
+    if bb_vol1 is None or bb_vol2 is None:
+        print("One of the volumes appears to be empty (no nonzero voxels).")
+        exit(1)
+    else:
+        print('Bounding boxes generated')
 
 # We will store the relative origins for the exported cube in this dictionary.
 cube_origins = {}
@@ -174,20 +176,22 @@ for x in range(num_x):
             user_input = input("Save this cube? (y/n): ").strip().lower()
             if user_input.startswith('y'):
                 # Compute the absolute origin.
-                abs_origin = (start_x, start_y, start_z)
-                # Compute the relative origin with respect to each volume's bounding box.
-                rel_origin_vol1 = (abs_origin[0] - bb_vol1[0],
-                                   abs_origin[1] - bb_vol1[2],
-                                   abs_origin[2] - bb_vol1[4])
-                rel_origin_vol2 = (abs_origin[0] - bb_vol2[0],
-                                   abs_origin[1] - bb_vol2[2],
-                                   abs_origin[2] - bb_vol2[4])
+                if bounding_box_calc:
+                    abs_origin = (start_x, start_y, start_z)
+                    # Compute the relative origin with respect to each volume's bounding box.
+                    rel_origin_vol1 = (abs_origin[0] - bb_vol1[0],
+                                    abs_origin[1] - bb_vol1[2],
+                                    abs_origin[2] - bb_vol1[4])
+                    rel_origin_vol2 = (abs_origin[0] - bb_vol2[0],
+                                    abs_origin[1] - bb_vol2[2],
+                                    abs_origin[2] - bb_vol2[4])
                 
                 if mode == 'tiff':
                     filename1 = f'{candidate_count}_split1.tiff'
                     filename2 = f'{candidate_count}_split2.tiff'
-                    cube_origins[filename1] = {"volume": "vol1", "relative_origin": rel_origin_vol1}
-                    cube_origins[filename2] = {"volume": "vol2", "relative_origin": rel_origin_vol2}
+                    if bounding_box_calc:
+                        cube_origins[filename1] = {"volume": "vol1", "relative_origin": rel_origin_vol1}
+                        cube_origins[filename2] = {"volume": "vol2", "relative_origin": rel_origin_vol2}
                     
                     print('Writing:', filename1)
                     tifffile.imwrite(filename1,
@@ -200,8 +204,9 @@ for x in range(num_x):
                 elif mode == 'npy':
                     filename1 = f'{candidate_count}_split1.npy'
                     filename2 = f'{candidate_count}_split2.npy'
-                    cube_origins[filename1] = {"volume": "vol1", "relative_origin": rel_origin_vol1}
-                    cube_origins[filename2] = {"volume": "vol2", "relative_origin": rel_origin_vol2}
+                    if bounding_box_calc:
+                        cube_origins[filename1] = {"volume": "vol1", "relative_origin": rel_origin_vol1}
+                        cube_origins[filename2] = {"volume": "vol2", "relative_origin": rel_origin_vol2}
                     
                     print('Writing:', filename1)
                     np.save(filename1, cube_vol1)
@@ -214,8 +219,9 @@ for x in range(num_x):
             candidate_count += 1
 
 # Write the cube origins dictionary to a JSON file.
-with open("cube_origins.json", "w") as fp:
-    json.dump(cube_origins, fp, indent=4)
+if bounding_box_calc:
+    with open("cube_origins.json", "w") as fp:
+        json.dump(cube_origins, fp, indent=4)
 
 if not cube_saved:
     print("No cube was saved.")
