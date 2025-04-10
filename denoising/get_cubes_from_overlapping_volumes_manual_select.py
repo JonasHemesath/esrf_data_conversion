@@ -164,13 +164,13 @@ for x in range(num_x):
 
             # Plot the middle Z-plane of each cube.
             mid_slice = cube_size // 2
-            #fig, axs = plt.subplots(1, 2, figsize=(10, 5))
-            #axs[0].imshow(cube_vol1[:, :, mid_slice], cmap='gray')
-            #axs[0].set_title("Volume 1 Cube (Middle Z Plane)")
-            #axs[1].imshow(cube_vol2[:, :, mid_slice], cmap='gray')
-            #axs[1].set_title("Volume 2 Cube (Middle Z Plane)")
-            #plt.tight_layout()
-            plt.imshow(cube_vol1[:, :, mid_slice], cmap='gray')
+            fig, axs = plt.subplots(1, 2, figsize=(10, 5))
+            axs[0].imshow(cube_vol1[:, :, mid_slice], cmap='gray')
+            axs[0].set_title("Volume 1 Cube (Middle Z Plane)")
+            axs[1].imshow(cube_vol2[:, :, mid_slice], cmap='gray')
+            axs[1].set_title("Volume 2 Cube (Middle Z Plane)")
+            plt.tight_layout()
+            #plt.imshow(cube_vol1[:, :, mid_slice], cmap='gray')
             plt.show()
             
             # Ask the user if they want to save this cube.
