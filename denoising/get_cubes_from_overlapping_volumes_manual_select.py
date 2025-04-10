@@ -113,6 +113,7 @@ vol2 = np.memmap(raw_files[1], dtype=np.uint8, mode='r', shape=dim1, order='F')
 # Create the overlap masks from the two volumes.
 overlap_mask = (vol1 > 0) & (vol2 > 0)
 filled_mask = process_overlap_mask_efficient(overlap_mask)
+print('Overlap mask generated')
 
 # Determine bounding boxes (the smallest box that contains all nonzero voxels).
 bb_vol1 = get_bounding_box(vol1)
@@ -120,6 +121,8 @@ bb_vol2 = get_bounding_box(vol2)
 if bb_vol1 is None or bb_vol2 is None:
     print("One of the volumes appears to be empty (no nonzero voxels).")
     exit(1)
+else:
+    print('Bounding boxes generated')
 
 # We will store the relative origins for the exported cube in this dictionary.
 cube_origins = {}
