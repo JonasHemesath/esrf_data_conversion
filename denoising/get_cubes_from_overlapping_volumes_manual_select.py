@@ -112,10 +112,16 @@ if dim1 != dim2:
 print("Using second raw file:", raw_files[1])
 vol2 = np.memmap(raw_files[1], dtype=np.float32, mode='r', shape=dim1, order='F')
 
+if not os.path.isfile('overlap_mask.npy'):
 # Create the overlap masks from the two volumes.
-overlap_mask = (vol1 > 0) & (vol2 > 0)
-filled_mask = process_overlap_mask_efficient(overlap_mask)
-print('Overlap mask generated')
+    overlap_mask = (vol1 > 0) & (vol2 > 0)
+    filled_mask = process_overlap_mask_efficient(overlap_mask)
+    print('Overlap mask generated')
+    np.save('overlap_mask.npy', filled_mask)
+else:
+    filled_mask = np.load('overlap_mask.npy')
+
+
 
 # Determine bounding boxes (the smallest box that contains all nonzero voxels).
 if bounding_box_calc:
