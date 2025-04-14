@@ -14,11 +14,11 @@ for i in range(vol1.shape[0]):
 
 for i in range(vol1.shape[1]):
     print(i+1, 'of', vol1.shape[1])
-    vol_matched_temp2[:,i,:] = match_histograms(vol2[:,i,:], vol1[:,i,:])
+    vol_matched_temp2[:,i,:] = match_histograms(vol_matched_temp1[:,i,:], vol1[:,i,:])
 
 for i in range(vol1.shape[2]):
     print(i+1, 'of', vol1.shape[2])
-    vol_matched[:,:,i] = match_histograms(vol2[:,:,i], vol1[:,:,i])
+    vol_matched[:,:,i] = match_histograms(vol_matched_temp2[:,:,i], vol1[:,:,i])
 
 
 np.save('1_split2_matched.npy', vol_matched)
