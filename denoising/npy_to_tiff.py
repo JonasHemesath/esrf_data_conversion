@@ -3,7 +3,7 @@ import tifffile
 import numpy as np
 
 for file in os.listdir():
-    if file[-3:] == 'npy':
+    if file[-3:] == 'npy' and file != 'overlap_mask.npy':
         data = np.load(file)
         if not os.path.isdir(file[0:-4]):
             os.makedirs(file[0:-4])
