@@ -11,4 +11,4 @@ for file in os.listdir():
             name = str(i)
             while len(name) < 5:
                 name = '0' + name
-            tifffile.imwrite(file[0:-4] + '/' + file[0:-3] + '.tif', data[i,:,:])
+            tifffile.imwrite(file[0:-4] + '/' + name + '.tif', data[i,:,:])
