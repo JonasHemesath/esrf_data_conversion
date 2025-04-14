@@ -10,4 +10,4 @@ for i in range(vol1.shape[0]):
     print(i+1, 'of', vol1.shape[0])
     vol_matched[i,:,:] = match_histograms(vol2[i,:,:], vol1[i,:,:])
 
-np.save('1_split1_matched.npy')
+np.save('1_split2_matched.npy', vol_matched)
