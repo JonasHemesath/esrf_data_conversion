@@ -115,7 +115,7 @@ create_goodness = False
 
 # Indicates if the calculations should be performed on a cluster or not.
 # Can be 'None' for local computations, 'Slurm' for Slurm cluster, or 'LSF' for IBM LSF cluster.
-cluster = None
+cluster = Slurm
 
 
 # Indicates if the script should wait until submitted cluster jobs are finished, and then continue.
