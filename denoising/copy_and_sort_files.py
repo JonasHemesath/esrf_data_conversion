@@ -47,7 +47,7 @@ for sample in samples:
                     if os.path.isfile(target_folder + volumes[f] + '/stitch_settings.txt') and curr_line:
                         with open(target_folder + volumes[f] + '/stitch_settings.txt', 'r') as curr_settings_file:
                             curr_settings = curr_settings_file.read()
-                        curr_settings_file = curr_settings + curr_line
+                        curr_settings = curr_settings + curr_line
                         with open(target_folder + volumes[f] + '/stitch_settings.txt', 'w') as curr_settings_file:
                             curr_settings_file.write(curr_settings)
 
