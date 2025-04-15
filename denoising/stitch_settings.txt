@@ -14,7 +14,7 @@ binning = 1
 # Space between points in the reference grid in the pairwise matching step.
 # Specify such a value that the deformation is approximately linear between the grid points.
 # The value should scale with image size.
-point_spacing = 60
+point_spacing = 120
 
 
 # Size of image block in pairwise matching (coarse step).
@@ -35,7 +35,7 @@ coarse_binning = 4
 # Size of image block in pairwise matching (fine step).
 # Indicates maximum shift on top of shift determined in coarse matching.
 # The value should scale with image size.
-fine_block_radius = 10
+fine_block_radius = 20
 
 
 # Amount of binning in fine matching.
@@ -43,7 +43,7 @@ fine_block_radius = 10
 # Sometimes the results seem to be very good although this value is greater than one.
 # If set to the same value than coarse_binning, the fine matching step is skipped.
 # The value should scale with image size.
-fine_binning = 2
+fine_binning = 1
 
 
 # Set to true to try to optimize locations and orientations of the sub-images so that
