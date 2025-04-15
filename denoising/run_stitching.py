@@ -7,6 +7,7 @@ parent_folder = '/cajal/scratch/projects/xray/bm05/converted_data/new_Sep_2024/z
 folders_done = []
 
 folders = sorted([folder for folder in os.listdir(parent_folder) if os.path.isdir(parent_folder + folder)])
+print('All folders:', folders)
 
 count = 0
 
@@ -35,7 +36,7 @@ while folders != folders_done or count < 2:
     folders = sorted([folder for folder in os.listdir(parent_folder) if os.path.isdir(parent_folder + folder)])
     folders_done = sorted(folders_done)
     count += 1
-    print('All folders:', folder)
+    print('All folders:', folders)
     print('Done folders:', folders_done)
             
 
