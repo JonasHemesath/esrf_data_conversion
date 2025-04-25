@@ -13,6 +13,10 @@ count = 0
 
 while folders != folders_done or count < 2:
     for folder in os.listdir(parent_folder):
+        for file in os.listdir(parent_folder + folder):
+            if file[-3:] == 'raw':
+                folders_done.append(folder)
+                break
         if os.path.isdir(parent_folder + folder) and folder not in folders_done:
             wd = parent_folder + folder
 
@@ -33,6 +37,7 @@ while folders != folders_done or count < 2:
                 print('Took', t2-t1, 's')
 
                 folders_done.append(folder)
+                time.sleep(120)
     
     if not folders_done:
         print('No folders ready yet. Sleeping for 30 min')
