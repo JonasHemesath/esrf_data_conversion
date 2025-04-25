@@ -19,7 +19,7 @@ for i,p in enumerate(processes):
     output_str = output_str + str(i) + '\n' + str(output[0]) + '\n\n' + str(output[1]) + '\n\n\n'
     print('Process', i, 'finished')
 
-with open(parent_folder + 'outputs.txt', 'r') as f:
+with open(parent_folder + 'outputs.txt', 'w') as f:
     f.write(output_str)
 
 
