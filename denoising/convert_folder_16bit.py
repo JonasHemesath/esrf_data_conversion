@@ -16,7 +16,7 @@ output_str = 'Process outputs:\n\n'
 for i,p in enumerate(processes):
     print('Waiting for process', i)
     output = p.communicate()
-    output_str = output_str + str(i) + '\n' + output[0] + '\n\n' + output[1] + '\n\n\n'
+    output_str = output_str + str(i) + '\n' + str(output[0]) + '\n\n' + str(output[1]) + '\n\n\n'
     print('Process', i, 'finished')
 
 with open(parent_folder + 'outputs.txt', 'r') as f:
