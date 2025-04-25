@@ -26,7 +26,7 @@ while folders != folders_done or count < 2:
                     tiff_files += 1
 
             if tiff_files == 2:
-                time.sleep(360)
+                #time.sleep(360)
                 print('Stitching folder:', folder)
                 t1 = time.time()
 
@@ -37,7 +37,7 @@ while folders != folders_done or count < 2:
                 print('Took', t2-t1, 's')
 
                 folders_done.append(folder)
-                time.sleep(120)
+                time.sleep(10)
     
     if not folders_done:
         print('No folders ready yet. Sleeping for 30 min')
