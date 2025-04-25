@@ -9,7 +9,7 @@ processes = []
 for folder in os.listdir(parent_folder):
     if os.path.isdir(parent_folder + folder):
         wd = parent_folder + folder
-        processes.append(subprocess.Popen(['srun', '--time=7-0', '--gres=gpu:0', '--mem=900000', '--tasks', '1', '--cpus-per_task', '32', '--pty', 'python', '/cajal/nvmescratch/users/johem/esrf_data_conversion/denoising/convert_16bit.py'],
+        processes.append(subprocess.Popen(['srun', '--time=7-0', '--gres=gpu:0', '--mem=900000', '--tasks', '1', '--cpus-per-task', '32', '--pty', 'python', '/cajal/nvmescratch/users/johem/esrf_data_conversion/denoising/convert_16bit.py'],
                                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=wd))
         print('Subprocess started in', folder)
 
