@@ -32,8 +32,10 @@ while folders != folders_done or count < 2:
 
                 p = subprocess.Popen(['python', '/cajal/nvmescratch/users/johem/pi2_new/pi2/bin-linux64/release-nocl/nr_stitcher_jh.py', 'stitch_settings.txt'],
                                         stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=wd)
-                p.communicate()
+                output = p.communicate()
                 t2 = time.time()
+                if t2-t1 < 200:
+                    print(output)
                 print('Took', t2-t1, 's')
 
                 folders_done.append(folder)
