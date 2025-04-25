@@ -15,7 +15,7 @@ for folder in os.listdir(parent_folder):
 
 output_str = 'Process outputs:\n\n'
 for i,p in enumerate(processes):
-    print('Waiting for process', i)
+    print('Waiting for process', i, 'of', len(processes))
     output = p.communicate()
     output_str = output_str + str(i) + '\n' + str(output[0]) + '\n\n' + str(output[1]) + '\n\n\n'
     print('Process', i, 'finished')

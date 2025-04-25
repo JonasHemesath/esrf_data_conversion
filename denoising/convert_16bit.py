@@ -64,7 +64,7 @@ print('Starting conversion')
 for file in os.listdir():
     if file[-4:] == 'tiff':
         print(file)
-        im = tifffile.imread(f[0] + f[1], key=range(0,z))
+        im = tifffile.imread(file, key=range(0,z))
         print('Image loaded')
         mask = create_circular_mask(im.shape[1], im.shape[2])
         print('mask created')
