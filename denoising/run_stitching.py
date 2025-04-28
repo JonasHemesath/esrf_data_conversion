@@ -25,7 +25,7 @@ while folders != folders_done or count < 2:
                 if tiff_file[-4:] == 'tiff':
                     tiff_files += 1
 
-            if tiff_files == 2:
+            if tiff_files > 1:
                 #time.sleep(360)
                 print('Stitching folder:', folder)
                 t1 = time.time()
