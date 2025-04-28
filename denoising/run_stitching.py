@@ -14,28 +14,29 @@ processes = []
 
 
 for folder in os.listdir(parent_folder):
-    for file in os.listdir(parent_folder + folder):
-        if file[-3:] == 'raw':
-            folders_done.append(folder)
-            break
-    if os.path.isdir(parent_folder + folder) and folder not in folders_done:
-        wd = parent_folder + folder
+    if os.path.isdir(parent_folder + folder):
+        for file in os.listdir(parent_folder + folder):
+            if file[-3:] == 'raw':
+                folders_done.append(folder)
+                break
+        if folder not in folders_done:
+            wd = parent_folder + folder
 
-        tiff_files = 0
-        for tiff_file in os.listdir(parent_folder + folder):
-            if tiff_file[-4:] == 'tiff':
-                tiff_files += 1
+            tiff_files = 0
+            for tiff_file in os.listdir(parent_folder + folder):
+                if tiff_file[-4:] == 'tiff':
+                    tiff_files += 1
 
-        if tiff_files > 1:
-            #time.sleep(360)
-            print('Stitching folder:', folder)
-            t1 = time.time()
+            if tiff_files > 1:
+                #time.sleep(360)
+                print('Stitching folder:', folder)
+                t1 = time.time()
 
-            processes.append(subprocess.Popen(['python', '/cajal/nvmescratch/users/johem/pi2_new/pi2/bin-linux64/release-nocl/nr_stitcher_jh.py', 'stitch_settings.txt'],
-                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=wd))
-            
-            folders_done.append(folder)
-            time.sleep(2)
+                processes.append(subprocess.Popen(['python', '/cajal/nvmescratch/users/johem/pi2_new/pi2/bin-linux64/release-nocl/nr_stitcher_jh.py', 'stitch_settings.txt'],
+                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=wd))
+                
+                folders_done.append(folder)
+                time.sleep(2)
 
 for i, p in enumerate(processes):
     p.communicate()
