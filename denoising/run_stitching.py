@@ -9,46 +9,43 @@ folders_done = []
 folders = sorted([folder for folder in os.listdir(parent_folder) if os.path.isdir(parent_folder + folder)])
 print('All folders:', folders)
 
-count = 0
 
-while folders != folders_done or count < 2:
-    for folder in os.listdir(parent_folder):
-        for file in os.listdir(parent_folder + folder):
-            if file[-3:] == 'raw':
-                folders_done.append(folder)
-                break
-        if os.path.isdir(parent_folder + folder) and folder not in folders_done:
-            wd = parent_folder + folder
+processes = []
 
-            tiff_files = 0
-            for tiff_file in os.listdir(parent_folder + folder):
-                if tiff_file[-4:] == 'tiff':
-                    tiff_files += 1
 
-            if tiff_files > 1:
-                #time.sleep(360)
-                print('Stitching folder:', folder)
-                t1 = time.time()
+for folder in os.listdir(parent_folder):
+    for file in os.listdir(parent_folder + folder):
+        if file[-3:] == 'raw':
+            folders_done.append(folder)
+            break
+    if os.path.isdir(parent_folder + folder) and folder not in folders_done:
+        wd = parent_folder + folder
 
-                p = subprocess.Popen(['python', '/cajal/nvmescratch/users/johem/pi2_new/pi2/bin-linux64/release-nocl/nr_stitcher_jh.py', 'stitch_settings.txt'],
-                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=wd)
-                output = p.communicate()
-                t2 = time.time()
-                if t2-t1 < 200:
-                    print(output)
-                print('Took', t2-t1, 's')
+        tiff_files = 0
+        for tiff_file in os.listdir(parent_folder + folder):
+            if tiff_file[-4:] == 'tiff':
+                tiff_files += 1
 
-                folders_done.append(folder)
-                time.sleep(10)
-    
-    if not folders_done:
-        print('No folders ready yet. Sleeping for 30 min')
-        time.sleep(1800)
+        if tiff_files > 1:
+            #time.sleep(360)
+            print('Stitching folder:', folder)
+            t1 = time.time()
 
-    folders = sorted([folder for folder in os.listdir(parent_folder) if os.path.isdir(parent_folder + folder)])
-    folders_done = sorted(folders_done)
-    count += 1
-    print('All folders:', folders)
-    print('Done folders:', folders_done)
+            processes.append(subprocess.Popen(['python', '/cajal/nvmescratch/users/johem/pi2_new/pi2/bin-linux64/release-nocl/nr_stitcher_jh.py', 'stitch_settings.txt'],
+                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=wd))
             
+            folders_done.append(folder)
+            time.sleep(2)
+
+for i, p in enumerate(processes):
+    p.communicate()
+    print('Process', i+1, 'of', len(processes), 'finished')
+
+
+folders = sorted([folder for folder in os.listdir(parent_folder) if os.path.isdir(parent_folder + folder)])
+folders_done = sorted(folders_done)
+
+print('All folders:', folders)
+print('Done folders:', folders_done)
+        
 
