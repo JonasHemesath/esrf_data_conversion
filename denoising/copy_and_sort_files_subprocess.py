@@ -34,6 +34,7 @@ for sample in samples:
                     os.makedirs(target_folder + volumes[f])
                     
 
-                subprocess.Popen(['cp', fp, dp],
+                p = subprocess.Popen(['cp', fp, dp],
                                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                p.communicate()
                 
