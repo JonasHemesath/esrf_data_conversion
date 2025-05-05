@@ -26,6 +26,8 @@ for sample in samples:
         for f in os.listdir(load_path + sample + '/' + tomo + '/' + subfolder):
             fp = load_path + sample + '/' + tomo + '/' + subfolder + f
             if f in volumes.keys():
+                print(f)
+                print(volumes[f])
                 fp = load_path + sample + '/' + tomo + '/' + subfolder + f
                 dp = target_folder + volumes[f] + '/'
                 curr_line = ''
