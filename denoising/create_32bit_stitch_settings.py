@@ -6,7 +6,7 @@ with open('stitch_settings_32bit_pi4_5.txt', 'r') as f:
     template = f.read()
 
 for folder in os.listdir(target_folder):
-    if os.path.isdir(folder):
+    if os.path.isdir(os.path.join(target_folder, folder)):
         with open(os.path.join(target_folder, folder, 'stitch_settings.txt'), 'r') as f:
             lines = f.readlines()
         template1 = template + lines[-2]
