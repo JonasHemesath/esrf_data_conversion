@@ -32,7 +32,7 @@ for folder in os.listdir(parent_folder):
                 print('Stitching folder:', folder)
                 t1 = time.time()
 
-                processes.append(subprocess.Popen(['python', '/cajal/nvmescratch/users/johem/pi2_new/pi2/bin-linux64/release-nocl/nr_stitcher_jh.py', 'stitch_settings.txt'],
+                processes.append(subprocess.Popen(['python', '/cajal/nvmescratch/users/johem/pi2_4_5/pi2/bin-linux64/release-nocl/nr_stitcher_jh.py', 'stitch_settings_32bit_pi4_5.txt'],
                                         stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=wd))
                 
                 folders_done.append(folder)
