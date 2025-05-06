@@ -9,7 +9,7 @@ for folder in os.listdir(target_folder):
     if os.path.isdir(os.path.join(target_folder, folder)):
         with open(os.path.join(target_folder, folder, 'stitch_settings.txt'), 'r') as f:
             lines = f.readlines()
-        template1 = template + lines[-2]
+        template1 = template + '\n' + lines[-2]
         template1 = template1 + lines[-1]
 
         with open(os.path.join(target_folder, folder, 'stitch_settings_32bit_pi4_5.txt'), 'w') as f:
