@@ -1,0 +1,148 @@
+[stitch]
+
+# Output name
+sample_name = zf13_hr2_stitched
+
+
+# Binning (downscaling) applied to inputs before stitching.
+# Binning 1 corresponds to original input image size, binning 2 to half of that, etc.
+# Use e.g. to test with smaller images before running stitching for full-scale data.
+binning = 1
+
+
+# Space between points in the reference grid in the pairwise matching step.
+# Specify such a value that the deformation is approximately linear between the grid points.
+# The value should scale with image size.
+# The value is given in the coordinates of the original image (not in binned coordinates).
+point_spacing = 60
+
+
+# Size of image block in pairwise matching (coarse step).
+# The block does not have to be cube, you can use syntax [a, b, c] to specify different dimension
+# for each coordinate direction.
+# The block radius is the maximal local shift that can be found between any two sub-images.
+# The value should scale with image size.
+# The value is given in the coordinates of the original image (not in binned coordinates).
+coarse_block_radius = 120
+
+
+# Amount of binning for coarse matching
+# If set to 1, no fine matching is performed.
+# Set to value greater than one to make a coarse match first and then a fine match using settings below.
+# The value should scale with image size.
+coarse_binning = 4
+
+
+# Size of image block in pairwise matching (fine step).
+# Indicates maximum shift on top of shift determined in coarse matching.
+# The value should scale with image size.
+fine_block_radius = 20
+
+
+# Amount of binning in fine matching.
+# If greater than one, the full resolution of the image is not used to find the shifts.
+# Sometimes the results seem to be very good although this value is greater than one.
+# If set to the same value than coarse_binning, the fine matching step is skipped.
+# The value should scale with image size.
+fine_binning = 1
+
+
+# Set to true to try to optimize locations and orientations of the sub-images so that
+# any discrepancies in overlapping regions are as small as possible before correcting
+# them with non-rigid displacements.
+global_optimization = True
+
+
+# Allow rigid body rotation of sub-images?
+# Disallow if the rotations have not been determined accurately enough, or if
+# errors in rotations propagate through the sample in unwanted way (e.g. in the case
+# of long Nx1x1 mosaic)
+allow_rotation = False
+
+
+# Allow local deformations of sub-images?
+# Disallow to make a rigid stitch instead of non-rigid one. Use e.g. for testing
+# the effect of the non-rigid transformation on the output.
+# Note that the local displacement fields are calculated anyway for determination
+# of optimal positions for the sub-images, even if local deformations are not
+# allowed in the final mosaic.
+allow_local_deformations = True
+
+
+# Normalization of gray values in the pairwise matching phase.
+# Set to true to make means and standard deviations of the sub-images same in
+# the overlapping regions before pairwise matching.
+# The value does not have any effect on the gray levels of the final mosaic.
+normalize_in_blockmatch = True
+
+
+# Normalization of gray values in the final mosaic.
+# Set to true to make means and standard deviations of the sub-images same in
+# the overlapping regions before the assembly of the final mosaic.
+# Enabling or disabling this option may cause global or local gray-value
+# gradients, respectively.
+normalize_while_stitching = False
+
+
+
+# Selects tile pixel weighing method. Set to a negative value to use rect weight, where weight
+# of a pixel is proportional to the distance from the edge of the tile. Set to 0 to use
+# maximum circle weight, where the weight of a pixel is proportional to the distance from
+# the edge of a maximal inscribed circle that fits inside the image in the xy-plane. Set
+# to a positive value to use circle weight with user-specified diameter.
+# This is useful if, e.g. tomographic slices contain bad values outside the
+# well-reconstructed region.
+# Note that currently masking is made after calculation of gray level normalization, see
+# also normalize_while_stitching and normalize_in_blockmatch settings.
+max_circle_diameter = -1
+
+
+# Set to True to treat pixels that have value 0 in the tiles as missing values.
+# Affects the final mosaic building phase only, zeroes are still treated as zeroes in the matching phase.
+zeroes_are_missing_values = True
+
+
+# Threshold value for displacement filtering.
+# This is the T value in the filtering process that is done before determination of
+# similarity transformations and before mosaic assembly.
+# The value should scale with image size.
+displacement_filter_threshold = 6
+
+
+# Set to true to create an output image that shows the local amount of
+# deviation from perfect stitching.
+# The output is standard deviation of all overlapping images in each pixel.
+# The data type of the goodness output is the same as the stitched image.
+# If set to true, you might need to decrease max_block_size accordingly.
+create_goodness = False
+
+
+# Indicates if the calculations should be performed on a cluster or not.
+# Can be 'None' for local computations, 'Slurm' for Slurm cluster, or 'LSF' for IBM LSF cluster.
+cluster = Slurm
+
+
+# Indicates if the script should wait until submitted cluster jobs are finished, and then continue.
+# If set to false, the script will return after submitting jobs.
+wait_for_jobs = True
+
+# Defines the output format
+# Candidates are: zarr, raw
+output_format = raw
+
+# Maximum size of image block that is processed in one process is max_block_size^3.
+# Set to zero to determine the value automatically based on available RAM.
+# If create_goodness is false, set to such a value that
+# (tile_pixel_size + 8) * max_block_size^3 < (available_memory_in_bytes).
+# If create_goodness is true, set to such a value that 
+# (tile_pixel_size + 12) * max_block_size^3 < (available_memory_in_bytes).
+max_block_size = 1000
+
+
+
+[positions]
+
+# Enter image file name and approximate position of that image here.
+# The positions should be given in the coordinate system of the first image, but the origin
+# can be anything.
+# You can skip the dimensions and extension as long as each file is uniquely identified.
