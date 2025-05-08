@@ -10,13 +10,17 @@ for folder in os.listdir(target_folder):
         with open(os.path.join(target_folder, folder, 'stitch_settings.txt'), 'r') as f:
             lines = f.readlines()
         if '16bit' in lines[-2]:
-            line_2 = lines[-2].replace('_16bit', '')
-        else: 
             line_2 = lines[-2]
-        if '16bit' in lines[-1]:
-            line_1 = lines[-1].replace('_16bit', '')
+            #line_2 = lines[-2].replace('_16bit', '')
         else: 
+            line_2 = lines[-2].replace('.tiff', '_16bit.tiff')
+            #line_2 = lines[-2]
+        if '16bit' in lines[-1]:
             line_1 = lines[-1]
+            #line_1 = lines[-1].replace('_16bit', '')
+        else: 
+            line_1 = lines[-1].replace('.tiff', '_16bit.tiff')
+            #line_1 = lines[-1]
         template1 = template + '\n' + line_2
         template1 = template1 + line_1
 
