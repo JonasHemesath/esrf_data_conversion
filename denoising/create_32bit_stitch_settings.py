@@ -24,7 +24,7 @@ for folder in os.listdir(target_folder):
         template1 = template + '\n' + line_2
         template1 = template1 + line_1
 
-        with open(os.path.join(target_folder, folder, 'stitch_settings_32bit_pi4_5.txt'), 'w') as f:
+        with open(os.path.join(target_folder, folder, 'stitch_settings_16bit_pi4_5.txt'), 'w') as f:
             f.write(template1)
 
 
