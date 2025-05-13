@@ -22,5 +22,6 @@ for folder in os.listdir(parent_folder):
 
         raw_files_sort = sorted(zip(raw_files_size, raw_files))
 
-        print(raw_files_sort)
+        os.rename(os.path.join(parent_folder, folder, raw_files_sort[-1][1]), os.path.join(parent_folder, folder, raw_files_sort[-1][1].replace('.raw', '_16bit.raw')))
+        os.rename(os.path.join(parent_folder, folder, raw_files_sort[-2][1]), os.path.join(parent_folder, folder, raw_files_sort[-2][1].replace('.raw', '_16bit.raw')))
         
