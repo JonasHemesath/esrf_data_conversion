@@ -10,7 +10,7 @@ folders = sorted([folder for folder in os.listdir(parent_folder) if os.path.isdi
 print('All folders:', folders)
 
 
-processes = []
+#processes = []
 
 
 for folder in os.listdir(parent_folder):
@@ -32,15 +32,20 @@ for folder in os.listdir(parent_folder):
                 print('Stitching folder:', folder)
                 t1 = time.time()
 
-                processes.append(subprocess.Popen(['python', '/cajal/nvmescratch/users/johem/pi2_4_5/pi2/bin-linux64/release-nocl/nr_stitcher_jh.py', 'stitch_settings_16bit_pi4_5.txt'],
-                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=wd))
+                #processes.append(subprocess.Popen(['python', '/cajal/nvmescratch/users/johem/pi2_4_5/pi2/bin-linux64/release-nocl/nr_stitcher_jh.py', 'stitch_settings_16bit_pi4_5.txt'],
+                #                        stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=wd))
+                
+                p = subprocess.Popen(['python', '/cajal/nvmescratch/users/johem/pi2_4_5/pi2/bin-linux64/release-nocl/nr_stitcher_jh.py', 'stitch_settings_16bit_pi4_5.txt'],
+                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=wd)
+                p.communicate()
+                print('folder', folder, 'done')
                 
                 folders_done.append(folder)
                 time.sleep(2)
 
-for i, p in enumerate(processes):
-    p.communicate()
-    print('Process', i+1, 'of', len(processes), 'finished')
+#for i, p in enumerate(processes):
+#    p.communicate()
+#    print('Process', i+1, 'of', len(processes), 'finished')
 
 
 folders = sorted([folder for folder in os.listdir(parent_folder) if os.path.isdir(parent_folder + folder)])
