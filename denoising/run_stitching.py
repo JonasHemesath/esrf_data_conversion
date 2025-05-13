@@ -16,7 +16,7 @@ processes = []
 for folder in os.listdir(parent_folder):
     if os.path.isdir(parent_folder + folder):
         for file in os.listdir(parent_folder + folder):
-            if file.endswith('16bit.raw'):
+            if file.endswith('done.tif'):
                 folders_done.append(folder)
                 break
         if folder not in folders_done:
