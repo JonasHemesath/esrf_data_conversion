@@ -110,7 +110,7 @@ if plot_mode == 'pygame':
             for i in range(3):
                 image[:, 0:image1.shape[1], i] = image1_n
                 image[:, image1.shape[1]:image1.shape[1]*2, i] = image2_n
-            self.image = image
+            self.image = pygame.surfarray.make_surface(image)
 
             # Pygame screen
             self.screen_width = int(self.image.shape[1])
