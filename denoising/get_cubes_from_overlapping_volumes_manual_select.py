@@ -95,7 +95,7 @@ random_offset_z = np.random.randint(0, cube_size)
 
 mode = 'npy'  # Change to 'tiff' if desired
 
-plot_mode = 'cv2'
+plot_mode = 'pyplot'
 
 raw_files = get_two_largest_raw_files()
 if len(raw_files) < 2:
