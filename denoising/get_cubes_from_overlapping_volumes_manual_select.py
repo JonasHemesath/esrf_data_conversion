@@ -110,7 +110,8 @@ if plot_mode == 'pygame':
             for i in range(3):
                 image[:, 0:image1.shape[1], i] = image1_n
                 image[:, image1.shape[1]:image1.shape[1]*2, i] = image2_n
-            self.image = pygame.surfarray.make_surface(image)
+            self.image = image
+            self.image_d = pygame.surfarray.make_surface(image)
 
             # Pygame screen
             self.screen_width = int(self.image.shape[1])
@@ -149,7 +150,7 @@ if plot_mode == 'pygame':
         def draw(self):
             """Draws all elements on the screen"""
             self.screen.fill((0, 0, 0))
-            self.screen.blit(self.image, self.image_rect)
+            self.screen.blit(self.image_d, self.image_rect)
 
             
 raw_files = get_two_largest_raw_files()
