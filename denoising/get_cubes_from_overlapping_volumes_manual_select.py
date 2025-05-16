@@ -171,10 +171,12 @@ for x in range(num_x):
             cube_vol2 = vol2[start_x : start_x + cube_size,
                              start_y : start_y + cube_size,
                              start_z : start_z + cube_size]
+            
+            mid_slice = cube_size // 2
 
             if plot_mode == 'pyplot':
                 # Plot the middle Z-plane of each cube.
-                mid_slice = cube_size // 2
+                
                 fig, axs = plt.subplots(1, 2, figsize=(10, 5))
                 axs[0].imshow(cube_vol1[:, :, mid_slice], cmap='gray')
                 axs[0].set_title("Volume 1 Cube (Middle Z Plane)")
