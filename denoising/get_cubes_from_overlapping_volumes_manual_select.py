@@ -7,6 +7,7 @@ from scipy.ndimage import convolve
 import json
 import matplotlib.pyplot as plt
 import cv2
+import pygame
 
 
 def get_two_largest_raw_files():
@@ -95,8 +96,62 @@ random_offset_z = np.random.randint(0, cube_size)
 
 mode = 'npy'  # Change to 'tiff' if desired
 
-plot_mode = 'pyplot'
+plot_mode = 'pygame'
 
+if plot_mode == 'pygame':
+    class VolViewer:
+
+        def __init__(self, image1, image2):
+            
+            # Camera
+            image = np.zeros((image1.shape[0], image1.shape[1]*2, 3))
+            image1_n = np.interp(image1, [np.min(image1), np.max(image1)], [0,255])
+            image2_n = np.interp(image2, [np.min(image2), np.max(image2)], [0,255])
+            for i in range(3):
+                image[:, 0:image1.shape[1], i] = image1_n
+                image[:, image1.shape[1]:image1.shape[1]*2, i] = image2_n
+            self.image = image
+
+            # Pygame screen
+            self.screen_width = int(self.image.shape[1])
+            self.screen_height = int(self.image.shape[0])
+            
+            self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
+            pygame.display.set_caption("Cam Viewer")
+
+            # Image display
+            self.image_rect = pygame.Rect(0, 0, self.screen_width, self.screen_height)
+
+            self.save_vols = 0
+
+            self.run()
+
+        def run(self):
+            pygame.init()
+            clock = pygame.time.Clock()
+            running = True
+            while running:
+                for event in pygame.event.get():
+                    keys = pygame.key.get_pressed()
+                    if event.type == pygame.QUIT:
+                        #self.cam2.release()
+                        return 0
+
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_UP:
+                            return 1
+                        elif event.key == pygame.K_DOWN:
+                            return 2
+                
+                self.draw()
+
+
+        def draw(self):
+            """Draws all elements on the screen"""
+            self.screen.fill((0, 0, 0))
+            self.screen.blit(self.image, self.image_rect)
+
+            
 raw_files = get_two_largest_raw_files()
 if len(raw_files) < 2:
     print("Fewer than two .raw files found.")
@@ -192,11 +247,20 @@ for x in range(num_x):
                 cv2_img[:, cube_size:2*cube_size] = cube_vol2[:, :, mid_slice]
                 cv2.imshow('mid slice', cv2_img)
                 cv2.waitKey()
-
-            
+            elif plot_mode == 'pygame':
+                volviewer = VolViewer(cube_vol1[:, :, mid_slice], cube_vol2[:, :, mid_slice])
+                outp = volviewer.run()
+                
+                
+ 
             # Ask the user if they want to save this cube.
-            user_input = input("Save this cube? (y/n): ").strip().lower()
-            if user_input.startswith('y'):
+            if plot_mode == 'pyplot' or plot_mode == 'cv2':
+                user_input = input("Save this cube? (y/n): ").strip().lower()
+                if user_input.startswith('y'):
+                    outp = 2
+                else: 
+                    outp = 1
+            if outp == 2:
                 # Compute the absolute origin.
                 if bounding_box_calc:
                     abs_origin = (start_x, start_y, start_z)
