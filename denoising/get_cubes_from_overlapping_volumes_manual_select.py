@@ -6,6 +6,7 @@ import tifffile
 from scipy.ndimage import convolve
 import json
 import matplotlib.pyplot as plt
+import cv2
 
 
 def get_two_largest_raw_files():
@@ -94,6 +95,8 @@ random_offset_z = np.random.randint(0, cube_size)
 
 mode = 'npy'  # Change to 'tiff' if desired
 
+plot_mode = 'cv2'
+
 raw_files = get_two_largest_raw_files()
 if len(raw_files) < 2:
     print("Fewer than two .raw files found.")
@@ -169,17 +172,25 @@ for x in range(num_x):
                              start_y : start_y + cube_size,
                              start_z : start_z + cube_size]
 
-            # Plot the middle Z-plane of each cube.
-            mid_slice = cube_size // 2
-            fig, axs = plt.subplots(1, 2, figsize=(10, 5))
-            axs[0].imshow(cube_vol1[:, :, mid_slice], cmap='gray')
-            axs[0].set_title("Volume 1 Cube (Middle Z Plane)")
-            axs[1].imshow(cube_vol2[:, :, mid_slice], cmap='gray')
-            axs[1].set_title("Volume 2 Cube (Middle Z Plane)")
-            plt.tight_layout()
-            #plt.imshow(cube_vol1[:, :, mid_slice], cmap='gray')
-            #plt.show()
-            plt.savefig('output.png')
+            if plot_mode == 'pyplot':
+                # Plot the middle Z-plane of each cube.
+                mid_slice = cube_size // 2
+                fig, axs = plt.subplots(1, 2, figsize=(10, 5))
+                axs[0].imshow(cube_vol1[:, :, mid_slice], cmap='gray')
+                axs[0].set_title("Volume 1 Cube (Middle Z Plane)")
+                axs[1].imshow(cube_vol2[:, :, mid_slice], cmap='gray')
+                axs[1].set_title("Volume 2 Cube (Middle Z Plane)")
+                plt.tight_layout()
+                #plt.imshow(cube_vol1[:, :, mid_slice], cmap='gray')
+                #plt.show()
+                plt.savefig('output.png')
+            elif plot_mode == 'cv2':
+                cv2_img = np.zeros((cube_size, 2*cube_size))
+                cv2_img[:, 0:cube_size] = cube_vol1[:, :, mid_slice]
+                cv2_img[:, cube_size:2*cube_size] = cube_vol2[:, :, mid_slice]
+                cv2.imshow('mid slice', cv2_img)
+                cv2.waitKey()
+
             
             # Ask the user if they want to save this cube.
             user_input = input("Save this cube? (y/n): ").strip().lower()
@@ -224,7 +235,7 @@ for x in range(num_x):
                 
                 print("Cube saved.")
                 cube_saved = True
-                break  # Break out of the innermost for-loop
+                #break  # Break out of the innermost for-loop
             candidate_count += 1
 
 # Write the cube origins dictionary to a JSON file.
