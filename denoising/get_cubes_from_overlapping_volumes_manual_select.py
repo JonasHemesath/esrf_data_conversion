@@ -145,6 +145,8 @@ if plot_mode == 'pygame':
                             return 2
                 
                 self.draw()
+                pygame.display.flip()
+                clock.tick(60)
 
 
         def draw(self):
