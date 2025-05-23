@@ -88,18 +88,18 @@ for folder in sorted(os.listdir(parent_folder)):
             matched_vol = matchhistograms_multi_dir(vol0, vol1)
             #np.save(os.path.join(parent_folder, 'train_smaples', folder+'_split0.npy'), vol0)
             #np.save(os.path.join(parent_folder, 'train_samples', folder+'_split1.npy'), matched_vol)
-            tifffile.imwrite(os.path.join(parent_folder, 'train_smaples', folder+'_split0.tiff'), vol0, imagej=True)
+            tifffile.imwrite(os.path.join(parent_folder, 'train_samples', folder+'_split0.tiff'), vol0, imagej=True)
             tifffile.imwrite(os.path.join(parent_folder, 'train_samples', folder+'_split1.tiff'), matched_vol, imagej=True)
         else:
             matched_vol = matchhistograms_multi_dir(vol1, vol0)
             #np.save(os.path.join(parent_folder, 'train_smaples', folder+'_split1.npy'), vol1)
             #np.save(os.path.join(parent_folder, 'train_samples', folder+'_split0.npy'), matched_vol)
-            tifffile.imwrite(os.path.join(parent_folder, 'train_smaples', folder+'_split1.tiff'), vol1, imagej=True)
+            tifffile.imwrite(os.path.join(parent_folder, 'train_samples', folder+'_split1.tiff'), vol1, imagej=True)
             tifffile.imwrite(os.path.join(parent_folder, 'train_samples', folder+'_split0.tiff'), matched_vol, imagej=True)
 
 
-        files_dict['split0'].append(os.path.join(parent_folder, 'train_smaples', folder+'_split0.tiff'))
-        files_dict['split1'].append(os.path.join(parent_folder, 'train_smaples', folder+'_split1.tiff'))
+        files_dict['split0'].append(os.path.join(parent_folder, 'train_samples', folder+'_split0.tiff'))
+        files_dict['split1'].append(os.path.join(parent_folder, 'train_samples', folder+'_split1.tiff'))
 
         with open(os.path.join(parent_folder, 'tarin_data_files.json'), 'w') as f:
             json.dump(files_dict, f)
