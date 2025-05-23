@@ -42,9 +42,9 @@ with open(os.path.join(parent_folder, 'positions_overlaps.txt'), 'r') as f:
 positions = {}
 
 for line in postions_data:
-    if line:
-        line = line.strip('\n').split(', ')
-        print(line)
+    
+    line = line.strip('\n').split(', ')
+    if not line == ['']:
         positions[line[0]] = [int(line[1]), int(line[2]), int(line[3]), line[7]] 
 
 for folder in sorted(os.listdir(parent_folder)):
