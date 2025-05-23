@@ -46,7 +46,8 @@ for line in postions_data:
         line = line.strip('\n').split(', ')
         positions[line[0]] = [int(line[1]), int(line[2]), int(line[3]), line[7]] 
 
-for folder in os.listdir(parent_folder):
+for folder in sorted(os.listdir(parent_folder)):
+    print(folder)
     if os.path.isdir(os.path.join(parent_folder, folder)):
         raw_files = []
         raw_files_size = []
