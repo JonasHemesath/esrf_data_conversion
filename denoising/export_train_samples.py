@@ -74,7 +74,7 @@ for folder in sorted(os.listdir(parent_folder)):
         vol0 = vol0_crop.get_data()
         
         #vol0 = vol0[positions[folder][0]:positions[folder][0]+512, positions[folder][1]:positions[folder][1]+512, positions[folder][2]:positions[folder][2]+512]
-        print('Loading vol0')
+        print('Loading vol1')
         vol1 = pi.read(os.path.join(parent_folder, folder, largest_files[1]))
         vol1_crop = pi.newimage(vol1.get_data_type(), 512, 512, 512)
         print('Cropping to ROI')
@@ -88,7 +88,7 @@ for folder in sorted(os.listdir(parent_folder)):
             print('Match zeros')
             vol1[vol0 == 0] = 0
             matched_vol = matchhistograms_multi_dir(vol0, vol1)
-            vol1[vol0 == 0] = 0
+            matched_vol[vol0 == 0] = 0
             tifffile.imwrite(os.path.join(parent_folder, 'train_samples', folder+'_split0.tiff'), vol0, imagej=True)
             tifffile.imwrite(os.path.join(parent_folder, 'train_samples', folder+'_split1.tiff'), matched_vol, imagej=True)
 
@@ -96,7 +96,7 @@ for folder in sorted(os.listdir(parent_folder)):
             print('Match zeros')
             vol0[vol1 == 0] = 0
             matched_vol = matchhistograms_multi_dir(vol1, vol0)
-            vol0[vol1 == 0] = 0
+            matched_vol[vol1 == 0] = 0
             tifffile.imwrite(os.path.join(parent_folder, 'train_samples', folder+'_split1.tiff'), vol1, imagej=True)
             tifffile.imwrite(os.path.join(parent_folder, 'train_samples', folder+'_split0.tiff'), matched_vol, imagej=True)
         else:
