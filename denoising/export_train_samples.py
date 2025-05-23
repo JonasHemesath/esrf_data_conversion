@@ -48,6 +48,7 @@ for line in postions_data:
         positions[line[0]] = [int(line[1]), int(line[2]), int(line[3]), line[7]] 
 
 for folder in sorted(os.listdir(parent_folder)):
+    print('\n****************************************************************')
     print(folder)
     if os.path.isdir(os.path.join(parent_folder, folder)):
         raw_files = []
@@ -64,14 +65,20 @@ for folder in sorted(os.listdir(parent_folder)):
         else:
             largest_files = [raw_files_sort[-2][1], raw_files_sort[-1][1]]
 
+        print('Loading vol0')
         vol0 = pi.read(os.path.join(parent_folder, folder, largest_files[0]))
+        print('Converting vol0 to numpy')
         vol0 = vol0.get_data()
+        print('Cropping to ROI')
         vol0 = vol0[positions[folder][0]:positions[folder][0]+512, positions[folder][1]:positions[folder][1]+512, positions[folder][2]:positions[folder][2]+512]
-
+        print('Loading vol1')
         vol1 = pi.read(os.path.join(parent_folder, folder, largest_files[1]))
+        print('Converting vol1 to numpy')
         vol1 = vol1.get_data()
+        print('Cropping to ROI')
         vol1 = vol1[positions[folder][0]:positions[folder][0]+512, positions[folder][1]:positions[folder][1]+512, positions[folder][2]:positions[folder][2]+512]
 
+        print('Matching histograms and saving volumes')
         if np.random.rand() < 0.5:
             matched_vol = matchhistograms_multi_dir(vol0, vol1)
             #np.save(os.path.join(parent_folder, 'train_smaples', folder+'_split0.npy'), vol0)
