@@ -36,7 +36,7 @@ def matchhistograms_multi_dir(vol0, vol1):
 files_dict = {'split0': [], 'split1': []}
 
 
-with open('positions_overlaps.txt', 'r') as f:
+with open(os.path.join(parent_folder, 'positions_overlaps.txt', 'r')) as f:
     postions_data = f.readlines()
 
 positions = {}
