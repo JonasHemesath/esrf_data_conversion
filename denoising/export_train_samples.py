@@ -17,20 +17,28 @@ if not os.path.isdir(os.path.join(parent_folder, 'train_samples')):
 
 np.random.seed(42)
 
-def matchhistograms_multi_dir(vol0, vol1):
+def matchhistograms_multi_dir(vol0, vol1, bool_select = None):
     vol_matched_temp1 = np.zeros(vol1.shape, dtype=vol1.dtype)
     vol_matched_temp2 = np.zeros(vol1.shape, dtype=vol1.dtype)
     vol_matched = np.zeros(vol1.shape, dtype=vol1.dtype)
+    if not bool_select:
+        for i in range(vol0.shape[0]):
+            vol_matched_temp1[i,:,:] = match_histograms(vol1[i,:,:], vol0[i,:,:])
 
-    for i in range(vol0.shape[0]):
-        vol_matched_temp1[i,:,:] = match_histograms(vol1[i,:,:], vol0[i,:,:])
+        for i in range(vol0.shape[1]):
+            vol_matched_temp2[:,i,:] = match_histograms(vol_matched_temp1[:,i,:], vol0[:,i,:])
 
-    for i in range(vol0.shape[1]):
-        vol_matched_temp2[:,i,:] = match_histograms(vol_matched_temp1[:,i,:], vol0[:,i,:])
+        for i in range(vol0.shape[2]):
+            vol_matched[:,:,i] = match_histograms(vol_matched_temp2[:,:,i], vol0[:,:,i])
+    else:
+        for i in range(vol0.shape[0]):
+            vol_matched_temp1[i,:,:][bool_select[i,:,:]] = match_histograms(vol1[i,:,:][bool_select[i,:,:]], vol0[i,:,:][bool_select[i,:,:]])
 
-    for i in range(vol0.shape[2]):
-        vol_matched[:,:,i] = match_histograms(vol_matched_temp2[:,:,i], vol0[:,:,i])
+        for i in range(vol0.shape[1]):
+            vol_matched_temp2[:,i,:][bool_select[:,i,:]] = match_histograms(vol_matched_temp1[:,i,:][bool_select[:,i,:]], vol0[:,i,:][bool_select[:,i,:]])
 
+        for i in range(vol0.shape[2]):
+            vol_matched[:,:,i][bool_select[:,:,i]] = match_histograms(vol_matched_temp2[:,:,i][bool_select[:,:,i]], vol0[:,:,i][bool_select[:,:,i]])
     return vol_matched
 
 files_dict = {'split0': [], 'split1': []}
@@ -87,7 +95,8 @@ for folder in sorted(os.listdir(parent_folder)):
         if positions[folder][3] == '0':
             print('Match zeros')
             vol1[vol0 == 0] = 0
-            matched_vol = matchhistograms_multi_dir(vol0, vol1)
+            bool_select = vol0 == 0
+            matched_vol = matchhistograms_multi_dir(vol0, vol1, bool_select=bool_select)
             matched_vol[vol0 == 0] = 0
             tifffile.imwrite(os.path.join(parent_folder, 'train_samples', folder+'_split0.tiff'), vol0, imagej=True)
             tifffile.imwrite(os.path.join(parent_folder, 'train_samples', folder+'_split1.tiff'), matched_vol, imagej=True)
@@ -95,7 +104,8 @@ for folder in sorted(os.listdir(parent_folder)):
         elif positions[folder][3] == '1':
             print('Match zeros')
             vol0[vol1 == 0] = 0
-            matched_vol = matchhistograms_multi_dir(vol1, vol0)
+            bool_select = vol1 == 0
+            matched_vol = matchhistograms_multi_dir(vol1, vol0, bool_select=bool_select)
             matched_vol[vol1 == 0] = 0
             tifffile.imwrite(os.path.join(parent_folder, 'train_samples', folder+'_split1.tiff'), vol1, imagej=True)
             tifffile.imwrite(os.path.join(parent_folder, 'train_samples', folder+'_split0.tiff'), matched_vol, imagej=True)
