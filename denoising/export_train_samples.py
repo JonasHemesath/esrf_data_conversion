@@ -21,7 +21,7 @@ def matchhistograms_multi_dir(vol0, vol1, bool_select = None):
     vol_matched_temp1 = np.zeros(vol1.shape, dtype=vol1.dtype)
     vol_matched_temp2 = np.zeros(vol1.shape, dtype=vol1.dtype)
     vol_matched = np.zeros(vol1.shape, dtype=vol1.dtype)
-    if not bool_select:
+    if bool_select == None:
         for i in range(vol0.shape[0]):
             vol_matched_temp1[i,:,:] = match_histograms(vol1[i,:,:], vol0[i,:,:])
 
