@@ -67,16 +67,21 @@ for folder in sorted(os.listdir(parent_folder)):
 
         print('Loading vol0')
         vol0 = pi.read(os.path.join(parent_folder, folder, largest_files[0]))
+        vol0_crop = pi.newimage(vol0.get_data_type(), 512, 512, 512)
+        print('Cropping to ROI')
+        pi.crop(vol0, vol0_crop, [positions[folder][0], positions[folder][1], positions[folder][2]], [512, 512, 512])
         print('Converting vol0 to numpy')
-        vol0 = vol0.get_data()
-        print('Cropping to ROI')
-        vol0 = vol0[positions[folder][0]:positions[folder][0]+512, positions[folder][1]:positions[folder][1]+512, positions[folder][2]:positions[folder][2]+512]
-        print('Loading vol1')
+        vol0 = vol0_crop.get_data()
+        
+        #vol0 = vol0[positions[folder][0]:positions[folder][0]+512, positions[folder][1]:positions[folder][1]+512, positions[folder][2]:positions[folder][2]+512]
+        print('Loading vol0')
         vol1 = pi.read(os.path.join(parent_folder, folder, largest_files[1]))
-        print('Converting vol1 to numpy')
-        vol1 = vol1.get_data()
+        vol1_crop = pi.newimage(vol1.get_data_type(), 512, 512, 512)
         print('Cropping to ROI')
-        vol1 = vol1[positions[folder][0]:positions[folder][0]+512, positions[folder][1]:positions[folder][1]+512, positions[folder][2]:positions[folder][2]+512]
+        pi.crop(vol1, vol1_crop, [positions[folder][0], positions[folder][1], positions[folder][2]], [512, 512, 512])
+        print('Converting vol0 to numpy')
+        vol1 = vol1_crop.get_data()
+        #vol1 = vol1[positions[folder][0]:positions[folder][0]+512, positions[folder][1]:positions[folder][1]+512, positions[folder][2]:positions[folder][2]+512]
 
         print('Matching histograms and saving volumes')
         if np.random.rand() < 0.5:
