@@ -84,18 +84,34 @@ for folder in sorted(os.listdir(parent_folder)):
         #vol1 = vol1[positions[folder][0]:positions[folder][0]+512, positions[folder][1]:positions[folder][1]+512, positions[folder][2]:positions[folder][2]+512]
 
         print('Matching histograms and saving volumes')
-        if np.random.rand() < 0.5:
+        if positions[folder][3] == '0':
+            print('Match zeros')
+            vol1[vol0 == 0] = 0
             matched_vol = matchhistograms_multi_dir(vol0, vol1)
-            #np.save(os.path.join(parent_folder, 'train_smaples', folder+'_split0.npy'), vol0)
-            #np.save(os.path.join(parent_folder, 'train_samples', folder+'_split1.npy'), matched_vol)
+            vol1[vol0 == 0] = 0
             tifffile.imwrite(os.path.join(parent_folder, 'train_samples', folder+'_split0.tiff'), vol0, imagej=True)
             tifffile.imwrite(os.path.join(parent_folder, 'train_samples', folder+'_split1.tiff'), matched_vol, imagej=True)
-        else:
+
+        elif positions[folder][3] == '1':
+            print('Match zeros')
+            vol0[vol1 == 0] = 0
             matched_vol = matchhistograms_multi_dir(vol1, vol0)
-            #np.save(os.path.join(parent_folder, 'train_smaples', folder+'_split1.npy'), vol1)
-            #np.save(os.path.join(parent_folder, 'train_samples', folder+'_split0.npy'), matched_vol)
+            vol0[vol1 == 0] = 0
             tifffile.imwrite(os.path.join(parent_folder, 'train_samples', folder+'_split1.tiff'), vol1, imagej=True)
             tifffile.imwrite(os.path.join(parent_folder, 'train_samples', folder+'_split0.tiff'), matched_vol, imagej=True)
+        else:
+            if np.random.rand() < 0.5:
+                matched_vol = matchhistograms_multi_dir(vol0, vol1)
+                #np.save(os.path.join(parent_folder, 'train_smaples', folder+'_split0.npy'), vol0)
+                #np.save(os.path.join(parent_folder, 'train_samples', folder+'_split1.npy'), matched_vol)
+                tifffile.imwrite(os.path.join(parent_folder, 'train_samples', folder+'_split0.tiff'), vol0, imagej=True)
+                tifffile.imwrite(os.path.join(parent_folder, 'train_samples', folder+'_split1.tiff'), matched_vol, imagej=True)
+            else:
+                matched_vol = matchhistograms_multi_dir(vol1, vol0)
+                #np.save(os.path.join(parent_folder, 'train_smaples', folder+'_split1.npy'), vol1)
+                #np.save(os.path.join(parent_folder, 'train_samples', folder+'_split0.npy'), matched_vol)
+                tifffile.imwrite(os.path.join(parent_folder, 'train_samples', folder+'_split1.tiff'), vol1, imagej=True)
+                tifffile.imwrite(os.path.join(parent_folder, 'train_samples', folder+'_split0.tiff'), matched_vol, imagej=True)
 
 
         files_dict['split0'].append(os.path.join(parent_folder, 'train_samples', folder+'_split0.tiff'))
