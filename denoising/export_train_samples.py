@@ -32,13 +32,22 @@ def matchhistograms_multi_dir(vol0, vol1, bool_select = None):
             vol_matched[:,:,i] = match_histograms(vol_matched_temp2[:,:,i], vol0[:,:,i])
     else:
         for i in range(vol0.shape[0]):
-            vol_matched_temp1[i,:,:][bool_select[i,:,:]] = match_histograms(vol1[i,:,:][bool_select[i,:,:]], vol0[i,:,:][bool_select[i,:,:]])
+            try:
+                vol_matched_temp1[i,:,:][bool_select[i,:,:]] = match_histograms(vol1[i,:,:][bool_select[i,:,:]], vol0[i,:,:][bool_select[i,:,:]])
+            except ValueError:
+                print('skipping plane, no values to match')
 
         for i in range(vol0.shape[1]):
-            vol_matched_temp2[:,i,:][bool_select[:,i,:]] = match_histograms(vol_matched_temp1[:,i,:][bool_select[:,i,:]], vol0[:,i,:][bool_select[:,i,:]])
+            try:
+                vol_matched_temp2[:,i,:][bool_select[:,i,:]] = match_histograms(vol_matched_temp1[:,i,:][bool_select[:,i,:]], vol0[:,i,:][bool_select[:,i,:]])
+            except ValueError:
+                print('skipping plane, no values to match')
 
         for i in range(vol0.shape[2]):
-            vol_matched[:,:,i][bool_select[:,:,i]] = match_histograms(vol_matched_temp2[:,:,i][bool_select[:,:,i]], vol0[:,:,i][bool_select[:,:,i]])
+            try:
+                vol_matched[:,:,i][bool_select[:,:,i]] = match_histograms(vol_matched_temp2[:,:,i][bool_select[:,:,i]], vol0[:,:,i][bool_select[:,:,i]])
+            except ValueError:
+                print('skipping plane, no values to match')
     return vol_matched
 
 files_dict = {'split0': [], 'split1': []}
@@ -87,7 +96,7 @@ for folder in sorted(os.listdir(parent_folder)):
         vol1_crop = pi.newimage(vol1.get_data_type(), 512, 512, 512)
         print('Cropping to ROI')
         pi.crop(vol1, vol1_crop, [positions[folder][0], positions[folder][1], positions[folder][2]], [512, 512, 512])
-        print('Converting vol0 to numpy')
+        print('Converting vol1 to numpy')
         vol1 = vol1_crop.get_data()
         #vol1 = vol1[positions[folder][0]:positions[folder][0]+512, positions[folder][1]:positions[folder][1]+512, positions[folder][2]:positions[folder][2]+512]
 
