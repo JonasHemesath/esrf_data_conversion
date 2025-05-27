@@ -112,7 +112,7 @@ for folder in sorted(os.listdir(parent_folder)):
             bool_select = vol0 == 0
             print(bool_select)
             print(bool_select.shape)
-            print(bool_select.type)
+            print(bool_select.dtype)
             matched_vol = matchhistograms_multi_dir(vol0, vol1, bool_select=bool_select)
             matched_vol[vol0 == 0] = 0
             tifffile.imwrite(os.path.join(parent_folder, 'train_samples', folder+'_split0.tiff'), vol0, imagej=True)
@@ -124,7 +124,7 @@ for folder in sorted(os.listdir(parent_folder)):
             bool_select = vol1 == 0
             print(bool_select)
             print(bool_select.shape)
-            print(bool_select.type)
+            print(bool_select.dtype)
             matched_vol = matchhistograms_multi_dir(vol1, vol0, bool_select=bool_select)
             matched_vol[vol1 == 0] = 0
             tifffile.imwrite(os.path.join(parent_folder, 'train_samples', folder+'_split1.tiff'), vol1, imagej=True)
