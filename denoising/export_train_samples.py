@@ -107,6 +107,9 @@ for folder in sorted(os.listdir(parent_folder)):
             print('Match zeros')
             vol1[vol0 == 0] = 0
             bool_select = vol0 == 0
+            print(bool_select)
+            print(bool_select.shape)
+            print(bool_select.type)
             matched_vol = matchhistograms_multi_dir(vol0, vol1, bool_select=bool_select)
             matched_vol[vol0 == 0] = 0
             tifffile.imwrite(os.path.join(parent_folder, 'train_samples', folder+'_split0.tiff'), vol0, imagej=True)
