@@ -34,20 +34,23 @@ def matchhistograms_multi_dir(vol0, vol1, bool_select = None):
         for i in range(vol0.shape[0]):
             try:
                 vol_matched_temp1[i,:,:][bool_select[i,:,:]] = match_histograms(vol1[i,:,:][bool_select[i,:,:]], vol0[i,:,:][bool_select[i,:,:]])
-            except ValueError:
+            except ValueError as e:
                 print('skipping plane, no values to match')
+                print(e)
 
         for i in range(vol0.shape[1]):
             try:
                 vol_matched_temp2[:,i,:][bool_select[:,i,:]] = match_histograms(vol_matched_temp1[:,i,:][bool_select[:,i,:]], vol0[:,i,:][bool_select[:,i,:]])
-            except ValueError:
+            except ValueError as e:
                 print('skipping plane, no values to match')
+                print(e)
 
         for i in range(vol0.shape[2]):
             try:
                 vol_matched[:,:,i][bool_select[:,:,i]] = match_histograms(vol_matched_temp2[:,:,i][bool_select[:,:,i]], vol0[:,:,i][bool_select[:,:,i]])
-            except ValueError:
+            except ValueError as e:
                 print('skipping plane, no values to match')
+                print(e)
     return vol_matched
 
 files_dict = {'split0': [], 'split1': []}
