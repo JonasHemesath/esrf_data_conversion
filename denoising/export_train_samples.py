@@ -64,10 +64,12 @@ for line in postions_data:
     if not line == ['']:
         positions[line[0]] = [int(line[1]), int(line[2]), int(line[3]), line[7]] 
 
+done_folders = [f.split('_')[0] for f in os.listdir(os.path.join(parent_folder, 'train_samples')) if f.endswith('_split0.tiff')]
+
 for folder in sorted(os.listdir(parent_folder)):
     print('\n****************************************************************')
     print(folder)
-    if os.path.isdir(os.path.join(parent_folder, folder)):
+    if os.path.isdir(os.path.join(parent_folder, folder)) and folder != 'train_samples' and folder not in done_folders:
         raw_files = []
         raw_files_size = []
         for file in os.listdir(parent_folder+folder):
@@ -114,6 +116,9 @@ for folder in sorted(os.listdir(parent_folder)):
             print('Match zeros')
             vol0[vol1 == 0] = 0
             bool_select = vol1 == 0
+            print(bool_select)
+            print(bool_select.shape)
+            print(bool_select.type)
             matched_vol = matchhistograms_multi_dir(vol1, vol0, bool_select=bool_select)
             matched_vol[vol1 == 0] = 0
             tifffile.imwrite(os.path.join(parent_folder, 'train_samples', folder+'_split1.tiff'), vol1, imagej=True)
