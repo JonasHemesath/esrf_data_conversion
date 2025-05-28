@@ -129,8 +129,8 @@ for folder in sorted(os.listdir(parent_folder)):
             #print(bool_select.dtype)
             #matched_vol = matchhistograms_multi_dir(vol1, vol0, bool_select=bool_select)
             #matched_vol[vol1 == 0] = 0
-            tifffile.imwrite(os.path.join(parent_folder, 'train_samples', folder+'_split1.tiff'), vol1, imagej=True)
-            tifffile.imwrite(os.path.join(parent_folder, 'train_samples', folder+'_split0.tiff'), vol0, imagej=True)
+            tifffile.imwrite(os.path.join(parent_folder, 'train_samples', folder+'_split0.tiff'), vol1, imagej=True)
+            tifffile.imwrite(os.path.join(parent_folder, 'train_samples', folder+'_split1.tiff'), vol0, imagej=True)
         else:
             print('no files written')
             #if np.random.rand() < 0.5:
