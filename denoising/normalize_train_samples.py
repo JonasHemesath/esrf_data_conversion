@@ -34,6 +34,7 @@ for line in postions_data:
 
 for file in os.listdir(os.path.join(parent_folder, source_folder)):
     if file.endswith('_split0.tiff'):
+        print(file)
         vol0 = tifffile.imread(os.path.join(parent_folder, source_folder, file))
     
         vol1 = tifffile.imread(os.path.join(parent_folder, source_folder, file.replace('_split0.tiff', '_split1.tiff')))
