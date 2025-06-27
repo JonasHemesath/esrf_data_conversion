@@ -43,6 +43,13 @@ def create_synthetic_image_with_artifact(shape=(512, 512), tissue_rect_width=400
     image = image + np.random.normal(0, 5, image.shape)
     image = np.clip(image, 0, 255)
 
+    # Add circular FOV by setting corners to 0
+    center = (shape[0] // 2, shape[1] // 2)
+    yy, xx = np.mgrid[:shape[0], :shape[1]]
+    dist_from_center = np.sqrt((xx - center[1])**2 + (yy - center[0])**2)
+    fov_radius = min(shape) // 2
+    image[dist_from_center > fov_radius] = 0
+
     return image
 
 
@@ -79,7 +86,7 @@ def correct_radial_artifact(image, percentile=90, savgol_window_fraction=0.25):
     image_flat = image.flatten()
     
     for r in range(max_radius + 1):
-        pixels_at_r = image_flat[radii_flat == r]
+        pixels_at_r = image_flat[(radii_flat == r) & (image_flat > 0)]
         if len(pixels_at_r) > 0:
             p_profile[r] = np.percentile(pixels_at_r, percentile)
         else:
@@ -186,3 +193,4 @@ if __name__ == '__main__':
 
     plt.tight_layout()
     plt.savefig('radial_artifact_correction.png')
+    tifffile.imwrite('radial_artifact_correction.tif', corrected_image)
