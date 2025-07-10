@@ -105,6 +105,7 @@ if not skip:
         else:
             fn = file.split('_1_')[0] + '_1_gauss_corr_sigma' + str(SIGMA_FOR_BLUR) + '_'
         pi.writeraw(output_img, fn)
+        del output_img
             
         
 """
