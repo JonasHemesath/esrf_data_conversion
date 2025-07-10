@@ -87,13 +87,19 @@ if not skip:
     for file in largest_files:
         #print('Loading vol0')
         vol0 = pi.read(os.path.join(file))
-        output_img = pi.newlike(vol0)
+        width = vol0.get_width()
+        height = vol0.get_height()
+        depth = vol0.get_depth()
+        datatype = vol0.get_data_type()
+        
         vol0 = vol0.get_data()
         #print(vol0.shape)
         for i in tqdm(range(vol0.shape[2])):
             corrected_slice, estimated_background = correct_cupping_artifact_masked(vol0[:,:,i], SIGMA_FOR_BLUR)
             vol0[:,:,i] = corrected_slice
+        output_img = pi.newimage(datatype, width, height, depth)
         output_img.set_data(vol0)
+        del vol0
         if '_0_' in file:
             fn = file.split('_0_')[0] + '_0_gauss_corr_sigma' + str(SIGMA_FOR_BLUR) + '_' 
         else:
