@@ -8,7 +8,7 @@ done_folders = []
 active_processes = []
 print('Starting processes')
 for folder in os.listdir(parent_folder):
-    if os.path.isdir(parent_folder + folder):
+    if os.path.isdir(parent_folder + folder) and 'a' not in folder:
         print(folder)
         wd = parent_folder + folder
         if os.path.isdir(os.path.join(parent_folder, folder)) and folder != 'train_samples' and folder not in done_folders:
