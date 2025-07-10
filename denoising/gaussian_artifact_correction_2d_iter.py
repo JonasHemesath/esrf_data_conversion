@@ -1,8 +1,7 @@
 import os
 import numpy as np
 from scipy.ndimage import gaussian_filter
-import matplotlib.pyplot as plt
-import tifffile
+from tqdm import tqdm
 import sys
 sys.path.append("/cajal/nvmescratch/users/johem/pi2_4_5/pi2/bin-linux64/release-nocl")
 from pi2py2 import *
@@ -62,7 +61,9 @@ def correct_cupping_artifact_masked(
 # Assume 'my_z_plane' is your float32 NumPy array with zeroed corners
 parent_folder = '/cajal/scratch/projects/xray/bm05/converted_data/new_Sep_2024/zf13_denoising_GT/'
 
-done_folders = [f.split('_')[0] for f in os.listdir(os.path.join(parent_folder, 'train_samples')) if f.endswith('_split0.tiff')]
+done_folders = []
+
+SIGMA_FOR_BLUR = 150
 
 for folder in sorted(os.listdir(parent_folder)):
     print('\n****************************************************************')
@@ -83,8 +84,18 @@ for folder in sorted(os.listdir(parent_folder)):
         for file in largest_files:
             print('Loading vol0')
             vol0 = pi.read(os.path.join(parent_folder, folder, file))
-            vol0 = vol0.to_numpy()
+            output_img = pi.newlike(vol0)
+            vol0 = vol0.get_data()
             print(vol0.shape)
+            for i in tqdm(range(vol0.shape[2])):
+                corrected_slice, estimated_background = correct_cupping_artifact_masked(vol0[:,:,i], SIGMA_FOR_BLUR)
+                vol0[:,:,i] = corrected_slice
+            output_img.set_data(vol0)
+            if '_0_' in file:
+                fn = file.split('_0_')[0] + '_0_gauss_corr_sigma' + str(SIGMA_FOR_BLUR) + '_' 
+            else:
+                fn = file.split('_1_')[0] + '_1_gauss_corr_sigma' + str(SIGMA_FOR_BLUR) + '_'
+            pi.writeraw(output_img, fn)
             
         
 """
