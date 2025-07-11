@@ -3,6 +3,7 @@ from scipy.ndimage import gaussian_filter
 import matplotlib.pyplot as plt
 import tifffile
 import sys
+import time
 def correct_cupping_artifact_masked(
     image: np.ndarray,
     sigma: float
@@ -56,7 +57,11 @@ def correct_cupping_artifact_masked(
 # Assume 'my_z_plane' is your float32 NumPy array with zeroed corners
 my_z_plane = tifffile.imread('my_z_plane.tif')
 SIGMA_FOR_BLUR = float(sys.argv[1]) # Must be tuned for your specific data
+t1 = time.time()
 corrected_slice, estimated_background = correct_cupping_artifact_masked(my_z_plane, SIGMA_FOR_BLUR)
+t2 = time.time()
+print('Time to do correction', t2-t1, 's')
+print('Shape of the image:', my_z_plane.shape)
 #--- Visualization ---
 vmin, vmax = my_z_plane[my_z_plane != 0].min(), my_z_plane[my_z_plane != 0].max()
 fig, axes = plt.subplots(1, 3, figsize=(18, 6))
