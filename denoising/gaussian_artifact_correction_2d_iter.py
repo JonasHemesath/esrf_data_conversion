@@ -89,7 +89,7 @@ if not skip:
         else: 
             large = False
     else:
-        largest_files = sys.argv[1]
+        largest_files = [sys.argv[1]]
         if os.path.getsize(os.path.join(largest_files[0])) > 300000000000:
             large = True
         else: 
