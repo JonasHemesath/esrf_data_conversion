@@ -113,15 +113,15 @@ if not skip:
                 else:
                     z = 0
                     dz = dims[2]//2
-                vol0 = pi.readrawblock('img_part', os.path.join(file), [0,0,z], [dims[0], dims[1], dz])
+                vol0 = pi.read(os.path.join(file))
                 
-                width = vol0.get_width()
-                height = vol0.get_height()
-                depth = vol0.get_depth()
+                width = dims[0]
+                height = dims[1]
+                depth = dz
                 datatype = vol0.get_data_type()
                 
                 
-                vol0 = vol0.get_data()
+                vol0 = vol0.get_data()[0:width, 0:height, z:z+dz]
                 #print(vol0.shape)
                 for i in tqdm(range(vol0.shape[2])):
                     corrected_slice, estimated_background = correct_cupping_artifact_masked(vol0[:,:,i], SIGMA_FOR_BLUR)
