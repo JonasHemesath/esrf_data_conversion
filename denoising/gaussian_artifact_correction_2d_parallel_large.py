@@ -9,7 +9,7 @@ active_processes = []
 print('Starting processes')
 for folder in os.listdir(parent_folder):
     if os.path.isdir(parent_folder + folder) and 'a' not in folder:
-        print(folder)
+        
         wd = parent_folder + folder
         skip = False
 
@@ -24,6 +24,7 @@ for folder in os.listdir(parent_folder):
                 raw_files_size.append(os.path.getsize(os.path.join(file)))
 
         if not skip:
+            print(folder)
             raw_files_sort = sorted(zip(raw_files_size, raw_files))
 
 
