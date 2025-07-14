@@ -112,7 +112,7 @@ if not skip:
                 else:
                     z = 0
                     dz = dims[2]//2
-                vol0 = pi.readrawblock(os.path.join(file), [0,0,z], [dims[0], dims[1], dz])
+                vol0 = pi.readrawblock('img_part', os.path.join(file), [0,0,z], [dims[0], dims[1], dz])
                 
                 width = vol0.get_width()
                 height = vol0.get_height()
