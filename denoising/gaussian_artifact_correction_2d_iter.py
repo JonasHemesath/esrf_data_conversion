@@ -101,6 +101,7 @@ if not skip:
             dims = [int(d) for d in largest_files[0].strip('.raw').split('_1_')[1].split('x')]
         elif '_0_' in largest_files[0]:
             dims = [int(d) for d in largest_files[0].strip('.raw').split('_0_')[1].split('x')]
+            print(dims)
         
         for file in largest_files:
             
