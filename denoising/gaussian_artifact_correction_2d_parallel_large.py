@@ -21,7 +21,7 @@ for folder in os.listdir(parent_folder):
                     skip = True
                     break
                 raw_files.append(file)
-                raw_files_size.append(os.path.getsize(os.path.join(file)))
+                raw_files_size.append(os.path.getsize(os.path.join(wd,file)))
 
         if not skip:
             print(folder)
