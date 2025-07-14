@@ -79,33 +79,85 @@ for file in os.listdir():
         raw_files_size.append(os.path.getsize(os.path.join(file)))
 
 if not skip:
-    raw_files_sort = sorted(zip(raw_files_size, raw_files))
+    if len(sys.argv) == 1:
+        raw_files_sort = sorted(zip(raw_files_size, raw_files))
 
 
-    largest_files = [raw_files_sort[-1][1], raw_files_sort[-2][1]]
+        largest_files = [raw_files_sort[-1][1], raw_files_sort[-2][1]]
+        if raw_files_sort[-1][0] > 300000000000:
+            large = True
+        else: 
+            large = False
+    else:
+        largest_files = sys.argv[1]
+        if os.path.getsize(os.path.join(largest_files[0])) > 300000000000:
+            large = True
+        else: 
+            large = False
+    
 
-    for file in largest_files:
-        #print('Loading vol0')
-        vol0 = pi.read(os.path.join(file))
-        width = vol0.get_width()
-        height = vol0.get_height()
-        depth = vol0.get_depth()
-        datatype = vol0.get_data_type()
+    if large:
+        if '_1_' in largest_files[0]:
+            dims = [int(d) for d in largest_files[0].strip('.raw').split('_1_')[1].split('x')]
+        elif '_0_' in largest_files[0]:
+            dims = [int(d) for d in largest_files[0].strip('.raw').split('_0_')[1].split('x')]
         
-        vol0 = vol0.get_data()
-        #print(vol0.shape)
-        for i in tqdm(range(vol0.shape[2])):
-            corrected_slice, estimated_background = correct_cupping_artifact_masked(vol0[:,:,i], SIGMA_FOR_BLUR)
-            vol0[:,:,i] = corrected_slice
-        output_img = pi.newimage(datatype, width, height, depth)
-        output_img.set_data(vol0)
-        del vol0
-        if '_0_' in file:
-            fn = file.split('_0_')[0] + '_0_gauss_corr_sigma' + str(SIGMA_FOR_BLUR) + '_' 
-        else:
-            fn = file.split('_1_')[0] + '_1_gauss_corr_sigma' + str(SIGMA_FOR_BLUR) + '_'
-        pi.writeraw(output_img, fn)
-        del output_img
+        for file in largest_files:
+            
+            #print('Loading vol0')
+            for i in range(2):
+                if i:
+                    z = dims[2]//2
+                    dz = dims[2] - dims[2]//2
+                else:
+                    z = 0
+                    dz = dims[2]//2
+                vol0 = pi.readrawblock(os.path.join(file), [0,0,z], [dims[0], dims[1], dz])
+                
+                width = vol0.get_width()
+                height = vol0.get_height()
+                depth = vol0.get_depth()
+                datatype = vol0.get_data_type()
+                
+                
+                vol0 = vol0.get_data()
+                #print(vol0.shape)
+                for i in tqdm(range(vol0.shape[2])):
+                    corrected_slice, estimated_background = correct_cupping_artifact_masked(vol0[:,:,i], SIGMA_FOR_BLUR)
+                    vol0[:,:,i] = corrected_slice
+                output_img = pi.newimage(datatype, width, height, depth)
+                output_img.set_data(vol0)
+                del vol0
+                if '_0_' in file:
+                    fn = file.split('_0_')[0] + '_0_gauss_corr_sigma' + str(SIGMA_FOR_BLUR) + '_' 
+                else:
+                    fn = file.split('_1_')[0] + '_1_gauss_corr_sigma' + str(SIGMA_FOR_BLUR) + '_'
+                pi.writerawblock(output_img, fn, [0,0,z], dims)
+            del output_img
+    else:
+
+        for file in largest_files:
+            #print('Loading vol0')
+            vol0 = pi.read(os.path.join(file))
+            width = vol0.get_width()
+            height = vol0.get_height()
+            depth = vol0.get_depth()
+            datatype = vol0.get_data_type()
+            
+            vol0 = vol0.get_data()
+            #print(vol0.shape)
+            for i in tqdm(range(vol0.shape[2])):
+                corrected_slice, estimated_background = correct_cupping_artifact_masked(vol0[:,:,i], SIGMA_FOR_BLUR)
+                vol0[:,:,i] = corrected_slice
+            output_img = pi.newimage(datatype, width, height, depth)
+            output_img.set_data(vol0)
+            del vol0
+            if '_0_' in file:
+                fn = file.split('_0_')[0] + '_0_gauss_corr_sigma' + str(SIGMA_FOR_BLUR) + '_' 
+            else:
+                fn = file.split('_1_')[0] + '_1_gauss_corr_sigma' + str(SIGMA_FOR_BLUR) + '_'
+            pi.writeraw(output_img, fn)
+            del output_img
             
         
 """
