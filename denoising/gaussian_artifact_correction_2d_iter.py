@@ -130,9 +130,9 @@ if not skip:
                 output_img.set_data(vol0)
                 del vol0
                 if '_0_' in file:
-                    fn = file.split('_0_')[0] + '_0_gauss_corr_sigma' + str(SIGMA_FOR_BLUR) + '_' 
+                    fn = file.split('_0_')[0] + '_0_gauss_corr_sigma' + str(SIGMA_FOR_BLUR) + '__' + str(dims[0]) + 'x' + str(dims[1]) + 'x' + str(dims[2]) + '.raw'
                 else:
-                    fn = file.split('_1_')[0] + '_1_gauss_corr_sigma' + str(SIGMA_FOR_BLUR) + '_'
+                    fn = file.split('_1_')[0] + '_1_gauss_corr_sigma' + str(SIGMA_FOR_BLUR) + '__' + str(dims[0]) + 'x' + str(dims[1]) + 'x' + str(dims[2]) + '.raw'
                 pi.writerawblock(output_img, fn, [0,0,z], dims)
             del output_img
     else:
