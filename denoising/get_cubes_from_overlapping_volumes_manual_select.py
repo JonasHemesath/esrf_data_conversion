@@ -71,7 +71,7 @@ def get_bounding_box(volume):
         where the minimum values define the origin of the nonzero region.
         (x_max, y_max, z_max) are the maximum indices (inclusive).
     """
-    nonzero = np.mean(volume, axis=2)
+    nonzero = np.nonzero(volume[:,:,995])
     if len(nonzero[0]) == 0:
         return None
     x_min, x_max = nonzero[0].min(), nonzero[0].max()
