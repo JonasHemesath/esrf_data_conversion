@@ -97,7 +97,7 @@ random_offset_z = np.random.randint(0, cube_size)
 
 mode = 'npy'  # Change to 'tiff' if desired
 
-plot_mode = 'pygame'
+plot_mode = 'pyplot'
 
 cwd = os.getcwd()
 if '/' in cwd:
@@ -304,11 +304,9 @@ for x in range(num_x):
                     abs_origin = (start_x, start_y, new_start_z)
                     # Compute the relative origin with respect to each volume's bounding box.
                     rel_origin_vol1 = (abs_origin[0] - bb_vol1[0],
-                                    abs_origin[1] - bb_vol1[2],
-                                    abs_origin[2] - bb_vol1[4])
+                                    abs_origin[1] - bb_vol1[2])
                     rel_origin_vol2 = (abs_origin[0] - bb_vol2[0],
-                                    abs_origin[1] - bb_vol2[2],
-                                    abs_origin[2] - bb_vol2[4])
+                                    abs_origin[1] - bb_vol2[2])
                     
                 exp_vol1 = cube_vol1[:,:,new_start_z:new_start_z+cube_size]
                 exp_vol2 = cube_vol2[:,:,new_start_z:new_start_z+cube_size]
