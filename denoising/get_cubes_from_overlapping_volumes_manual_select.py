@@ -250,9 +250,9 @@ for x in range(num_x):
         cube_sum = np.sum(filled_mask[start_x : start_x + cube_size,
                                         start_y : start_y + cube_size,
                                         start_z : start_z + 1900])
-        if cube_sum != cube_size ** 3:
+        if cube_sum != cube_size ** 2 * 1900:
             print('Skipping cube')
-            print((cube_size ** 3)-cube_sum)
+            print((cube_size ** 2 * 1900)-cube_sum)
             continue
         
         # Extract cubes from both volumes.
