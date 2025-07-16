@@ -201,22 +201,23 @@ else:
 if bounding_box_calc:
     
     if not os.path.isfile('bbbox1.json'):
-        'Creating bounding box 1'
+        print('Creating bounding box 1')
         bb_vol1 = get_bounding_box(vol1)
         with open('bbbox1.json', 'w') as f:
             json.dump(bb_vol1, f)
     else:
+        print('Loading bounding box 1')
         with open('bbbox1.json', 'w') as f:
             bb_vol1 = json.load(f)
-    'Creating bounding box 2'
-    bb_vol2 = get_bounding_box(vol2)
+    
 
     if not os.path.isfile('bbbox2.json'):
-        'Creating bounding box 2'
+        print('Creating bounding box 2')
         bb_vol2 = get_bounding_box(vol2)
         with open('bbbox2.json', 'w') as f:
             json.dump(bb_vol2, f)
     else:
+        print('Loading bounding box 2')
         with open('bbbox2.json', 'w') as f:
             bb_vol2 = json.load(f)
     if bb_vol1 is None or bb_vol2 is None:
@@ -250,6 +251,8 @@ for x in range(num_x):
                                         start_y : start_y + cube_size,
                                         start_z : start_z + 1900])
         if cube_sum != cube_size ** 3:
+            print('Skipping cube')
+            print((cube_size ** 3)-cube_sum)
             continue
         
         # Extract cubes from both volumes.
