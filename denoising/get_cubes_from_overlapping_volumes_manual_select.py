@@ -207,7 +207,7 @@ if bounding_box_calc:
             json.dump(bb_vol1, f)
     else:
         print('Loading bounding box 1')
-        with open('bbbox1.json', 'w') as f:
+        with open('bbbox1.json', 'r') as f:
             bb_vol1 = json.load(f)
     
 
@@ -218,7 +218,7 @@ if bounding_box_calc:
             json.dump(bb_vol2, f)
     else:
         print('Loading bounding box 2')
-        with open('bbbox2.json', 'w') as f:
+        with open('bbbox2.json', 'r') as f:
             bb_vol2 = json.load(f)
     if bb_vol1 is None or bb_vol2 is None:
         print("One of the volumes appears to be empty (no nonzero voxels).")
