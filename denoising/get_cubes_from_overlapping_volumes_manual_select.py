@@ -71,13 +71,13 @@ def get_bounding_box(volume):
         where the minimum values define the origin of the nonzero region.
         (x_max, y_max, z_max) are the maximum indices (inclusive).
     """
-    nonzero = np.nonzero(volume)
+    nonzero = np.mean(volume, axis=2)
     if len(nonzero[0]) == 0:
         return None
     x_min, x_max = nonzero[0].min(), nonzero[0].max()
     y_min, y_max = nonzero[1].min(), nonzero[1].max()
-    z_min, z_max = nonzero[2].min(), nonzero[2].max()
-    return (x_min, x_max, y_min, y_max, z_min, z_max)
+    
+    return [x_min, x_max, y_min, y_max]
 
 # Registering the two tomograms
 #print('Start stich subprocess')
@@ -199,8 +199,26 @@ else:
 
 # Determine bounding boxes (the smallest box that contains all nonzero voxels).
 if bounding_box_calc:
-    bb_vol1 = get_bounding_box(vol1)
+    
+    if not os.path.isfile('bbbox1.json'):
+        'Creating bounding box 1'
+        bb_vol1 = get_bounding_box(vol1)
+        with open('bbbox1.json', 'w') as f:
+            json.dump(bb_vol1, f)
+    else:
+        with open('bbbox1.json', 'w') as f:
+            bb_vol1 = json.load(f)
+    'Creating bounding box 2'
     bb_vol2 = get_bounding_box(vol2)
+
+    if not os.path.isfile('bbbox2.json'):
+        'Creating bounding box 2'
+        bb_vol2 = get_bounding_box(vol2)
+        with open('bbbox2.json', 'w') as f:
+            json.dump(bb_vol2, f)
+    else:
+        with open('bbbox2.json', 'w') as f:
+            bb_vol2 = json.load(f)
     if bb_vol1 is None or bb_vol2 is None:
         print("One of the volumes appears to be empty (no nonzero voxels).")
         exit(1)
