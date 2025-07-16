@@ -77,7 +77,7 @@ def get_bounding_box(volume):
     x_min, x_max = nonzero[0].min(), nonzero[0].max()
     y_min, y_max = nonzero[1].min(), nonzero[1].max()
     
-    return [x_min, x_max, y_min, y_max]
+    return [int(x_min), int(x_max), int(y_min), int(y_max)]
 
 # Registering the two tomograms
 #print('Start stich subprocess')
