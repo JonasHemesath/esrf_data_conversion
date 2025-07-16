@@ -10,7 +10,7 @@ import cv2
 import pygame
 
 
-def get_two_largest_raw_files():
+def get_two_largest_raw_files(file_filter):
     """
     Iterates over the current working directory (the directory in which this script is run)
     and returns the file names of the two largest files with a '.raw' extension.
@@ -25,7 +25,7 @@ def get_two_largest_raw_files():
             except OSError:
                 continue
     raw_files.sort(key=lambda x: x[1], reverse=True)
-    return [file[0] for file in raw_files[:2]]
+    return [file[0] for file in raw_files if file_filter in file[0]]
 
 def process_overlap_mask_efficient(overlap_mask, erosion_iterations=5, erosion_threshold=8):
     """
@@ -88,7 +88,8 @@ def get_bounding_box(volume):
 
 # Main processing
 cube_size = 512
-bounding_box_calc = False
+bounding_box_calc = True
+file_filter = 'gauss_corr_sigma'
 # Note: random offsets are still computed; you may set them to 0 if you want systematic tiling.
 random_offset_x = np.random.randint(0, cube_size)
 random_offset_y = np.random.randint(0, cube_size)
@@ -97,6 +98,18 @@ random_offset_z = np.random.randint(0, cube_size)
 mode = 'npy'  # Change to 'tiff' if desired
 
 plot_mode = 'pygame'
+
+cwd = os.getcwd()
+if '/' in cwd:
+    cwd_split = cwd.split('/')
+    if cwd_split[-1]:
+        cwd = cwd_split[-1]
+    else:
+        cwd = cwd_split[-2]
+
+export_folder = '/cajal/scratch/projects/xray/bm05/converted_data/new_Sep_2024/zf13_denoising_GT/train_samples_gauss/'
+if not os.path.isdir(export_folder):
+    os.makedirs(export_folder)
 
 if plot_mode == 'pygame':
     class VolViewer:
@@ -155,8 +168,8 @@ if plot_mode == 'pygame':
             self.screen.blit(self.image_d, self.image_rect)
 
             
-raw_files = get_two_largest_raw_files()
-if len(raw_files) < 2:
+raw_files = get_two_largest_raw_files(file_filter)
+if len(raw_files) != 2:
     print("Fewer than two .raw files found.")
     exit(1)
 
@@ -199,74 +212,75 @@ cube_origins = {}
 cube_saved = False
 candidate_count = 0  # For naming purposes
 
+ranges = [[0, 121], [633, 754], [1266, 1388]]
+
 # Determine number of cubes in each dimension.
 num_x = math.floor((dim1[0] - random_offset_x) / cube_size)
 num_y = math.floor((dim1[1] - random_offset_y) / cube_size)
 num_z = math.floor((dim1[2] - random_offset_z) / cube_size)
 
 for x in range(num_x):
-    if cube_saved:
-        break
+    
     for y in range(num_y):
-        if cube_saved:
-            break
-        for z in range(num_z):
-            start_x = x * cube_size + random_offset_x
-            start_y = y * cube_size + random_offset_y
-            start_z = z * cube_size + random_offset_z
-            
-            # Check that this cube lies entirely within the filled overlapping region.
-            cube_sum = np.sum(filled_mask[start_x : start_x + cube_size,
-                                            start_y : start_y + cube_size,
-                                            start_z : start_z + cube_size])
-            if cube_sum != cube_size ** 3:
-                continue
-            
-            # Extract cubes from both volumes.
-            cube_vol1 = vol1[start_x : start_x + cube_size,
-                             start_y : start_y + cube_size,
-                             start_z : start_z + cube_size]
-            cube_vol2 = vol2[start_x : start_x + cube_size,
-                             start_y : start_y + cube_size,
-                             start_z : start_z + cube_size]
-            
-            mid_slice = cube_size // 2
+        
+        start_x = x * cube_size + random_offset_x
+        start_y = y * cube_size + random_offset_y
+        start_z = 40
+        
+        # Check that this cube lies entirely within the filled overlapping region.
+        cube_sum = np.sum(filled_mask[start_x : start_x + cube_size,
+                                        start_y : start_y + cube_size,
+                                        start_z : start_z + 1900])
+        if cube_sum != cube_size ** 3:
+            continue
+        
+        # Extract cubes from both volumes.
+        cube_vol1 = vol1[start_x : start_x + cube_size,
+                            start_y : start_y + cube_size,
+                            start_z : start_z + 1900]
+        cube_vol2 = vol2[start_x : start_x + cube_size,
+                            start_y : start_y + cube_size,
+                            start_z : start_z + 1900]
+        
+        mid_slice = cube_size // 2
 
-            if plot_mode == 'pyplot':
-                # Plot the middle Z-plane of each cube.
-                
-                fig, axs = plt.subplots(1, 2, figsize=(10, 5))
-                axs[0].imshow(cube_vol1[:, :, mid_slice], cmap='gray')
-                axs[0].set_title("Volume 1 Cube (Middle Z Plane)")
-                axs[1].imshow(cube_vol2[:, :, mid_slice], cmap='gray')
-                axs[1].set_title("Volume 2 Cube (Middle Z Plane)")
-                plt.tight_layout()
-                #plt.imshow(cube_vol1[:, :, mid_slice], cmap='gray')
-                #plt.show()
-                plt.savefig('output.png')
-            elif plot_mode == 'cv2':
-                cv2_img = np.zeros((cube_size, 2*cube_size))
-                cv2_img[:, 0:cube_size] = cube_vol1[:, :, mid_slice]
-                cv2_img[:, cube_size:2*cube_size] = cube_vol2[:, :, mid_slice]
-                cv2.imshow('mid slice', cv2_img)
-                cv2.waitKey()
-            elif plot_mode == 'pygame':
-                volviewer = VolViewer(cube_vol1[:, :, mid_slice], cube_vol2[:, :, mid_slice])
-                outp = volviewer.run()
-                
-                
- 
-            # Ask the user if they want to save this cube.
-            if plot_mode == 'pyplot' or plot_mode == 'cv2':
-                user_input = input("Save this cube? (y/n): ").strip().lower()
-                if user_input.startswith('y'):
-                    outp = 2
-                else: 
-                    outp = 1
-            if outp == 2:
-                # Compute the absolute origin.
+        if plot_mode == 'pyplot':
+            # Plot the middle Z-plane of each cube.
+            
+            fig, axs = plt.subplots(1, 2, figsize=(10, 5))
+            axs[0].imshow(cube_vol1[:, mid_slice, :], cmap='gray')
+            axs[0].set_title("Volume 1 Cube (Middle Z Plane)")
+            axs[1].imshow(cube_vol2[:, mid_slice, :], cmap='gray')
+            axs[1].set_title("Volume 2 Cube (Middle Z Plane)")
+            plt.tight_layout()
+            #plt.imshow(cube_vol1[:, :, mid_slice], cmap='gray')
+            #plt.show()
+            plt.savefig('output.png')
+        elif plot_mode == 'cv2':
+            cv2_img = np.zeros((cube_size, 2*cube_size))
+            cv2_img[:, 0:cube_size] = cube_vol1[:, :, mid_slice]
+            cv2_img[:, cube_size:2*cube_size] = cube_vol2[:, :, mid_slice]
+            cv2.imshow('mid slice', cv2_img)
+            cv2.waitKey()
+        elif plot_mode == 'pygame':
+            volviewer = VolViewer(cube_vol1[:, :, mid_slice], cube_vol2[:, :, mid_slice])
+            outp = volviewer.run()
+            
+            
+
+        # Ask the user if they want to save this cube.
+        if plot_mode == 'pyplot' or plot_mode == 'cv2':
+            user_input = input("Save this cube? (y/n): ").strip().lower()
+            if user_input.startswith('y'):
+                outp = 2
+            else: 
+                outp = 1
+        if outp == 2:
+            for i in range(3):
+            # Compute the absolute origin.
+                new_start_z = np.random.randint(ranges[i][0], ranges[i][1])
                 if bounding_box_calc:
-                    abs_origin = (start_x, start_y, start_z)
+                    abs_origin = (start_x, start_y, new_start_z)
                     # Compute the relative origin with respect to each volume's bounding box.
                     rel_origin_vol1 = (abs_origin[0] - bb_vol1[0],
                                     abs_origin[1] - bb_vol1[2],
@@ -274,38 +288,41 @@ for x in range(num_x):
                     rel_origin_vol2 = (abs_origin[0] - bb_vol2[0],
                                     abs_origin[1] - bb_vol2[2],
                                     abs_origin[2] - bb_vol2[4])
+                    
+                exp_vol1 = cube_vol1[:,:,new_start_z:new_start_z+cube_size]
+                exp_vol2 = cube_vol2[:,:,new_start_z:new_start_z+cube_size]
                 
                 if mode == 'tiff':
-                    filename1 = f'{candidate_count}_split1.tiff'
-                    filename2 = f'{candidate_count}_split2.tiff'
+                    filename1 = f'{cwd}_{candidate_count}_split1.tiff'
+                    filename2 = f'{cwd}_{candidate_count}_split2.tiff'
                     if bounding_box_calc:
                         cube_origins[filename1] = {"volume": "vol1", "relative_origin": rel_origin_vol1}
                         cube_origins[filename2] = {"volume": "vol2", "relative_origin": rel_origin_vol2}
                     
                     print('Writing:', filename1)
                     tifffile.imwrite(filename1,
-                        data=cube_vol1.T,
+                        data=exp_vol1.transpose(2,1,0),
                         imagej=True)
                     print('Writing:', filename2)
                     tifffile.imwrite(filename2,
-                        data=cube_vol2.T,
+                        data=exp_vol2.transpose(2,1,0),
                         imagej=True)
                 elif mode == 'npy':
-                    filename1 = f'{candidate_count}_split1.npy'
-                    filename2 = f'{candidate_count}_split2.npy'
+                    filename1 = f'{cwd}_{candidate_count}_split1.npy'
+                    filename2 = f'{cwd}_{candidate_count}_split2.npy'
                     if bounding_box_calc:
                         cube_origins[filename1] = {"volume": "vol1", "relative_origin": rel_origin_vol1}
                         cube_origins[filename2] = {"volume": "vol2", "relative_origin": rel_origin_vol2}
                     
                     print('Writing:', filename1)
-                    np.save(filename1, cube_vol1)
+                    np.save(filename1, exp_vol1)
                     print('Writing:', filename2)
-                    np.save(filename2, cube_vol2)
+                    np.save(filename2, exp_vol2)
                 
                 print("Cube saved.")
-                cube_saved = True
+                
                 #break  # Break out of the innermost for-loop
-            candidate_count += 1
+                candidate_count += 1
 
 # Write the cube origins dictionary to a JSON file.
 if bounding_box_calc:
