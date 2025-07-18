@@ -240,7 +240,7 @@ if not cube_candidates:
                 
                 mid_slices.append([cube_vol1[:,:,cube_size // 2], cube_vol2[:,:,cube_size // 2]])
 
-            if plot_mode == 'pyplot':
+            if plot_mode == 'pyplot' and mid_slices:
                 # Plot the middle Z-plane of each cube.
                 
                 fig, axs = plt.subplots(3, 2, figsize=(15, 10))
