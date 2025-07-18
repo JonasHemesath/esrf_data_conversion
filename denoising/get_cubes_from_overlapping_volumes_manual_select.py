@@ -238,7 +238,7 @@ if not cube_candidates:
                 cube_positions[iden] = [[start_x, start_x + cube_size], [start_y, start_y + cube_size], [start_z, start_z + cube_size]]
                 all_cube_origins[iden] = {'vol1': rel_origin_vol1, 'vol2': rel_origin_vol2}
                 
-                mid_slices.append([cube_vol1[:,:,cube_size // 2]], [cube_vol2[:,:,cube_size // 2]])
+                mid_slices.append([cube_vol1[:,:,cube_size // 2], cube_vol2[:,:,cube_size // 2]])
 
             if plot_mode == 'pyplot':
                 # Plot the middle Z-plane of each cube.
