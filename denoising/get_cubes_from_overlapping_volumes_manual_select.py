@@ -263,7 +263,7 @@ if not cube_candidates:
                 plt.savefig('output_' + str(candidate_count) + '.png')
             
 
-            candidate_count += 1
+                candidate_count += 1
     with open('cube_positions.json', 'w') as f:
         json.dump(cube_positions, f)
     with open('all_cube_origins.json', 'w') as f:
