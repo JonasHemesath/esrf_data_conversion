@@ -95,7 +95,7 @@ random_offset_x = np.random.randint(0, cube_size)
 random_offset_y = np.random.randint(0, cube_size)
 random_offset_z = np.random.randint(0, cube_size)
 
-mode = 'npy'  # Change to 'tiff' if desired
+mode = 'tiff'  # Change to 'tiff' if desired
 
 plot_mode = 'pyplot'
 
@@ -111,61 +111,7 @@ export_folder = '/cajal/scratch/projects/xray/bm05/converted_data/new_Sep_2024/z
 if not os.path.isdir(export_folder):
     os.makedirs(export_folder)
 
-if plot_mode == 'pygame':
-    class VolViewer:
 
-        def __init__(self, image1, image2):
-            
-            # Camera
-            image = np.zeros((image1.shape[0], image1.shape[1]*2, 3))
-            image1_n = np.interp(image1, [np.min(image1), np.max(image1)], [0,255])
-            image2_n = np.interp(image2, [np.min(image2), np.max(image2)], [0,255])
-            for i in range(3):
-                image[:, 0:image1.shape[1], i] = image1_n
-                image[:, image1.shape[1]:image1.shape[1]*2, i] = image2_n
-            self.image = image
-            self.image_d = pygame.surfarray.make_surface(image)
-
-            # Pygame screen
-            self.screen_width = int(self.image.shape[1])
-            self.screen_height = int(self.image.shape[0])
-            
-            self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
-            pygame.display.set_caption("Cam Viewer")
-
-            # Image display
-            self.image_rect = pygame.Rect(0, 0, self.screen_width, self.screen_height)
-
-            self.save_vols = 0
-
-            self.run()
-
-        def run(self):
-            pygame.init()
-            clock = pygame.time.Clock()
-            running = True
-            while running:
-                for event in pygame.event.get():
-                    keys = pygame.key.get_pressed()
-                    if event.type == pygame.QUIT:
-                        #self.cam2.release()
-                        return 0
-
-                    if event.type == pygame.KEYDOWN:
-                        if event.key == pygame.K_UP:
-                            return 1
-                        elif event.key == pygame.K_DOWN:
-                            return 2
-                
-                self.draw()
-                pygame.display.flip()
-                clock.tick(60)
-
-
-        def draw(self):
-            """Draws all elements on the screen"""
-            self.screen.fill((0, 0, 0))
-            self.screen.blit(self.image_d, self.image_rect)
 
             
 raw_files = get_two_largest_raw_files(file_filter)
@@ -225,9 +171,19 @@ if bounding_box_calc:
         exit(1)
     else:
         print('Bounding boxes generated')
-
+if os.path.isfile('cube_candidates.json'):
+    with open('cube_candidates.json', 'r') as f:
+        cube_candidates = json.load(f)
+    with open('cube_positions.json', 'r') as f:
+        cube_positions = json.load(f)
+    with open('all_cube_origins.json', 'r') as f:
+        all_cube_origins = {}
+else:
+    cube_candidates = []
+    cube_positions = {}
+    all_cube_origins = {}
 # We will store the relative origins for the exported cube in this dictionary.
-cube_origins = {}
+
 cube_saved = False
 candidate_count = 0  # For naming purposes
 
@@ -238,115 +194,140 @@ num_x = math.floor((dim1[0] - random_offset_x) / cube_size)
 num_y = math.floor((dim1[1] - random_offset_y) / cube_size)
 num_z = math.floor((dim1[2] - random_offset_z) / cube_size)
 
-for x in range(num_x):
-    
-    for y in range(num_y):
+if not cube_candidates:
+    for x in range(num_x):
         
-        start_x = x * cube_size + random_offset_x
-        start_y = y * cube_size + random_offset_y
-        start_z = 40
-        
-        # Check that this cube lies entirely within the filled overlapping region.
-        cube_sum = np.sum(filled_mask[start_x : start_x + cube_size,
-                                        start_y : start_y + cube_size,
-                                        start_z : start_z + 1900])
-        if cube_sum != cube_size ** 2 * 1900:
-            print('Skipping cube')
-            print((cube_size ** 2 * 1900)-cube_sum)
-            continue
-        
-        # Extract cubes from both volumes.
-        cube_vol1 = vol1[start_x : start_x + cube_size,
-                            start_y : start_y + cube_size,
-                            start_z : start_z + 1900]
-        cube_vol2 = vol2[start_x : start_x + cube_size,
-                            start_y : start_y + cube_size,
-                            start_z : start_z + 1900]
-        
-        mid_slice = cube_size // 2
+        for y in range(num_y):
 
-        if plot_mode == 'pyplot':
-            # Plot the middle Z-plane of each cube.
-            
-            fig, axs = plt.subplots(1, 2, figsize=(10, 5))
-            axs[0].imshow(cube_vol1[:, mid_slice, :], cmap='gray')
-            axs[0].set_title("Volume 1 Cube (Middle Z Plane)")
-            axs[1].imshow(cube_vol2[:, mid_slice, :], cmap='gray')
-            axs[1].set_title("Volume 2 Cube (Middle Z Plane)")
-            plt.tight_layout()
-            #plt.imshow(cube_vol1[:, :, mid_slice], cmap='gray')
-            #plt.show()
-            plt.savefig('output.png')
-        elif plot_mode == 'cv2':
-            cv2_img = np.zeros((cube_size, 2*cube_size))
-            cv2_img[:, 0:cube_size] = cube_vol1[:, :, mid_slice]
-            cv2_img[:, cube_size:2*cube_size] = cube_vol2[:, :, mid_slice]
-            cv2.imshow('mid slice', cv2_img)
-            cv2.waitKey()
-        elif plot_mode == 'pygame':
-            volviewer = VolViewer(cube_vol1[:, :, mid_slice], cube_vol2[:, :, mid_slice])
-            outp = volviewer.run()
-            
-            
+            z_count = 0
 
-        # Ask the user if they want to save this cube.
-        if plot_mode == 'pyplot' or plot_mode == 'cv2':
-            user_input = input("Save this cube? (y/n): ").strip().lower()
-            if user_input.startswith('y'):
-                outp = 2
-            else: 
-                outp = 1
-        if outp == 2:
-            for i in range(3):
-            # Compute the absolute origin.
-                new_start_z = np.random.randint(ranges[i][0], ranges[i][1])
+            mid_slices = []
+
+            for z in range(num_z):
+            
+                start_x = x * cube_size + random_offset_x
+                start_y = y * cube_size + random_offset_y
+                start_z = z * cube_size + random_offset_z
+                
+                # Check that this cube lies entirely within the filled overlapping region.
+                cube_sum = np.sum(filled_mask[start_x : start_x + cube_size,
+                                                start_y : start_y + cube_size,
+                                                start_z : start_z + cube_size])
+                if cube_sum != cube_size ** 3:
+                    print('Skipping cube')
+                    print((cube_size ** 3)-cube_sum)
+                    continue
+                
+                # Extract cubes from both volumes.
+                cube_vol1 = vol1[start_x : start_x + cube_size,
+                                    start_y : start_y + cube_size,
+                                    start_z : start_z + cube_size]
+                cube_vol2 = vol2[start_x : start_x + cube_size,
+                                    start_y : start_y + cube_size,
+                                    start_z : start_z + cube_size]
+                
                 if bounding_box_calc:
-                    abs_origin = (start_x, start_y, new_start_z)
+                    abs_origin = (start_x, start_y)
                     # Compute the relative origin with respect to each volume's bounding box.
-                    rel_origin_vol1 = (abs_origin[0] - bb_vol1[0],
-                                    abs_origin[1] - bb_vol1[2])
-                    rel_origin_vol2 = (abs_origin[0] - bb_vol2[0],
-                                    abs_origin[1] - bb_vol2[2])
-                    
-                exp_vol1 = cube_vol1[:,:,new_start_z:new_start_z+cube_size]
-                exp_vol2 = cube_vol2[:,:,new_start_z:new_start_z+cube_size]
-                
-                if mode == 'tiff':
-                    filename1 = f'{cwd}_{candidate_count}_split1.tiff'
-                    filename2 = f'{cwd}_{candidate_count}_split2.tiff'
-                    if bounding_box_calc:
-                        cube_origins[filename1] = {"volume": "vol1", "relative_origin": rel_origin_vol1}
-                        cube_origins[filename2] = {"volume": "vol2", "relative_origin": rel_origin_vol2}
-                    
-                    print('Writing:', filename1)
-                    tifffile.imwrite(filename1,
-                        data=exp_vol1.transpose(2,1,0),
-                        imagej=True)
-                    print('Writing:', filename2)
-                    tifffile.imwrite(filename2,
-                        data=exp_vol2.transpose(2,1,0),
-                        imagej=True)
-                elif mode == 'npy':
-                    filename1 = f'{cwd}_{candidate_count}_split1.npy'
-                    filename2 = f'{cwd}_{candidate_count}_split2.npy'
-                    if bounding_box_calc:
-                        cube_origins[filename1] = {"volume": "vol1", "relative_origin": rel_origin_vol1}
-                        cube_origins[filename2] = {"volume": "vol2", "relative_origin": rel_origin_vol2}
-                    
-                    print('Writing:', filename1)
-                    np.save(filename1, exp_vol1)
-                    print('Writing:', filename2)
-                    np.save(filename2, exp_vol2)
-                
-                print("Cube saved.")
-                
-                #break  # Break out of the innermost for-loop
-                candidate_count += 1
+                    rel_origin_vol1 = [abs_origin[0] + cube_size//2 - bb_vol1[0],
+                                    abs_origin[1] + cube_size//2 - bb_vol1[2]]
+                    rel_origin_vol2 = [abs_origin[0] + cube_size//2 - bb_vol2[0],
+                                    abs_origin[1] + cube_size//2 - bb_vol2[2]]
 
-# Write the cube origins dictionary to a JSON file.
-if bounding_box_calc:
-    with open("cube_origins.json", "w") as fp:
-        json.dump(cube_origins, fp, indent=4)
+                iden = str(candidate_count) + '_' + str(z_count)
+                cube_positions[iden] = [[start_x, start_x + cube_size], [start_y, start_y + cube_size], [start_z, start_z + cube_size]]
+                all_cube_origins[iden] = {'vol1': rel_origin_vol1, 'vol2': rel_origin_vol2}
+                
+                mid_slices.append([cube_vol1[:,:,cube_size // 2]], [cube_vol2[:,:,cube_size // 2]])
+
+            if plot_mode == 'pyplot':
+                # Plot the middle Z-plane of each cube.
+                
+                fig, axs = plt.subplots(3, 2, figsize=(15, 10))
+                axs[0, 0].imshow(mid_slices[0, 0], cmap='gray')
+                axs[0, 0].set_title(str(candidate_count) + "_0, Volume 1, Z 0")
+                axs[0, 1].imshow(mid_slices[0, 1], cmap='gray')
+                axs[0, 1].set_title("Volume 2, Z 0")
+                axs[1, 0].imshow(mid_slices[1, 0], cmap='gray')
+                axs[1, 0].set_title(str(candidate_count) + "_1, Volume 1, Z 1")
+                axs[1, 1].imshow(mid_slices[1, 1], cmap='gray')
+                axs[1, 1].set_title("Volume 2, Z 1")
+                axs[2, 0].imshow(mid_slices[2, 0], cmap='gray')
+                axs[2, 0].set_title(str(candidate_count) + "_2, Volume 1, Z 2")
+                axs[2, 1].imshow(mid_slices[2, 1], cmap='gray')
+                axs[2, 1].set_title("Volume 2, Z 2")
+                plt.tight_layout()
+                #plt.imshow(cube_vol1[:, :, mid_slice], cmap='gray')
+                #plt.show()
+                plt.savefig('output_' + str(candidate_count) + '.png')
+            
+
+            candidate_count += 1
+    with open('cube_positions.json', 'w') as f:
+        json.dump(cube_positions, f)
+    with open('all_cube_origins.json', 'w') as f:
+        json.dump(all_cube_origins, f)
+    with open('cube_candidates.json', 'w') as f:
+        json.dump(cube_candidates, f)
+        
+                
+else:
+    if os.path.isfile(os.path.join(export_folder, 'cube_origins.json')):
+        with open(os.path.join(export_folder, 'cube_origins.json'), 'r') as f:
+            cube_origins = json.load(f)
+    else:
+        cube_origins = {}
+
+    for candidate in cube_candidates:
+        
+        cube_vol1 = vol1[cube_positions[candidate][0][0]:cube_positions[candidate][0][1],
+                         cube_positions[candidate][1][0]:cube_positions[candidate][1][1],
+                         cube_positions[candidate][2][0]:cube_positions[candidate][2][1]]
+        cube_vol2 = vol2[cube_positions[candidate][0][0]:cube_positions[candidate][0][1],
+                         cube_positions[candidate][1][0]:cube_positions[candidate][1][1],
+                         cube_positions[candidate][2][0]:cube_positions[candidate][2][1]]
+        cube_origins[cwd + '_' + candidate] = all_cube_origins[candidate]
+
+        if mode == 'tiff':
+            filename1 = f'{cwd}_{candidate}_split1.tiff'
+            filename2 = f'{cwd}_{candidate}_split2.tiff'
+            
+            
+            print('Writing:', filename1)
+            tifffile.imwrite(export_folder+filename1,
+                data=cube_vol1.transpose(2,1,0),
+                imagej=True)
+            print('Writing:', filename2)
+            tifffile.imwrite(export_folder+filename2,
+                data=cube_vol2.transpose(2,1,0),
+                imagej=True)
+            cube_saved = True
+        elif mode == 'npy':
+            filename1 = f'{cwd}_{candidate}_split1.npy'
+            filename2 = f'{cwd}_{candidate}_split2.npy'
+            
+            
+            print('Writing:', filename1)
+            np.save(export_folder+filename1, cube_vol1)
+            print('Writing:', filename2)
+            np.save(export_folder+filename2, cube_vol2)
+
+            cube_saved = True
+
+
+            
+                    
+                    
+                    
+        print("Cube saved.")
+
+    with open(os.path.join(export_folder, 'cube_origins.json'), 'w') as f:
+        json.dump(cube_origins, f)
+                    
+                    #break  # Break out of the innermost for-loop
+                    
+
+
 
 if not cube_saved:
     print("No cube was saved.")
