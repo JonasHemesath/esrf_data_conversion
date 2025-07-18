@@ -177,7 +177,7 @@ if os.path.isfile('cube_candidates.json'):
     with open('cube_positions.json', 'r') as f:
         cube_positions = json.load(f)
     with open('all_cube_origins.json', 'r') as f:
-        all_cube_origins = {}
+        all_cube_origins = json.load(f)
 else:
     cube_candidates = []
     cube_positions = {}
