@@ -204,6 +204,7 @@ if not cube_candidates:
             mid_slices = []
 
             for z in range(num_z):
+                
             
                 start_x = x * cube_size + random_offset_x
                 start_y = y * cube_size + random_offset_y
@@ -234,7 +235,7 @@ if not cube_candidates:
                     rel_origin_vol2 = [abs_origin[0] + cube_size//2 - bb_vol2[0],
                                     abs_origin[1] + cube_size//2 - bb_vol2[2]]
 
-                iden = str(candidate_count) + '_' + str(z_count)
+                iden = str(candidate_count) + '_' + str(z)
                 cube_positions[iden] = [[start_x, start_x + cube_size], [start_y, start_y + cube_size], [start_z, start_z + cube_size]]
                 all_cube_origins[iden] = {'vol1': rel_origin_vol1, 'vol2': rel_origin_vol2}
                 
