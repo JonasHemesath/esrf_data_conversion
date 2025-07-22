@@ -1,4 +1,5 @@
 import os
+import sys
 import subprocess
 import numpy as np
 import math
@@ -87,6 +88,10 @@ def get_bounding_box(volume):
 #print('Finished stitching')
 
 # Main processing
+if len(sys.argv) < 2:
+    selection_threshold = 100000000
+else:
+    selection_threshold = int(sys.argv[1])
 cube_size = 512
 bounding_box_calc = True
 file_filter = 'gauss_corr_sigma'
