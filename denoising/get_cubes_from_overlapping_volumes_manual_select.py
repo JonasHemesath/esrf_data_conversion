@@ -214,7 +214,7 @@ if not cube_candidates:
                 cube_sum = np.sum(filled_mask[start_x : start_x + cube_size,
                                                 start_y : start_y + cube_size,
                                                 start_z : start_z + cube_size])
-                if cube_size ** 3 - cube_sum > 5000000:
+                if cube_size ** 3 - cube_sum > 10000000:
                     print('Skipping cube')
                     print((cube_size ** 3)-cube_sum)
                     continue
