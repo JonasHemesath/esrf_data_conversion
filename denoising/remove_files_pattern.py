@@ -1,8 +1,8 @@
 import os
-import sys
 
-pattern = sys.argv[1]
+pattern = input('Files with which pattern should be removed?\n')
 
+confirm = input('Are you sure you want to remove all files with this pattern in the subdirectories of the current location?\n\n' + pattern + '\n\ny/n\n')
 
 
 for folder in os.listdir():
