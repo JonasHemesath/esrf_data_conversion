@@ -206,7 +206,7 @@ if __name__ == '__main__':
     if fn not in os.listdir(save_path):
         print(file)
 
-        tasks = [(i, tifffile.imread(file, key=z)) for i in range(z)]
+        tasks = [(i, tifffile.imread(file, key=i)) for i in range(z)]
         print('images loaded')
 
         im_shape = (z, tasks[0][1].shape[0], tasks[0][1].shape[1])
