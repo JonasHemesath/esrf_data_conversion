@@ -156,7 +156,7 @@ def ring_remove(ring_img, n_segments=250, compactness=10):
 def make_16bit(image, min_val, max_val):
     return (65535 * (image - min_val) / (max_val - min_val)).astype(np.uint16)
 
-def process_slice(slice_tuple, mask, value_range, iterations, n_segments, compactness):
+def process_slice(slice_tuple, mask, value_range, iterations, n_segments, compactness, save_path):
     i, im_slice = slice_tuple
     
     no_ring_img = im_slice
@@ -169,6 +169,9 @@ def process_slice(slice_tuple, mask, value_range, iterations, n_segments, compac
     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
     im_slice_clahe = clahe.apply(im_slice_mirrored)
     im_slice_clahe[mask == 0] = 0
+
+    with open(os.path.join(save_path, str(i) + '.txt')) as f:
+        f.write('done')
     
     return i, im_slice_clahe
 
@@ -216,7 +219,7 @@ if __name__ == '__main__':
         
         # Use a partial function to pass the constant arguments to process_slice
         worker_func = partial(process_slice, mask=mask, value_range=value_range, 
-                              iterations=iterations, n_segments=n_segments, compactness=compactness)
+                              iterations=iterations, n_segments=n_segments, compactness=compactness, save_path=save_path)
 
         print('start mapping with multiprocessing')
         with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
