@@ -5,7 +5,6 @@ import numpy as np
 import tifffile
 import os
 from tqdm import tqdm
-import json
 import multiprocessing
 from functools import partial
 
@@ -156,8 +155,12 @@ def ring_remove(ring_img, n_segments=250, compactness=10):
 def make_16bit(image, min_val, max_val):
     return (65535 * (image - min_val) / (max_val - min_val)).astype(np.uint16)
 
-def process_slice(slice_tuple, mask, value_range, iterations, n_segments, compactness, save_path):
-    i, im_slice = slice_tuple
+def process_slice(slice_index, file_path, mask, value_range, iterations, n_segments, compactness):
+    """
+    Worker function to process a single slice.
+    It reads the slice from the file, processes it, and returns the result.
+    """
+    im_slice = tifffile.imread(file_path, key=slice_index)
     
     no_ring_img = im_slice
     for _ in range(iterations):
@@ -169,13 +172,17 @@ def process_slice(slice_tuple, mask, value_range, iterations, n_segments, compac
     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
     im_slice_clahe = clahe.apply(im_slice_mirrored)
     im_slice_clahe[mask == 0] = 0
-
-    with open(os.path.join(save_path, str(i) + '.txt')) as f:
-        f.write('done')
     
-    return i, im_slice_clahe
+    return slice_index, im_slice_clahe
 
 if __name__ == '__main__':
+    # Set the start method to 'spawn' for safety with ImageJ and on clusters.
+    # This must be done once at the beginning of the main execution block.
+    try:
+        multiprocessing.set_start_method('spawn', force=True)
+    except RuntimeError:
+        pass # context has already been set
+
     if len(sys.argv) != 4:
         print("Usage: python your_script_name.py <sample> <file> <fn>")
         sys.exit(1)
@@ -190,7 +197,6 @@ if __name__ == '__main__':
         print('ij loaded')
     except Exception as e:
         print(f"Failed to initialize ImageJ: {e}")
-        # Decide if you want to exit or continue without ImageJ functionality
         ij = None
 
     value_range = [-5, 5]
@@ -199,8 +205,6 @@ if __name__ == '__main__':
     n_segments = 1
     compactness = 10
     
-    load_path = '/cajal/scratch/projects/xray/bm05/20230913/PROCESSED_DATA/'
-    subfolder = 'recs_2024_04/'
     save_path = f'/cajal/scratch/projects/xray/bm05/converted_data/new_Aug_2025/{sample}/'
     if not os.path.isdir(save_path):
         os.makedirs(save_path)
@@ -209,32 +213,40 @@ if __name__ == '__main__':
     if fn not in os.listdir(save_path):
         print(file)
 
-        tasks = [(i, tifffile.imread(file, key=i)) for i in range(z)]
-        print('images loaded')
+        # Get image shape from the first slice without reading the whole file
+        try:
+            with tifffile.TiffFile(file) as tif:
+                if not tif.pages:
+                    print(f"Error: TIFF file {file} contains no pages.")
+                    sys.exit(1)
+                first_page = tif.pages[0]
+                im_shape = (z, first_page.shape[0], first_page.shape[1])
+        except FileNotFoundError:
+            print(f"Error: Input file not found at {file}")
+            sys.exit(1)
 
-        im_shape = (z, tasks[0][1].shape[0], tasks[0][1].shape[1])
+        print(f"Image shape determined to be: {im_shape}")
 
         mask = create_circular_mask(im_shape[1], im_shape[2])
         print('mask created')
         
-        # Use a partial function to pass the constant arguments to process_slice
-        worker_func = partial(process_slice, mask=mask, value_range=value_range, 
-                              iterations=iterations, n_segments=n_segments, compactness=compactness, save_path=save_path)
+        # Prepare the partial function for the worker processes
+        worker_func = partial(process_slice, file_path=file, mask=mask, value_range=value_range, 
+                              iterations=iterations, n_segments=n_segments, compactness=compactness)
 
         print('start mapping with multiprocessing')
-        with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
-            # Use tqdm to show progress bar
-            results = list(tqdm(pool.starmap(worker_func, [(task,) for task in tasks]), total=len(tasks)))
+        im_new = np.zeros(im_shape, dtype=np.uint16)
 
-        del tasks
+        num_processes = multiprocessing.cpu_count()
+        print(f"Using {num_processes} processes.")
 
-        # Sort results based on the original index
-        results.sort(key=lambda x: x[0])
-
-        im_new = np.zeros((z, ), dtype=np.uint16)
-        # Reconstruct the image from sorted results
-        for i, processed_slice in results:
-            im_new[i, :, :] = processed_slice
+        with multiprocessing.Pool(processes=num_processes) as pool:
+            # Use imap_unordered for memory-efficient processing of results
+            results_iterator = pool.imap_unordered(worker_func, range(z))
+            
+            # Process results as they complete and show progress
+            for i, processed_slice in tqdm(results_iterator, total=z):
+                im_new[i, :, :] = processed_slice
             
         print('mapping finished')
         
@@ -245,5 +257,5 @@ if __name__ == '__main__':
             print('ImageJ: image saved')
         else:
             # Fallback to tifffile if ImageJ is not available
-            tifffile.imwrite(os.path.join(save_path, fn), im_new)
+            tifffile.imwrite(os.path.join(save_path, fn), im_new, imagej=True)
             print('Saved with tifffile.')
