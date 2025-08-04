@@ -237,7 +237,8 @@ if __name__ == '__main__':
         print('start mapping with multiprocessing')
         im_new = np.zeros(im_shape, dtype=np.uint16)
 
-        num_processes = multiprocessing.cpu_count()
+        #num_processes = multiprocessing.cpu_count()
+        num_processes = 32
         print(f"Using {num_processes} processes.")
 
         with multiprocessing.Pool(processes=num_processes) as pool:
