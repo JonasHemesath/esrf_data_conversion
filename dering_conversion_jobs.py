@@ -5,7 +5,7 @@ import json
 
 
 sample = sys.argv[1]
-num_cpus = 56
+num_cpus = 32
 load_path = '/cajal/scratch/projects/xray/bm05/20230913/PROCESSED_DATA/'
 subfolder = 'recs_2024_04/'
 save_path = '/cajal/scratch/projects/xray/bm05/converted_data/new_Aug_2024/' 
@@ -42,11 +42,13 @@ processes = []
 for i, f in enumerate(path_list):
     print(i)
     print(f)
-    processes.append(subprocess.Popen(['srun', '--time=7-0', '--gres=gpu:0', '--mem=900000', '--tasks', '1', '--cpus-per-task', str(num_cpus), '--pty', 'python', '/cajal/nvmescratch/users/johem/esrf_data_conversion/ij_read_dering_convert_export_single_mp.py', sample, f[0] + f[1], f[1], str(num_cpus)],
+    processes.append(subprocess.Popen(['srun', '--time=7-0', '--gres=gpu:0', '--mem=400000', '--tasks', '1', '--cpus-per-task', str(num_cpus), '--pty', 'python', '/cajal/nvmescratch/users/johem/esrf_data_conversion/ij_read_dering_convert_export_single_mp.py', sample, f[0] + f[1], f[1], str(num_cpus)],
                                             stdout=subprocess.PIPE, stderr=subprocess.PIPE))
     
 for i, process in enumerate(processes):
-    process.communicate()
+    output = process.communicate()
+    if output[1]:
+        print(output)
     print('Process', i+1, 'of', len(processes), 'finished')
 
 

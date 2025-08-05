@@ -249,7 +249,7 @@ if __name__ == '__main__':
             # Process results as they complete and show progress
             for i, processed_slice in tqdm(results_iterator, total=z):
                 im_new[i, :, :] = processed_slice
-            
+        del results_iterator
         print('mapping finished')
         
         if ij:
