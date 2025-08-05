@@ -8,7 +8,7 @@ sample = sys.argv[1]
 num_cpus = 32
 load_path = '/cajal/scratch/projects/xray/bm05/20230913/PROCESSED_DATA/'
 subfolder = 'recs_2024_04/'
-save_path = '/cajal/scratch/projects/xray/bm05/converted_data/new_Aug_2024/' 
+save_path = '/cajal/scratch/projects/xray/bm05/converted_data/new_Aug_2025/' 
 
 path_list = []
 missing_volumes = []
