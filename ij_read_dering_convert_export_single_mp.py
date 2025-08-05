@@ -183,8 +183,8 @@ if __name__ == '__main__':
     except RuntimeError:
         pass # context has already been set
 
-    if len(sys.argv) != 4:
-        print("Usage: python your_script_name.py <sample> <file> <fn>")
+    if len(sys.argv) != 5:
+        print("Usage: python your_script_name.py <sample> <file> <fn> <num_cpus>")
         sys.exit(1)
 
     sample = sys.argv[1]
