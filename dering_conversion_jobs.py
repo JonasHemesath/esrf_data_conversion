@@ -39,7 +39,8 @@ with open(os.path.join(save_path, sample + '_missing_volumes.json')) as mv:
 
 processes = []
 
-for f in path_list:
+for i, f in enumerate(path_list):
+    print(i)
     print(f)
     processes.append(subprocess.Popen(['srun', '--time=7-0', '--gres=gpu:0', '--mem=900000', '--tasks', '1', '--cpus-per-task', str(num_cpus), '--pty', 'python', '/cajal/nvmescratch/users/johem/esrf_data_conversion/ij_read_dering_convert_export_single_mp.py', sample, f[0] + f[1], f[1], str(num_cpus)],
                                             stdout=subprocess.PIPE, stderr=subprocess.PIPE))
