@@ -34,7 +34,7 @@ for tomo in os.listdir(load_path + sample):
         path_list.append(tomo_tiffs[0])
 path_list.sort()
 print('missing vols:', missing_volumes)
-with open(os.path.join(save_path, sample + '_missing_volumes.json')) as mv:
+with open(os.path.join(save_path, sample + '_missing_volumes.json'), 'w') as mv:
     json.dump(missing_volumes, mv)
 
 processes = []
