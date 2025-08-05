@@ -190,6 +190,7 @@ if __name__ == '__main__':
     sample = sys.argv[1]
     file = sys.argv[2]
     fn = sys.argv[3]
+    num_cpus = int(sys.argv[4])
 
     scyjava.config.add_option('-Xmx500g')
     try:
@@ -238,7 +239,7 @@ if __name__ == '__main__':
         im_new = np.zeros(im_shape, dtype=np.uint16)
 
         #num_processes = multiprocessing.cpu_count()
-        num_processes = 32
+        num_processes = num_cpus
         print(f"Using {num_processes} processes.")
 
         with multiprocessing.Pool(processes=num_processes) as pool:
