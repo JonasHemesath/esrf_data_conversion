@@ -22,7 +22,8 @@ for line in txt:
         pot_f = line.split(' = ')[0]
         if pot_f not in files:
             print('This file is not in the folder:', pot_f)
-            pot_f2 = pot_f.split('__1_')[0]
+            pot_f2 = pot_f.split('_z-')[0]
+            pot_f2 = pot_f2[0] + '_z-' + pot_f2[1][0:5]
 
             for file in files:
                 if pot_f2 in file:
