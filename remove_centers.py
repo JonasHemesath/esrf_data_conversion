@@ -26,9 +26,14 @@ def create_circular_mask(h, w, z, center=None, radius=None):
     return mask3d
 
 ref_file = sys.argv[1]
+start = sys.argv[2]
+stop = sys.argv[3]
 
 with open(ref_file, 'r') as f:
-    tasks_list = f.readlines()
+    tasks_list = sorted(f.readlines())
+
+len_list = len(tasks_list)
+tasks_list = tasks_list[int(len_list*((start-1)/stop)):int(len_list*(start/stop))]
 
 tasks_dict = {s.strip().split(': ')[0]: int(float(s.strip().split(': ')[1])) for s in tasks_list}
 
