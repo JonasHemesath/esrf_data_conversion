@@ -61,6 +61,10 @@ def calculate_removable_radii(tomograms, uncertainty_threshold):
     """
     Calculates the removable radius for each tomogram based on overlaps.
 
+    This version correctly handles the constraint that removed regions from a pair
+    of overlapping tomograms must not themselves overlap. It calculates a symmetric
+    removable radius for each pair and updates the maximum possible radius for each tomogram.
+
     Args:
         tomograms (list): A list of tomogram data dictionaries.
         uncertainty_threshold (float): The positional uncertainty threshold.
@@ -68,30 +72,44 @@ def calculate_removable_radii(tomograms, uncertainty_threshold):
     Returns:
         dict: A dictionary mapping filename to the calculated removable radius.
     """
-    removable_radii = {}
+    removable_radii = {t['filename']: 0.0 for t in tomograms}
+    tomo_map = {t['filename']: t for t in tomograms}
+    filenames = [t['filename'] for t in tomograms]
 
     print("Calculating removable radii from overlaps...")
-    for t1 in tqdm(tomograms):
-        max_removable_r = 0.0
-        for t2 in tomograms:
-            if t1['filename'] == t2['filename']:
-                continue
+    for i in tqdm(range(len(filenames))):
+        for j in range(i + 1, len(filenames)):
+            t1 = tomo_map[filenames[i]]
+            t2 = tomo_map[filenames[j]]
 
             dx = t1['cx'] - t2['cx']
             dy = t1['cy'] - t2['cy']
             distance = math.sqrt(dx**2 + dy**2)
 
-            # The radius of the cylinder in t1 that is completely covered by t2
-            # This is the radius of t2, reduced by the distance between centers and the uncertainty.
-            removable_r_candidate = t2['radius'] - distance - uncertainty_threshold
+            # Effective distance after accounting for uncertainty
+            d_safe = distance - uncertainty_threshold
 
-            # The removable cylinder cannot be larger than t1's own radius.
-            removable_r_candidate = min(t1['radius'], removable_r_candidate)
-            
-            if removable_r_candidate > max_removable_r:
-                max_removable_r = removable_r_candidate
-        
-        removable_radii[t1['filename']] = max(0, max_removable_r)
+            # If centers are too close or uncertainty is too high, no safe removal is possible from this pair
+            if d_safe <= 0:
+                continue
+
+            # For a symmetric removal radius R for both tomograms in the pair, three conditions must be met:
+            # 1. Removal from t1 is covered by t2: R <= t2['radius'] - d_safe
+            # 2. Removal from t2 is covered by t1: R <= t1['radius'] - d_safe
+            # 3. The two removed areas do not overlap: R + R <= d_safe => R <= d_safe / 2
+
+            # The symmetric removable radius is the minimum of these three values.
+            r_candidate = min(
+                t1['radius'] - d_safe,
+                t2['radius'] - d_safe,
+                d_safe / 2.0
+            )
+
+            if r_candidate > 0:
+                # This pair contributes a potential removable radius to both tomograms.
+                # We update each tomogram's removable radius if this pair offers a larger one.
+                removable_radii[t1['filename']] = max(removable_radii[t1['filename']], r_candidate)
+                removable_radii[t2['filename']] = max(removable_radii[t2['filename']], r_candidate)
 
     return removable_radii
 
