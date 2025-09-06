@@ -47,6 +47,8 @@ for k, v in tqdm(tasks_dict.items()):
     im_ij = ij.py.to_dataset(im, dim_order=['pln', 'row', 'col'])
     print('ij conversion done')
 
+    os.remove(k)
+
     ij.io().save(im_ij, k)
     print('ImageJ: image saved')
 
