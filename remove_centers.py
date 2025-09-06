@@ -26,8 +26,8 @@ def create_circular_mask(h, w, z, center=None, radius=None):
     return mask3d
 
 ref_file = sys.argv[1]
-start = sys.argv[2]
-stop = sys.argv[3]
+start = int(sys.argv[2])
+stop = int(sys.argv[3])
 
 with open(ref_file, 'r') as f:
     tasks_list = sorted(f.readlines())
