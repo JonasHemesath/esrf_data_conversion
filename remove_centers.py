@@ -30,7 +30,7 @@ ref_file = sys.argv[1]
 with open(ref_file, 'r') as f:
     tasks_list = f.readlines()
 
-tasks_dict = {s.strip().split(': ')[0]: int(s.strip().split(': ')[1]) for s in tasks_list}
+tasks_dict = {s.strip().split(': ')[0]: int(float(s.strip().split(': ')[1])) for s in tasks_list}
 
 z=1990
 
