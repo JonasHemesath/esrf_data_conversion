@@ -57,7 +57,7 @@ def get_tomogram_sizes(tiff_folder, filenames):
             print(f"Warning: Could not read {filename}. Error: {e}. Skipping.")
     return sizes
 
-def calculate_removable_radii(tomograms, uncertainty_threshold):
+def calculate_removable_radii(tomograms, uncertainty_threshold, z_threshold):
     """
     Calculates the removable radius for each tomogram based on overlaps.
 
@@ -68,6 +68,7 @@ def calculate_removable_radii(tomograms, uncertainty_threshold):
     Args:
         tomograms (list): A list of tomogram data dictionaries.
         uncertainty_threshold (float): The positional uncertainty threshold.
+        z_threshold (float): Maximum Z-distance to be considered neighbours.
 
     Returns:
         dict: A dictionary mapping filename to the calculated removable radius.
@@ -82,28 +83,37 @@ def calculate_removable_radii(tomograms, uncertainty_threshold):
             t1 = tomo_map[filenames[i]]
             t2 = tomo_map[filenames[j]]
 
+            # 1. Filter by Z-level proximity
+            if abs(t1['cz'] - t2['cz']) > z_threshold:
+                continue
+
             dx = t1['cx'] - t2['cx']
             dy = t1['cy'] - t2['cy']
             distance = math.sqrt(dx**2 + dy**2)
+            
+            # The maximum possible distance between centers due to uncertainty
+            d_max = distance + uncertainty_threshold
+            # The minimum possible distance between centers due to uncertainty
+            d_min = distance - uncertainty_threshold
 
-            # Effective distance after accounting for uncertainty
-            d_safe = distance - uncertainty_threshold
-
-            # If centers are too close or uncertainty is too high, no safe removal is possible from this pair
-            if d_safe <= 0:
+            # 2. Filter by center coverage: each tomogram's FoV must extend over the other's center,
+            # even in the worst-case (largest) separation.
+            if not (t1['radius'] > d_max and t2['radius'] > d_max):
                 continue
+            
+            if d_min <= 0:
+                continue
+            
+            # 3. Calculate symmetric removable radius 'r' based on three worst-case conditions:
+            #   a. Removal from t1 is covered by t2: r <= t2['radius'] - d_max
+            r_from_coverage2 = t2['radius'] - d_max
+            #   b. Removal from t2 is covered by t1: r <= t1['radius'] - d_max
+            r_from_coverage1 = t1['radius'] - d_max
+            #   c. The two removed areas do not overlap: 2*r <= d_min => r <= d_min / 2
+            r_from_non_overlap = d_min / 2.0
 
-            # For a symmetric removal radius R for both tomograms in the pair, three conditions must be met:
-            # 1. Removal from t1 is covered by t2: R <= t2['radius'] - d_safe
-            # 2. Removal from t2 is covered by t1: R <= t1['radius'] - d_safe
-            # 3. The two removed areas do not overlap: R + R <= d_safe => R <= d_safe / 2
-
-            # The symmetric removable radius is the minimum of these three values.
-            r_candidate = min(
-                t1['radius'] - d_safe,
-                t2['radius'] - d_safe,
-                d_safe / 2.0
-            )
+            # The final candidate radius is the most restrictive of these conditions.
+            r_candidate = min(r_from_coverage1, r_from_coverage2, r_from_non_overlap)
 
             if r_candidate > 0:
                 # This pair contributes a potential removable radius to both tomograms.
@@ -139,6 +149,12 @@ def main():
         default=0.0,
         help="A threshold to account for positional uncertainty of each tomogram."
     )
+    parser.add_argument(
+        "--z_threshold",
+        type=float,
+        default=100.0,
+        help="Maximum Z-distance between tomogram centers to be considered neighbours for overlap."
+    )
     args = parser.parse_args()
 
     # 1. Parse locations
@@ -164,6 +180,7 @@ def main():
                 'filename': filename,
                 'cx': coords[0],
                 'cy': coords[1],
+                'cz': coords[2],
                 'radius': min(width, height) / 2.0
             })
 
@@ -172,7 +189,7 @@ def main():
         return
 
     # 4. Calculate removable radii
-    removable_radii = calculate_removable_radii(tomograms, args.uncertainty_threshold)
+    removable_radii = calculate_removable_radii(tomograms, args.uncertainty_threshold, args.z_threshold)
 
     # 5. Print results
     print("\n--- Results ---")
