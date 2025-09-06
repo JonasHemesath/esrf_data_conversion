@@ -35,7 +35,7 @@ tasks_dict = {s.strip().split(': ')[0]: int(float(s.strip().split(': ')[1])) for
 z=1990
 
 for k, v in tqdm(tasks_dict.items()):
-    print(file)
+    print(k)
     im = tifffile.imread(k, key=range(0,z))
     
 
