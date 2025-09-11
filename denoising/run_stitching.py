@@ -2,7 +2,7 @@ import os
 import subprocess
 import time
 
-parent_folder = '/cajal/scratch/projects/xray/bm05/converted_data/new_Sep_2024/zf13_denoising_GT/'
+parent_folder = '/cajal/scratch/projects/xray/bm05/converted_data/new_Aug_2025/Seg_GT/'
 
 folders_done = []
 
@@ -35,7 +35,7 @@ for folder in os.listdir(parent_folder):
                 #processes.append(subprocess.Popen(['python', '/cajal/nvmescratch/users/johem/pi2_4_5/pi2/bin-linux64/release-nocl/nr_stitcher_jh.py', 'stitch_settings_16bit_pi4_5.txt'],
                 #                        stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=wd))
                 
-                p = subprocess.Popen(['python', '/cajal/nvmescratch/users/johem/pi2_4_5/pi2/bin-linux64/release-nocl/nr_stitcher_jh.py', 'stitch_settings_16bit_pi4_5.txt'],
+                p = subprocess.Popen(['python', '/cajal/nvmescratch/users/johem/pi2_4_5/pi2/bin-linux64/release-nocl/nr_stitcher_jh.py', 'stitch_settings.txt'],
                                         stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=wd)
                 p.communicate()
                 print('folder', folder, 'done')

@@ -23,7 +23,7 @@ point_spacing = 60
 # The block radius is the maximal local shift that can be found between any two sub-images.
 # The value should scale with image size.
 # The value is given in the coordinates of the original image (not in binned coordinates).
-coarse_block_radius = 120
+coarse_block_radius = 240
 
 
 # Amount of binning for coarse matching
@@ -136,7 +136,7 @@ output_format = raw
 # (tile_pixel_size + 8) * max_block_size^3 < (available_memory_in_bytes).
 # If create_goodness is true, set to such a value that 
 # (tile_pixel_size + 12) * max_block_size^3 < (available_memory_in_bytes).
-max_block_size = 1000
+max_block_size = 2000
 
 
 
