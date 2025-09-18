@@ -56,6 +56,7 @@ vol = dataset_3d[block_org[0]:block_org[0]+block_size,
 vol = vol.transpose(2,1,0)
 print(type(vol))
 
-img_pi = Pi2Image.from_numpy(vol)
+img_pi = pi.newimage(ImageDataType.UINT16, block_size, block_size, block_size)
+img_pi.from_numpy(vol)
 
 pi.writerawblock(img_pi, 'test_1000x1100x1200.raw', [100,200,300], [0, 0, 0], [0, 0, 0], [block_size, block_size, block_size])
