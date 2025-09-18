@@ -1,6 +1,6 @@
 import numpy as np
 import tifffile
-import tensorstore
+import tensorstore as ts
 import sys
 sys.path.append("/cajal/nvmescratch/users/johem/pi2_4_5/pi2/bin-linux64/release-nocl")
 from pi2py2 import *
