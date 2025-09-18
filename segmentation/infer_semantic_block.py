@@ -53,5 +53,8 @@ vol = dataset_3d[block_org[0]:block_org[0]+block_size,
                                 block_org[1]:block_org[1]+block_size,
                                 block_org[2]:block_org[2]+block_size].read().result()
 
-tifffile.imwrite('test.tiff', vol)
-print('Image written')
+vol = vol.transpose(2,1,0)
+
+img_pi = Pi2Image.from_numpy(vol)
+
+pi.writerawblock(img_pi, 'test_1000x1100x1200.raw', [100,200,300], [0, 0, 0], [0, 0, 0], [block_size, block_size, block_size])
