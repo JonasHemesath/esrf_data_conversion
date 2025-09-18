@@ -54,6 +54,7 @@ vol = dataset_3d[block_org[0]:block_org[0]+block_size,
                                 block_org[2]:block_org[2]+block_size].read().result()
 
 vol = vol.transpose(2,1,0)
+print(type(vol))
 
 img_pi = Pi2Image.from_numpy(vol)
 
