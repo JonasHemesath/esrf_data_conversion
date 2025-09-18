@@ -9,12 +9,19 @@ pi = Pi2()
 
 si = 0
 
+dataset_name = sys.argv[1]
+
+block_org = int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4])
+block_size = int(sys.argv[5])
+
+iden = 'https://syconn.esc.mpcdf.mpg.de/johem/ng/' + dataset_name + '/'
+
 dataset_future = ts.open({
      'driver':
         'neuroglancer_precomputed',
     'kvstore':
          #'https://syconn.esc.mpcdf.mpg.de/johem/ng/zf13_hr2/',
-         'https://syconn.esc.mpcdf.mpg.de/johem/ng/zf13_v250808/',
+        iden,
     'scale_index':
         si,
      # Use 100MB in-memory cache.
@@ -42,4 +49,9 @@ elif str(dataset_3d.dtype) == 'dtype("uint16")':
     data_type = np.uint16
 
 
-#tifffile.imwrite('test.tiff', img_np)
+vol = dataset_3d[block_org[0]:block_org[0]+block_size,
+                                block_org[1]:block_org[1]+block_size,
+                                block_org[2]:block_org[2]+block_size].read().result()
+
+tifffile.imwrite('test.tiff', vol)
+print('Image written')
