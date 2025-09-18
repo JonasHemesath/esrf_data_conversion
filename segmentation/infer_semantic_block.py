@@ -12,7 +12,7 @@ file = sys.argv[1]
 
 img = pi.readrawblock('img', file, 0, 0, 0, 500, 500, 500, ImageDataType.UINT16)
 
-img_np = pi2.read('img').get_data()
+img_np = pi.read('img').get_data()
 
 
 tifffile.imwrite('test.tiff', img_np)
