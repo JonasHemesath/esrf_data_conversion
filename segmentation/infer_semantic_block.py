@@ -7,6 +7,8 @@ from pi2py2 import *
 
 pi = Pi2()
 
+si = 0
+
 dataset_future = ts.open({
      'driver':
         'neuroglancer_precomputed',
