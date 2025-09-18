@@ -15,6 +15,7 @@ block_org = int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4])
 block_size = int(sys.argv[5])
 
 iden = 'https://syconn.esc.mpcdf.mpg.de/johem/ng/' + dataset_name + '/'
+iden = '/cajal/nvmescratch/projects/from_ssdscratch/songbird/johem/ng/' + dataset_name + '/'
 
 dataset_future = ts.open({
      'driver':
@@ -60,41 +61,3 @@ img_pi = pi.newimage(ImageDataType.UINT16, block_size, block_size, block_size)
 img_pi.from_numpy(vol)
 
 pi.writerawblock(img_pi, 'test_1000x1100x1200.raw', [100,200,300], [0, 0, 0], [0, 0, 0], [block_size, block_size, block_size])
-
-vol = dataset_3d[block_org[0]:block_org[0]+block_size,
-                                block_org[1]+block_size:block_org[1]+2*block_size,
-                                block_org[2]:block_org[2]+block_size].read().result()
-
-vol = vol.transpose(2,1,0)
-print(type(vol))
-
-img_pi = pi.newimage(ImageDataType.UINT16, block_size, block_size, block_size)
-img_pi.from_numpy(vol)
-
-pi.writerawblock(img_pi, 'test_1000x1100x1200.raw', [100,400,300], [0, 0, 0], [0, 0, 0], [block_size, block_size, block_size])
-
-
-vol = dataset_3d[block_org[0]:block_org[0]+block_size,
-                                block_org[1]:block_org[1]+block_size,
-                                block_org[2]+block_size:block_org[2]+2*block_size].read().result()
-
-vol = vol.transpose(2,1,0)
-print(type(vol))
-
-img_pi = pi.newimage(ImageDataType.UINT16, block_size, block_size, block_size)
-img_pi.from_numpy(vol)
-
-pi.writerawblock(img_pi, 'test_1000x1100x1200.raw', [300,200,300], [0, 0, 0], [0, 0, 0], [block_size, block_size, block_size])
-
-
-vol = dataset_3d[block_org[0]+block_size:block_org[0]+2*block_size,
-                                block_org[1]:block_org[1]+block_size,
-                                block_org[2]:block_org[2]+block_size].read().result()
-
-vol = vol.transpose(2,1,0)
-print(type(vol))
-
-img_pi = pi.newimage(ImageDataType.UINT16, block_size, block_size, block_size)
-img_pi.from_numpy(vol)
-
-pi.writerawblock(img_pi, 'test_1000x1100x1200.raw', [100,200,500], [0, 0, 0], [0, 0, 0], [block_size, block_size, block_size])
