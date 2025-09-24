@@ -20,12 +20,12 @@ for f in os.listdir(load_path):
         c += 1
         
         im = tifffile.imread(load_path + f, key=range(0,z))
-        print(im.dtype)
-        if im.dtype == np.uint16:
-            im = im / 65535 
-            im = im * 255 
-            im = im.astype(np.uint8)
-            print('new dtype', im.dtype)
+        #print(im.dtype)
+        #if im.dtype == np.uint16:
+        #    im = im / 65535 
+        #    im = im * 255 
+        #    im = im.astype(np.uint8)
+        #    print('new dtype', im.dtype)
         for i in range(2):
             if i:
                 im_d = skimage.transform.resize(im[:,:,im.shape[2]//2], (im.shape[0]//2, im.shape[2]//2), anti_aliasing=True)
