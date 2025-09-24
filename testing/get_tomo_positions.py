@@ -41,7 +41,8 @@ for f in os.listdir(full_path):
                         z = float(p[1:4] + '.' + p[4:])
                     else:
                             print('length does not match', f, p)
-            except IndexError:
+            except IndexError as e:
+                print(e)
                 print('string skipped:', f)
 
         if x > max_x:
