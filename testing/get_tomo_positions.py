@@ -1,6 +1,6 @@
 import os
 
-sample = 'zf13_hr2zf13_hr2_center_remove'
+sample = 'zf13_hr2_center_remove'
 
 voxel_size = 0.0007278      # in mm
 
