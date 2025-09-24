@@ -21,7 +21,7 @@ for f in os.listdir(load_path):
         
         im = tifffile.imread(load_path + f, key=range(0,z))
         print(im.dtype)
-        if im.dtype == np.unit16:
+        if im.dtype == np.uint16:
             im = im / 65535 
             im = im * 255 
             im = im.astype(np.uint8)

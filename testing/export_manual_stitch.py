@@ -20,7 +20,7 @@ for f in os.listdir(load_path):
         for i in idxs:
             im = tifffile.imread(load_path + f, key=i)
             print(im.dtype)
-            if im.dtype == np.unit16:
+            if im.dtype == np.uint16:
                 im = im / 65535 
                 im = im * 255 
                 im = im.astype(np.uint8)
