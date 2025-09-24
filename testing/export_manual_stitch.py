@@ -18,6 +18,12 @@ for f in os.listdir(load_path):
         c += 1
         for i in idxs:
             im = tifffile.imread(load_path + f, key=i)
+            print(im.dtype)
+            if im.dtype == np.unit16:
+                im = im / 65535 
+                im = im * 255 
+                im = im.astype(np.uint8)
+                print('new dtype',)
             im_d = skimage.transform.resize(im, (im.shape[0]//2, im.shape[1]//2), anti_aliasing=True)
 
             parts = f.split('_')
