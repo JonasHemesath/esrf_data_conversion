@@ -24,7 +24,7 @@ for f in os.listdir(load_path):
                 im = im / 65535 
                 im = im * 255 
                 im = im.astype(np.uint8)
-                print('new dtype',)
+                print('new dtype', im.dtype)
             im_d = skimage.transform.resize(im, (im.shape[0]//2, im.shape[1]//2), anti_aliasing=True)
 
             parts = f.split('_')
