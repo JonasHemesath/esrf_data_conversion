@@ -12,6 +12,7 @@ out_wd = sys.argv[2]
 
 
 block_size = int(sys.argv[3])
+step_size = block_size - 100
 model_path = sys.argv[4]
 
 iden = 'https://syconn.esc.mpcdf.mpg.de/johem/ng/' + dataset_name + '/'
@@ -45,9 +46,9 @@ dataset_shape = dataset_3d.shape
 
 processes = []
 
-for x in range(0, dataset_shape[0], block_size):
-    for y in range(0, dataset_shape[1], block_size):
-        for z in range(0, dataset_shape[2], block_size):
+for x in range(0, dataset_shape[0], step_size):
+    for y in range(0, dataset_shape[1], step_size):
+        for z in range(0, dataset_shape[2], step_size):
 
             processes.append(subprocess.Popen(['srun', '--time=7-0', '--gres=gpu:a40:1', '--mem=400000', '--tasks', '1', '--cpus-per-task', '32', '--pty', 
                                     'python', '/cajal/nvmescratch/users/johem/esrf_data_conversion/segmentation/infer_semantic_block.py', 

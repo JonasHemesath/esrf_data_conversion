@@ -78,7 +78,7 @@ vol = dataset_3d[
 vol = vol.transpose(2,1,0)
 #print(type(vol))
 
-if np.sum(vol) > 0:
+if np.sum(vol) > 0 and block_size_x > 100 and block_size_y > 100 and block_size_z > 100:
 
     # --- Device Configuration ---
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -137,9 +137,10 @@ if np.sum(vol) > 0:
 
 
     img_pi = pi.newimage(ImageDataType.UINT32, block_size, block_size, block_size)
-    img_pi.from_numpy(pred_output_np)
+    img_pi.from_numpy(pred_output_np[50:block_size_z-50, 50:block_size_y-50, 50:block_size_x-50])
 
     out_name = dataset_name + '_semantic_seg_' + str(out_shape[0]) + 'x' + str(out_shape[1]) + 'x' + str(out_shape[2]) + '.raw'
 
-    pi.writerawblock(img_pi, out_name, [block_org[2], block_org[1], block_org[0]], [0, 0, 0], [0, 0, 0], [block_size_z, block_size_y, block_size_x])
+
+    pi.writerawblock(img_pi, out_name, [block_org[2]+50, block_org[1]+50, block_org[0]+50], [0, 0, 0], [0, 0, 0], [block_size_z-100, block_size_y-100, block_size_x-100])
     print('done')

@@ -1,10 +1,10 @@
 import os
 
-sample = 'zf13_hr2'
+sample = 'zf13_hr2zf13_hr2_center_remove'
 
 voxel_size = 0.0007278      # in mm
 
-path = '/cajal/scratch/projects/xray/bm05/converted_data/new_Sep_2024/'
+path = '/cajal/scratch/projects/xray/bm05/converted_data/new_Aug_2025/'
 
 full_path = path + sample
 
