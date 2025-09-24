@@ -23,22 +23,27 @@ for f in os.listdir(full_path):
                 if p[0] == 'x':
                     if len(p) == 6:
                         x = float(p[1] + '.' + p[2:])
+                        print('x:', x)
                     elif len(p) == 7:
                         x = float(p[1:3] + '.' + p[3:])
+                        print('x:', x)
                     else:
                         print('length does not match', f, p)
 
                 if p[0] == 'y':
                     if len(p) == 6:
                         y = float(p[1] + '.' + p[2:])
+                        print('y:', y)
                     elif len(p) == 7:
                         y = float(p[1:3] + '.' + p[3:])
+                        print('y:', y)
                     else:
                         print('length does not match', f, p)
 
                 if p[0] == 'z' and p[1] != 'f':
                     if len(p) == 8:
                         z = float(p[1:4] + '.' + p[4:])
+                        print('z:', z)
                     else:
                             print('length does not match', f, p)
             except IndexError as e:
