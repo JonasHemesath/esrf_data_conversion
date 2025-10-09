@@ -3,9 +3,9 @@ import tifffile
 import numpy as np
 import cv2
 
-load_path = 'C:/Users/hemesath/Desktop/zf13_hr2_manual_stitch_exp/zf13_hr2_manual_stitch_exp/'
+load_path = 'C:/Users/hemesath/Desktop/zf13_hr2_cr_manual_stitch/zf13_hr2_cr_manual_stitch/'
 
-save_path = 'C:/Users/hemesath/Desktop/zf13_hr2_manual_stitch_exp/pngs/'
+save_path = 'C:/Users/hemesath/Desktop/zf13_hr2_cr_manual_stitch/pngs/'
 
 c = 1
 for folder in os.listdir(load_path):
