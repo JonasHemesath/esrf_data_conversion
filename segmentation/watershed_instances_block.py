@@ -63,6 +63,11 @@ markers = label(markers_mask)[0]
 # The markers guide the flooding process.
 somata_instances = watershed(-distance, markers, mask=vol_sem)
 
+del distance
+del markers_mask
+del markers
+del vol_sem
+
 edge = list(np.unique(somata_instances[:,:,0])) + \
     list(np.unique(somata_instances[:,:,-1])) + \
     list(np.unique(somata_instances[:,0,:])) + \
@@ -91,6 +96,8 @@ if args.process_id > 0:
 
     somata_instances[somata_instances>0] = somata_instances[somata_instances>0] + max_prev_id
 somata_instances[vol!=3] = vol[vol!=3]
+
+del vol
 
 max_id = np.max(somata_instances)
 
