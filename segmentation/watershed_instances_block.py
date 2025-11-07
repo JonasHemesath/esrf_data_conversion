@@ -25,7 +25,7 @@ parser.add_argument('--data_path', type=str, required=True,
                         help='Path to the dataset')
 parser.add_argument('--dataset_shape', nargs=3, type=int, required=True, 
                         help='Shape of the dataset')
-parser.add_argument('--block_orgin', nargs=3, type=int, required=True, 
+parser.add_argument('--block_origin', nargs=3, type=int, required=True, 
                         help='Origin of the block to load')
 parser.add_argument('--block_shape', nargs=3, type=int, required=True, 
                         help='Shape of the block to load')
@@ -42,9 +42,9 @@ dataset_dtype = np.uint64
 output_dtype = ImageDataType.UINT64
 
 data = np.memmap(args.data_path, dtype=dataset_dtype, mode='r', shape=tuple(args.dataset_shape), order='F')
-vol = data[args.block_orgin[0]:args.block_orgin[0]+args.block_shape[0],
-           args.block_orgin[1]:args.block_orgin[1]+args.block_shape[1],
-           args.block_orgin[2]:args.block_orgin[2]+args.block_shape[2]]
+vol = data[args.block_origin[0]:args.block_origin[0]+args.block_shape[0],
+           args.block_origin[1]:args.block_origin[1]+args.block_shape[1],
+           args.block_origin[2]:args.block_origin[2]+args.block_shape[2]]
 
 vol_sem = vol[vol==3]
 

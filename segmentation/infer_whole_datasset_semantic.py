@@ -52,7 +52,7 @@ for x in range(x_chunks):
                                                '--data_path', args.data_path,
                                                '--dataset_shape', str(args.dataset_shape[0]), str(args.dataset_shape[1]), str(args.dataset_shape[2]),
                                                '--dataset_dtype', args.dataset_dtype,
-                                               '--block_orgin', str(x_org), str(y_org), str(z_org),
+                                               '--block_origin', str(x_org), str(y_org), str(z_org),
                                                '--block_shape', str(block_x), str(block_y), str(block_z),
                                                '--output_name', out_name,
                                                '--model_path', args.model_path],
