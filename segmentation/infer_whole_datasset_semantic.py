@@ -48,7 +48,7 @@ for x in range(x_chunks):
             z_org = z * stride[2]
             block_z = min(args.block_shape[2], args.dataset_shape[2]-z_org)
 
-            processes.append(subprocess.Popen(['srun', '--time=7-0', '--gres:gpu:a40:1', '--mem=400000', '--tasks', '1', '--cpus-per-task', '32', '--pty', 'python', '/cajal/nvmescratch/users/johem/esrf_data_conversion/segmentation/infer_semantic_block.py',
+            processes.append(subprocess.Popen(['srun', '--time=7-0', '--gres=gpu:a40:1', '--mem=400000', '--tasks', '1', '--cpus-per-task', '32', '--pty', 'python', '/cajal/nvmescratch/users/johem/esrf_data_conversion/segmentation/infer_semantic_block.py',
                                                '--data_path', args.data_path,
                                                '--dataset_shape', str(args.dataset_shape[0]), str(args.dataset_shape[1]), str(args.dataset_shape[2]),
                                                '--dataset_dtype', args.dataset_dtype,

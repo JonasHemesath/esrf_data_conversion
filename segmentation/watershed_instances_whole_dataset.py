@@ -43,7 +43,7 @@ for x_i in [0,1]:
                         z_org = z * stride[2]
                         block_z = min(args.block_shape[2], args.dataset_shape[2]-z_org)
 
-                        processes.append([subprocess.Popen(['srun', '--time=7-0', '--gpu:0', '--mem=400000', '--tasks', '1', '--cpus-per-task', '32', '--pty', 'python', '/cajal/nvmescratch/users/johem/esrf_data_conversion/segmentation/watershed_instances_block.py',
+                        processes.append([subprocess.Popen(['srun', '--time=7-0', '--gres=gpu:0', '--mem=400000', '--tasks', '1', '--cpus-per-task', '32', '--pty', 'python', '/cajal/nvmescratch/users/johem/esrf_data_conversion/segmentation/watershed_instances_block.py',
                                                '--data_path', args.data_path,
                                                '--dataset_shape', str(args.dataset_shape[0]), str(args.dataset_shape[1]), str(args.dataset_shape[2]),
                                                '--block_orgin', str(x_org), str(y_org), str(z_org),
