@@ -4,6 +4,9 @@ import argparse
 
 import subprocess
 
+import time
+
+
 parser = argparse.ArgumentParser(description="3D Brain Tissue Segmentation")
 parser.add_argument('--data_path', type=str, required=True, 
                         help='Path to the dataset')
@@ -13,13 +16,13 @@ parser.add_argument('--dataset_dtype', type=str, choices=['uint8', 'uint16'], re
                         help='Datatype of the dataset')
 parser.add_argument('--block_shape', nargs=3, type=int, required=True, 
                         help='Shape of the block to load, should be larger than 200')
-parser.add_argument('--output_dtype', type=str, choices=['uint32', 'uint64'], required=True, 
-                        help='Datatype of the output')
 parser.add_argument('--output_name', type=str, required=True, 
                         help='Descriptive name of the output')
 parser.add_argument('--model_path', type=str, required=True, 
                         help='Path to the model')
 args = parser.parse_args()
+
+t0 = time.time()
 
 stride = [s-100 for s in args.block_shape]
 
@@ -51,7 +54,6 @@ for x in range(x_chunks):
                                                '--dataset_dtype', args.dataset_dtype,
                                                '--block_orgin', str(x_org), str(y_org), str(z_org),
                                                '--block_shape', str(block_x), str(block_y), str(block_z),
-                                               '--output_dtype', args.output_dtype,
                                                '--output_name', out_name,
                                                '--model_path', args.model_path],
                                             stdout=subprocess.PIPE, stderr=subprocess.PIPE))
@@ -63,3 +65,8 @@ for i, process in enumerate(processes):
         print(errs)
     else:
         print('Process', i+1, 'of', len(processes), 'done')
+
+
+
+print('All done')
+print('Took', round(time.time()-t0), 's')

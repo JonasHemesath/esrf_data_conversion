@@ -32,8 +32,6 @@ parser.add_argument('--block_orgin', nargs=3, type=int, required=True,
                         help='Origin of the block to load')
 parser.add_argument('--block_shape', nargs=3, type=int, required=True, 
                         help='Shape of the block to load')
-parser.add_argument('--output_dtype', type=str, choices=['uint32', 'uint64'], required=True, 
-                        help='Datatype of the output')
 parser.add_argument('--output_name', type=str, required=True, 
                         help='Filename of the output')
 parser.add_argument('--model_path', type=str, required=True, 
@@ -46,10 +44,9 @@ if args.dataset_dtype == 'uint8':
 elif args.dataset_dtype == 'uint16':
     dataset_dtype = np.uint16
 
-if args.output_dtype == 'uint32':
-    output_dtype = ImageDataType.UINT32
-elif args.output_dtype == 'uint64':
-    output_dtype = ImageDataType.UINT64
+
+output_dtype = ImageDataType.UINT64
+output_dtype_np = np.uint64
 
 
 data = np.memmap(args.data_path, dtype=dataset_dtype, mode='r', shape=tuple(args.dataset_shape), order='F')
@@ -111,15 +108,15 @@ if np.sum(vol) > 0 and args.block_shape[0] > 100 and args.block_shape[1] > 100 a
 
         # Process output: apply softmax, get argmax, and convert to numpy
         pred_output = torch.argmax(F.softmax(pred_output, dim=1), dim=1).squeeze(0)
-        pred_output_np = pred_output.cpu().numpy().astype(np.uint32)
+        pred_output_np = pred_output.cpu().numpy().astype(output_dtype_np)
 
 
 
-    img_pi = pi.newimage(output_dtype, args.block_shape[0], args.block_shape[1], args.block_shape[2])
+    img_pi = pi.newimage(output_dtype, args.block_shape[0]-100, args.block_shape[1]-100, args.block_shape[2]-100)
     img_pi.from_numpy(pred_output_np[50:args.block_shape[0]-50, 50:args.block_shape[1]-50, 50:args.block_shape[2]-50])
 
     #out_name = dataset_name + '_semantic_seg_' + str(out_shape[0]) + 'x' + str(out_shape[1]) + 'x' + str(out_shape[2]) + '.raw'
 
 
-    pi.writerawblock(img_pi, args.output_name, [args.block_origin[0]+50, args.block_origin[1]+50, args.block_origin[2]+50], [0, 0, 0], [0, 0, 0], [args.block_shape-100, args.block_shape-100, args.block_shape-100])
+    pi.writerawblock(img_pi, args.output_name, [args.block_origin[0]+50, args.block_origin[1]+50, args.block_origin[2]+50], [0, 0, 0], [0, 0, 0], [args.block_shape[0]-100, args.block_shape[1]-100, args.block_shape[2]-100])
     #print('done')
