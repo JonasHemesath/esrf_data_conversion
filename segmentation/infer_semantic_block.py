@@ -52,7 +52,7 @@ output_dtype_np = np.uint64
 data = np.memmap(args.data_path, dtype=dataset_dtype, mode='r', shape=tuple(args.dataset_shape), order='F')
 vol = data[args.block_origin[0]:args.block_origin[0]+args.block_shape[0],
            args.block_origin[1]:args.block_origin[1]+args.block_shape[1],
-           args.block_origin[2]:args.block_origin[2]+args.block_shape[2]]
+           args.block_origin[2]:args.block_origin[2]+args.block_shape[2]].copy()  # Copy to make writable and avoid warnings
 
 
 if np.sum(vol) > 0 and args.block_shape[0] > 100 and args.block_shape[1] > 100 and args.block_shape[2] > 100:
@@ -100,15 +100,28 @@ if np.sum(vol) > 0 and args.block_shape[0] > 100 and args.block_shape[1] > 100 a
 
     with torch.no_grad():
         # Sliding window inference for large images
+        # Reduced sw_batch_size to save memory
         roi_size = (96, 96, 96)
-        sw_batch_size = 4
+        sw_batch_size = 1  # Reduced from 4 to 1 to avoid OOM
+        overlap = 0.25  # Overlap between windows
+        
         pred_output = sliding_window_inference(
-            input_tensor, roi_size, sw_batch_size, model
+            input_tensor, roi_size, sw_batch_size, model, overlap=overlap
         )
 
-        # Process output: apply softmax, get argmax, and convert to numpy
-        pred_output = torch.argmax(F.softmax(pred_output, dim=1), dim=1).squeeze(0)
+        # Process output: use logits directly with argmax to avoid creating full softmax tensor
+        # This is more memory efficient than softmax + argmax
+        pred_output = torch.argmax(pred_output, dim=1).squeeze(0)
+        
+        # Clear GPU cache before moving to CPU
+        torch.cuda.empty_cache()
+        
         pred_output_np = pred_output.cpu().numpy().astype(output_dtype_np)
+        
+        # Clear more memory
+        del pred_output
+        del input_tensor
+        torch.cuda.empty_cache()
 
 
 
