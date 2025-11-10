@@ -45,8 +45,8 @@ elif args.dataset_dtype == 'uint16':
     dataset_dtype = np.uint16
 
 
-output_dtype = ImageDataType.UINT64
-output_dtype_np = np.uint64
+output_dtype = ImageDataType.UINT8
+output_dtype_np = np.uint8
 
 
 data = np.memmap(args.data_path, dtype=dataset_dtype, mode='r', shape=tuple(args.dataset_shape), order='F')
