@@ -2,3 +2,4 @@
 *txt
 !denoising/stitch_settings*
 !denoising/zf13_hr.txt
+segmentation/banis_example_inference.py
