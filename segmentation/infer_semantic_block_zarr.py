@@ -139,11 +139,16 @@ if np.sum(vol) > 0 and args.block_shape[0] > 100 and args.block_shape[1] > 100 a
     # writes to different chunks, but FileLock provides an extra safety layer.
     # Note: Since blocks are non-overlapping, FileLock could be removed for better performance,
     # but it's kept here for safety.
-    lock_file = f"{args.zarr_path}.lock"
-    with FileLock(lock_file):
+    if args.block_shape[0]-100 > 512 and args.block_shape[1]-100 > 512 and args.block_shape[2]-100 > 512:
         z[write_origin[0]:write_end[0],
           write_origin[1]:write_end[1],
           write_origin[2]:write_end[2]] = output_block
+    else:
+        lock_file = f"{args.zarr_path}.lock"
+        with FileLock(lock_file):
+            z[write_origin[0]:write_end[0],
+            write_origin[1]:write_end[1],
+            write_origin[2]:write_end[2]] = output_block
     
     #print('done')
 

@@ -24,6 +24,8 @@ parser.add_argument('--model_path', type=str, required=True,
                         help='Path to the model')
 parser.add_argument('--zarr_chunk_size', nargs=3, type=int, default=None,
                         help='Chunk size for zarr array (default: 512 512 512)')
+parser.add_argument('--testing_x_loc', type=int, default=None,
+                        help='x location for testing pipeline')
 args = parser.parse_args()
 
 t0 = time.time()
@@ -62,43 +64,53 @@ x_chunks = math.ceil(args.dataset_shape[0]/stride[0])
 y_chunks = math.ceil(args.dataset_shape[1]/stride[1])
 z_chunks = math.ceil(args.dataset_shape[2]/stride[2])
 
+if args.testing_x_loc is None:
+    test_x = None
+else:
+    test_x = math.ceil(args.testing_x_loc/stride[0])
+
 total_jobs = x_chunks * y_chunks * z_chunks
 print(f"Launching {total_jobs} jobs ({x_chunks}x{y_chunks}x{z_chunks})")
 
 processes = []
 
-for x in range(x_chunks):
-    x_org = x * stride[0]
-    block_x = min(args.block_shape[0], args.dataset_shape[0]-x_org)
+for x_i in [0,1]:
+    for y_i in [0,1]:
+        for z_i in [0,1]:
+            processes = []
+            for x in range(x_i, x_chunks, 2):
+                if test_x is not None and x != test_x:
+                    print('Skipping x =', x)
+                    continue
+                x_org = x * stride[0]
+                block_x = min(args.block_shape[0], args.dataset_shape[0]-x_org)
+                for y in range(y_i, y_chunks, 2):
+                    y_org = y * stride[1]
+                    block_y = min(args.block_shape[1], args.dataset_shape[1]-y_org)
+                    for z in range(z_i, z_chunks, 2):
+                        z_org = z * stride[2]
+                        block_z = min(args.block_shape[2], args.dataset_shape[2]-z_org)
 
-    for y in range(y_chunks):
-        y_org = y * stride[1]
-        block_y = min(args.block_shape[1], args.dataset_shape[1]-y_org)
-
-        for z in range(z_chunks):
-            z_org = z * stride[2]
-            block_z = min(args.block_shape[2], args.dataset_shape[2]-z_org)
-
-            processes.append(subprocess.Popen(['srun', '--time=7-0', '--gres=gpu:a40:1', '--mem=400000', '--tasks', '1', '--cpus-per-task', '32', 'python', '/cajal/nvmescratch/users/johem/esrf_data_conversion/segmentation/infer_semantic_block_zarr.py',
-                                               '--data_path', args.data_path,
-                                               '--dataset_shape', str(args.dataset_shape[0]), str(args.dataset_shape[1]), str(args.dataset_shape[2]),
-                                               '--dataset_dtype', args.dataset_dtype,
-                                               '--block_origin', str(x_org), str(y_org), str(z_org),
-                                               '--block_shape', str(block_x), str(block_y), str(block_z),
-                                               '--zarr_path', zarr_path,
-                                               '--model_path', args.model_path],
-                                            stdout=subprocess.PIPE, stderr=subprocess.PIPE))
+                        processes.append(subprocess.Popen(['srun', '--time=7-0', '--gres=gpu:a40:1', '--mem=400000', '--tasks', '1', '--cpus-per-task', '32', 'python', '/cajal/nvmescratch/users/johem/esrf_data_conversion/segmentation/infer_semantic_block_zarr.py',
+                                                        '--data_path', args.data_path,
+                                                        '--dataset_shape', str(args.dataset_shape[0]), str(args.dataset_shape[1]), str(args.dataset_shape[2]),
+                                                        '--dataset_dtype', args.dataset_dtype,
+                                                        '--block_origin', str(x_org), str(y_org), str(z_org),
+                                                        '--block_shape', str(block_x), str(block_y), str(block_z),
+                                                        '--zarr_path', zarr_path,
+                                                        '--model_path', args.model_path],
+                                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE))
             
 
-for i, process in enumerate(processes):
-    outs, errs = process.communicate()
-    if errs:
-        print(f"Process {i+1} errors:")
-        print(errs.decode('utf-8') if isinstance(errs, bytes) else errs)
-    if outs:
-        print(f"Process {i+1} output:")
-        print(outs.decode('utf-8') if isinstance(outs, bytes) else outs)
-    print('Process', i+1, 'of', len(processes), 'done')
+            for i, process in enumerate(processes):
+                outs, errs = process.communicate()
+                if errs:
+                    print(f"Process {i+1} errors:")
+                    print(errs.decode('utf-8') if isinstance(errs, bytes) else errs)
+                if outs:
+                    print(f"Process {i+1} output:")
+                    print(outs.decode('utf-8') if isinstance(outs, bytes) else outs)
+                print('Process', i+1, 'of', len(processes), 'done')
 
 
 
