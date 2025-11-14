@@ -32,7 +32,7 @@ parser.add_argument('--block_shape', nargs=3, type=int, required=True,
 parser.add_argument('--zarr_path', type=str, required=True, 
                         help='Path to the zarr array for output')
 parser.add_argument('--process_id', type=int, required=True, 
-                        help='Path to the zarr array for output')
+                        help='Process ID')
 parser.add_argument('--model_path', type=str, required=True, 
                         help='Path to the model')
 parser.add_argument('--debug_path', type=str, default=None, 

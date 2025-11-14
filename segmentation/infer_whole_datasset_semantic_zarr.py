@@ -109,7 +109,7 @@ for x_i in [0,1]:
                                                             '--block_shape', str(block_x), str(block_y), str(block_z),
                                                             '--zarr_path', zarr_path,
                                                             '--model_path', args.model_path,
-                                                            '--process_id', process_id,
+                                                            '--process_id', str(process_id),
                                                             '--debug_path', debug_path],
                                                             stdout=subprocess.PIPE, stderr=subprocess.PIPE))
                         else:
@@ -121,7 +121,7 @@ for x_i in [0,1]:
                                                             '--block_shape', str(block_x), str(block_y), str(block_z),
                                                             '--zarr_path', zarr_path,
                                                             '--model_path', args.model_path,
-                                                            '--process_id', process_id],
+                                                            '--process_id', str(process_id)],
                                                             stdout=subprocess.PIPE, stderr=subprocess.PIPE))
                         process_id += 1
             
