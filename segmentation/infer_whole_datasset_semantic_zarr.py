@@ -1,3 +1,5 @@
+import os
+
 import math
 
 import argparse
@@ -26,11 +28,17 @@ parser.add_argument('--zarr_chunk_size', nargs=3, type=int, default=None,
                         help='Chunk size for zarr array (default: 512 512 512)')
 parser.add_argument('--testing_x_loc', type=int, default=None,
                         help='x location for testing pipeline')
+parser.add_argument('--export_debug', action=argparse.BooleanOptionalAction, help='Export debug information from the individual jobs')
 args = parser.parse_args()
 
 t0 = time.time()
 
 stride = [s-100 for s in args.block_shape]
+
+if args.export_debug:
+    debug_path = args.output_name + 'debug'
+    if not os.path.isdir(debug_path):
+        os.makedirs(debug_path)
 
 # Create zarr path from output name
 zarr_path = args.output_name + '_semantic_seg_' + str(args.dataset_shape[0]) + 'x' + str(args.dataset_shape[1]) + 'x' + str(args.dataset_shape[2]) + '.zarr'
@@ -74,6 +82,7 @@ total_jobs = x_chunks * y_chunks * z_chunks
 print(f"Launching {total_jobs} jobs ({x_chunks}x{y_chunks}x{z_chunks})")
 
 processes = []
+process_id = 0
 
 for x_i in [0,1]:
     for y_i in [0,1]:
@@ -91,16 +100,30 @@ for x_i in [0,1]:
                     for z in range(z_i, z_chunks, 2):
                         z_org = z * stride[2]
                         block_z = min(args.block_shape[2], args.dataset_shape[2]-z_org)
-
-                        processes.append(subprocess.Popen(['srun', '--time=7-0', '--gres=gpu:a40:1', '--mem=400000', '--tasks', '1', '--cpus-per-task', '32', 'python', '/cajal/nvmescratch/users/johem/esrf_data_conversion/segmentation/infer_semantic_block_zarr.py',
-                                                        '--data_path', args.data_path,
-                                                        '--dataset_shape', str(args.dataset_shape[0]), str(args.dataset_shape[1]), str(args.dataset_shape[2]),
-                                                        '--dataset_dtype', args.dataset_dtype,
-                                                        '--block_origin', str(x_org), str(y_org), str(z_org),
-                                                        '--block_shape', str(block_x), str(block_y), str(block_z),
-                                                        '--zarr_path', zarr_path,
-                                                        '--model_path', args.model_path],
-                                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE))
+                        if args.export_debug:
+                            processes.append(subprocess.Popen(['srun', '--time=7-0', '--gres=gpu:a40:1', '--mem=400000', '--tasks', '1', '--cpus-per-task', '32', 'python', '/cajal/nvmescratch/users/johem/esrf_data_conversion/segmentation/infer_semantic_block_zarr.py',
+                                                            '--data_path', args.data_path,
+                                                            '--dataset_shape', str(args.dataset_shape[0]), str(args.dataset_shape[1]), str(args.dataset_shape[2]),
+                                                            '--dataset_dtype', args.dataset_dtype,
+                                                            '--block_origin', str(x_org), str(y_org), str(z_org),
+                                                            '--block_shape', str(block_x), str(block_y), str(block_z),
+                                                            '--zarr_path', zarr_path,
+                                                            '--model_path', args.model_path,
+                                                            '--process_id', process_id,
+                                                            '--debug_path', debug_path],
+                                                            stdout=subprocess.PIPE, stderr=subprocess.PIPE))
+                        else:
+                            processes.append(subprocess.Popen(['srun', '--time=7-0', '--gres=gpu:a40:1', '--mem=400000', '--tasks', '1', '--cpus-per-task', '32', 'python', '/cajal/nvmescratch/users/johem/esrf_data_conversion/segmentation/infer_semantic_block_zarr.py',
+                                                            '--data_path', args.data_path,
+                                                            '--dataset_shape', str(args.dataset_shape[0]), str(args.dataset_shape[1]), str(args.dataset_shape[2]),
+                                                            '--dataset_dtype', args.dataset_dtype,
+                                                            '--block_origin', str(x_org), str(y_org), str(z_org),
+                                                            '--block_shape', str(block_x), str(block_y), str(block_z),
+                                                            '--zarr_path', zarr_path,
+                                                            '--model_path', args.model_path,
+                                                            '--process_id', process_id],
+                                                            stdout=subprocess.PIPE, stderr=subprocess.PIPE))
+                        process_id += 1
             
 
             for i, process in enumerate(processes):

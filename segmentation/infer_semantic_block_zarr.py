@@ -3,6 +3,7 @@ import os
 import argparse
 
 import numpy as np
+import time
 
 import torch
 import torch.nn.functional as F
@@ -30,8 +31,12 @@ parser.add_argument('--block_shape', nargs=3, type=int, required=True,
                         help='Shape of the block to load')
 parser.add_argument('--zarr_path', type=str, required=True, 
                         help='Path to the zarr array for output')
+parser.add_argument('--process_id', type=int, required=True, 
+                        help='Path to the zarr array for output')
 parser.add_argument('--model_path', type=str, required=True, 
                         help='Path to the model')
+parser.add_argument('--debug_path', type=str, default=None, 
+                        help='Path to the debug_folder')
 
 args = parser.parse_args()
 
@@ -42,12 +47,13 @@ elif args.dataset_dtype == 'uint16':
 
 output_dtype_np = np.uint64
 
+t1 = time.time()
 data = np.memmap(args.data_path, dtype=dataset_dtype, mode='r', shape=tuple(args.dataset_shape), order='F')
 vol = data[args.block_origin[0]:args.block_origin[0]+args.block_shape[0],
            args.block_origin[1]:args.block_origin[1]+args.block_shape[1],
            args.block_origin[2]:args.block_origin[2]+args.block_shape[2]].copy()  # Copy to make writable and avoid warnings
 
-
+t2 = time.time()
 if np.sum(vol) > 0 and args.block_shape[0] > 100 and args.block_shape[1] > 100 and args.block_shape[2] > 100:
 
     # --- Device Configuration ---
@@ -116,6 +122,8 @@ if np.sum(vol) > 0 and args.block_shape[0] > 100 and args.block_shape[1] > 100 a
         del input_tensor
         torch.cuda.empty_cache()
 
+    t3 = time.time()
+
     # Trim 50 pixels from each side (100 total reduction per dimension)
     # Extract the valid region (excluding borders)
     output_block = pred_output_np[50:args.block_shape[0]-50, 
@@ -150,5 +158,11 @@ if np.sum(vol) > 0 and args.block_shape[0] > 100 and args.block_shape[1] > 100 a
             write_origin[1]:write_end[1],
             write_origin[2]:write_end[2]] = output_block
     
+    t4 = time.time()
+
+    if args.debug_path is not None:
+        msg = 'Time for reading: ' + str(round(t2-t1)) + ' s\nTime for inference: ' + str(round(t3-t2)) + ' s\nTime for writing: ' + str(round(t4-t3)) + ' s'
+        with open(os.path.join(args.debug_path, str(args.process_id) + '.txt'), 'w') as f:
+            f.write(msg)
     #print('done')
 
