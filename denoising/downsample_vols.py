@@ -13,6 +13,7 @@ def downsample_block(downsampled_vol, vol, downsample_factor, z, y, x):
                  x * downsample_factor:min((x+1) * downsample_factor, int(sys.argv[4]))]
             
     downsampled_vol[z, y, x] = np.mean(kernel[kernel > 0], dtype=np.uint16) if np.any(kernel > 0) else 0
+    print(z)
 
 path = sys.argv[1]
 
