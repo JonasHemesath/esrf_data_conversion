@@ -29,7 +29,7 @@ for z in tqdm(range(downsampled_shape[0])):
             task_list = []
             task_list.append((downsampled_vol, vol, downsample_factor, z, y, x))
 
-with Pool(processes=32) as pool:
+with Pool(processes=64) as pool:
     pool.starmap(downsample_block, task_list)
 
 downsampled_vol.flush()
