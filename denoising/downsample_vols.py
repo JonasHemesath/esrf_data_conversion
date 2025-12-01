@@ -37,10 +37,13 @@ for z in tqdm(range(downsampled_shape[0])):
             
             downsampled_vol[z, y, x] = np.mean(kernel[kernel > 0], dtype=np.uint16) if np.any(kernel > 0) else 0
 
+print(np.mean(downsampled_vol))
+print(np.max(downsampled_vol))
+
 #with Pool(processes=64) as pool:
     #pool.starmap(downsample_block, task_list)
 
 #downsampled_vol.flush()
 np.save(sys.argv[6], downsampled_vol)
-tifffile.imwrite(sys.argv[6].replace('.npy', '.tiff'), downsampled_vol)
+tifffile.imwrite(sys.argv[6].replace('.npy', '.tiff'), downsampled_vol, imagej=True)
 print(f"Downsampled volume saved to {sys.argv[6]} with shape {downsampled_shape}")
