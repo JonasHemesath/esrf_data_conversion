@@ -4,7 +4,15 @@ import numpy as np
 
 from tqdm import tqdm
 
+from multiprocessing import Pool
 
+
+def downsample_block(downsampled_vol, vol, downsample_factor, z, y, x):
+    kernel = vol[z * downsample_factor:min((z+1) * downsample_factor, int(sys.argv[2])), 
+                 y * downsample_factor:min((y+1) * downsample_factor, int(sys.argv[3])), 
+                 x * downsample_factor:min((x+1) * downsample_factor, int(sys.argv[4]))]
+            
+    downsampled_vol[z, y, x] = np.mean(kernel[kernel > 0], dtype=np.uint16) if np.any(kernel > 0) else 0
 
 path = sys.argv[1]
 
@@ -17,10 +25,11 @@ downsampled_vol = np.memmap(sys.argv[6], dtype='uint16', mode='w+', shape=downsa
 for z in tqdm(range(downsampled_shape[0])):
     for y in range(downsampled_shape[1]):
         for x in range(downsampled_shape[2]):
-            kernel = vol[z * downsample_factor:min((z+1) * downsample_factor, int(sys.argv[2])), 
-                         y * downsample_factor:min((y+1) * downsample_factor, int(sys.argv[3])), 
-                         x * downsample_factor:min((x+1) * downsample_factor, int(sys.argv[4]))]
-            
-            downsampled_vol[z, y, x] = np.mean(kernel[kernel > 0], dtype=np.uint16) if np.any(kernel > 0) else 0
+            task_list = []
+            task_list.append((downsampled_vol, vol, downsample_factor, z, y, x))
+
+with Pool(processes=32) as pool:
+    pool.starmap(downsample_block, task_list)
+
 downsampled_vol.flush()
 print(f"Downsampled volume saved to {sys.argv[6]} with shape {downsampled_shape}")
