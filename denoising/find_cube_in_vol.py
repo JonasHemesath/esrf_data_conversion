@@ -10,7 +10,7 @@ cube_path = sys.argv[1]
 vol_path = sys.argv[2]
 
 
-cube = tifffile(cube_path).transpose(2,1,0)
+cube = tifffile.imread(cube_path).transpose(2,1,0)
 vol = np.fromfile(vol_path, dtype='uint16').reshape((int(sys.argv[3]), int(sys.argv[4]), int(sys.argv[5])), order='F')
 
 
