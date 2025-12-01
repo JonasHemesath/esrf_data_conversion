@@ -38,7 +38,14 @@ for z in tqdm(range(downsampled_shape[0])):
             #task_list.append((downsampled_vol, vol, downsample_factor, z, y, x))
             
             
-            downsampled_vol[z, y, x] = vol[z * downsample_factor, y * downsample_factor, x * downsample_factor]
+            #downsampled_vol[z, y, x] = vol[z * downsample_factor, y * downsample_factor, x * downsample_factor]
+            kernel = vol[z * downsample_factor:min((z+1) * downsample_factor, int(sys.argv[2])), 
+                y * downsample_factor:min((y+1) * downsample_factor, int(sys.argv[3])), 
+                x * downsample_factor:min((x+1) * downsample_factor, int(sys.argv[4]))]
+            downsampled_vol[z, y, x] = np.mean(kernel).astype(np.uint16)
+            
+#            
+#    downsampled_vol[z, y, x] = np.mean(kernel[kernel > 0], dtype=np.uint16) if np.any(kernel > 0) else 0
 
 print(np.mean(downsampled_vol))
 print(np.max(downsampled_vol))
