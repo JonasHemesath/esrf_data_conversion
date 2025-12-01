@@ -20,10 +20,11 @@ path = sys.argv[1]
 
 #vol = np.memmap(path, dtype='uint16', mode='r', shape=tuple([int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4])]), order='F')
 vol = np.fromfile(path, dtype='uint16').reshape((int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4])), order='F')
-mask = vol > 0
-vol = gaussian_filter(vol, sigma=1)
-vol = vol * mask
-vol = vol.astype('uint16')
+print(np.mean(vol))
+#mask = vol > 0
+#vol = gaussian_filter(vol, sigma=1)
+#vol = vol * mask
+#vol = vol.astype('uint16')
 
 downsample_factor = int(sys.argv[5])
 
