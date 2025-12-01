@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 path = sys.argv[1]
 
-vol = np.memmap(path, dtype='uint16', mode='r', shape=tuple(int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4])), order='F')
+vol = np.memmap(path, dtype='uint16', mode='r', shape=tuple([int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4])]), order='F')
 
 downsample_factor = int(sys.argv[5])
 
