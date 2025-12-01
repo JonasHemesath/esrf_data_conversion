@@ -1,5 +1,6 @@
 import sys
 import numpy as np
+import json
 
 import tifffile
 
@@ -18,4 +19,6 @@ for z in range(vol.shape[0] - cube.shape[0]):
             subvol = vol[z:z+cube.shape[0], y:y+cube.shape[1], x:x+cube.shape[2]]
             if np.array_equal(subvol, cube):
                 print(f"Cube found at position: z={z}, y={y}, x={x}")
+                with open(cube_path.replace('.tif', '.json'), 'w') as f:
+                    json.dump([z,y,x], f)
                 sys.exit(0)
