@@ -1,7 +1,7 @@
 import sys
 
 import numpy as np
-
+from scipy.ndimage import gaussian_filter
 from tqdm import tqdm
 
 #from multiprocessing import Pool
@@ -20,6 +20,10 @@ path = sys.argv[1]
 
 #vol = np.memmap(path, dtype='uint16', mode='r', shape=tuple([int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4])]), order='F')
 vol = np.fromfile(path, dtype='uint16').reshape((int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4])), order='F')
+mask = vol > 0
+vol = gaussian_filter(vol, sigma=1)
+vol = vol * mask
+vol = vol.astype('uint16')
 
 downsample_factor = int(sys.argv[5])
 
@@ -31,11 +35,9 @@ for z in tqdm(range(downsampled_shape[0])):
         for x in range(downsampled_shape[2]):
             #task_list = []
             #task_list.append((downsampled_vol, vol, downsample_factor, z, y, x))
-            kernel = vol[z * downsample_factor:min((z+1) * downsample_factor, int(sys.argv[2])), 
-                 y * downsample_factor:min((y+1) * downsample_factor, int(sys.argv[3])), 
-                 x * downsample_factor:min((x+1) * downsample_factor, int(sys.argv[4]))]
             
-            downsampled_vol[z, y, x] = np.mean(kernel[kernel > 0], dtype=np.uint16) if np.any(kernel > 0) else 0
+            
+            downsampled_vol[z, y, x] = vol[z * downsample_factor, y * downsample_factor, x * downsample_factor]
 
 print(np.mean(downsampled_vol))
 print(np.max(downsampled_vol))
