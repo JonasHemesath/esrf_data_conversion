@@ -1,0 +1,26 @@
+import sys
+
+import numpy as np
+
+from tqdm import tqdm
+
+
+
+path = sys.argv[1]
+
+vol = np.memmap(path, dtype='uint16', mode='r', shape=tuple(int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4])), order='F')
+
+downsample_factor = int(sys.argv[5])
+
+downsampled_shape = (vol.shape[0] // downsample_factor, vol.shape[1] // downsample_factor, vol.shape[2] // downsample_factor)
+downsampled_vol = np.memmap(sys.argv[6], dtype='uint16', mode='w+', shape=downsampled_shape, order='F')
+for z in tqdm(range(downsampled_shape[0])):
+    for y in range(downsampled_shape[1]):
+        for x in range(downsampled_shape[2]):
+            kernel = vol[z * downsample_factor:min((z+1) * downsample_factor, int(sys.argv[2])), 
+                         y * downsample_factor:min((y+1) * downsample_factor, int(sys.argv[3])), 
+                         x * downsample_factor:min((x+1) * downsample_factor, int(sys.argv[4]))]
+            
+            downsampled_vol[z, y, x] = np.mean(kernel[kernel > 0], dtype=np.uint16) if np.any(kernel > 0) else 0
+downsampled_vol.flush()
+print(f"Downsampled volume saved to {sys.argv[6]} with shape {downsampled_shape}")
