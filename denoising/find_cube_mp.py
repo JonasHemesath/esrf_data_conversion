@@ -15,7 +15,7 @@ ranges = [[i*shape[0]//processes_num, min((i+1)*shape[0]//processes_num, shape[0
 
 processes = []
 for i, r in enumerate(ranges):
-    processes.append(subprocess.Popen(['srun', '--time=7-0', '--gres=gpu:a40:1', '--mem=400000', '--tasks', '1', '--cpus-per-task', '32','python', '/cajal/nvmescratch/users/johem/esrf_data_conversion/denoising/find_cube_in_vol.py',
+    processes.append(subprocess.Popen(['srun', '--time=7-0', '--gres=gpu:0', '--mem=400000', '--tasks', '1', '--cpus-per-task', '32','python', '/cajal/nvmescratch/users/johem/esrf_data_conversion/denoising/find_cube_in_vol.py',
                                         cube_path,
                                         vol_path,
                                         str(shape[0]),
