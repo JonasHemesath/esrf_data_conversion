@@ -13,7 +13,7 @@ vol_path = sys.argv[2]
 cube = tifffile.imread(cube_path).transpose(2,1,0)
 tifffile.imwrite(cube_path.replace('.tif', '_fixed.tif'), cube[:,:,0], imagej=True)
 vol = np.fromfile(vol_path, dtype='uint16').reshape((int(sys.argv[3]), int(sys.argv[4]), int(sys.argv[5])), order='F')
-tifffile.imwrite(cube_path.replace('.tif', '_vol_fixed.tif'), vol[:,:,0], imagej=True)
+tifffile.imwrite(cube_path.replace('.tif', '_vol_fixed.tif'), vol[:,:,vol.shape[2]//2], imagej=True)
 
 for z in tqdm(range(vol.shape[0] - cube.shape[0])):
     for y in range(vol.shape[1] - cube.shape[1]):
