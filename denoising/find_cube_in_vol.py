@@ -18,8 +18,9 @@ vol = np.fromfile(vol_path, dtype='uint16').reshape((int(sys.argv[3]), int(sys.a
 score = np.inf
 pos = None
 
-z_min = sys.argv[6] if len(sys.argv) > 6 else 0
-z_max = sys.argv[7] if len(sys.argv) > 7 else vol.shape[0] - cube.shape[0]
+z_min = int(sys.argv[6]) if len(sys.argv) > 6 else 0
+z_max = int(sys.argv[7]) if len(sys.argv) > 7 else vol.shape[0] - cube.shape[0]
+process = sys.argv[8] if len(sys.argv) > 8 else 'single'
 
 for z in tqdm(range(z_min, z_max)):
     for y in range(vol.shape[1] - cube.shape[1]):
@@ -33,13 +34,13 @@ for z in tqdm(range(z_min, z_max)):
             if score == 0:
                 print(f"Cube found at position: z={pos[0]}, y={pos[1]}, x={pos[2]}")
                 print(f"Score: {score}")
-                with open(cube_path.replace('.tif', '.json'), 'w') as f:
-                    json.dump([pos[0],pos[1],pos[2]], f)
+                with open(cube_path.replace('.tif', '_' + process + '.json'), 'w') as f:
+                    json.dump([[pos[0],pos[1],pos[2]], float(score)], f)
                 sys.exit(0)
 print(f"Cube found at position: z={pos[0]}, y={pos[1]}, x={pos[2]}")
 print(f"Score: {score}")
-with open(cube_path.replace('.tif', '.json'), 'w') as f:
-    json.dump([pos[0],pos[1],pos[2]], f)
+with open(cube_path.replace('.tif', '_' + process + 'json'), 'w') as f:
+    json.dump([[pos[0],pos[1],pos[2]], float(score)], f)
 #            if np.array_equal(subvol, cube[0:16, 0:16, 0:16]):
 #                print(f"Cube found at position: z={z}, y={y}, x={x}")
 #                with open(cube_path.replace('.tif', '.json'), 'w') as f:
