@@ -43,3 +43,10 @@ for i, path in enumerate(paths):
                                         str(downsample_factor),
                                         save_path],
                                         stdout=subprocess.PIPE, stderr=subprocess.PIPE))
+for i, process in enumerate(processes):
+    stdout, stderr = process.communicate()
+    print(f"Process {i} finished.")
+    print("STDOUT:")
+    print(stdout.decode())
+    print("STDERR:")
+    print(stderr.decode())
