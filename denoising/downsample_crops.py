@@ -49,7 +49,7 @@ def correct_ds_image(image):
     
     mask = np.sum(image, axis=2)
     mask2d = mask > 0
-    erosion_iterations = 1
+    erosion_iterations = 3
     erosion_threshold = 8
     # 3. Erode the 2D mask.
     eroded_mask2d = mask2d.copy()
