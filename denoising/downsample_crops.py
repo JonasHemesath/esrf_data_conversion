@@ -258,8 +258,10 @@ for i, path in enumerate(paths):
             vol_org[2]:vol_max[2]] = ds_image_crop
     
     ds_image_fill = ds_image_fill.transpose((2,1,0))
+
+    avg = round(np.mean(vol_out[ds_image_fill>0]) - np.mean(ds_image_fill[ds_image_fill>0]))
     
-    vol_out[ds_image_fill>0] = ds_image_fill[ds_image_fill>0]
+    vol_out[ds_image_fill>0] = ds_image_fill[ds_image_fill>0] + avg
 
     tifffile.imwrite(save_path,vol_out)
 
