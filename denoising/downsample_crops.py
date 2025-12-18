@@ -288,5 +288,5 @@ for i, path in enumerate(paths):
     print(b_mask_fill[0,0,0])
     print(b_mask_inv_fill[0,0,0])
 
-    tifffile.imwrite(save_path,vol_out)
+    tifffile.imwrite(save_path,vol_out.astype(np.uint16))
 
