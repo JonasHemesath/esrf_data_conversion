@@ -27,7 +27,7 @@ shapes = [
     (5937, 5136, 1999)
 ]
 
-downsample_factor = 2
+downsample_factor = 64
 
 save_paths = [path.replace(".raw", f"_ds{downsample_factor}.npy") for path in paths]
 
