@@ -67,6 +67,33 @@ def correct_ds_image(image):
 
     return image
 
+def blending_mask(image):
+    mask = np.sum(image, axis=2)
+    mask2d = mask > 0
+
+    erosion_iterations = 10
+    erosion_threshold = 8
+    # 3. Erode the 2D mask.
+    
+    kernel = np.ones((3, 3), dtype=int)
+    kernel[1, 1] = 0  # exclude the center
+    eroded_masks = [mask2d]
+    for _ in range(erosion_iterations):
+        neighbor_count = convolve(eroded_masks[-1].astype(int), kernel, mode='constant', cval=0)
+        eroded_masks.append(np.where((eroded_masks[-1] == True) & (neighbor_count < erosion_threshold),
+                                 False, eroded_masks[-1]))
+    
+    b_mask = np.zeros(eroded_masks[-1].shape)
+    for i, m in enumerate(eroded_masks):
+        b_mask[m] = m.astype(int) * (i+1) / erosion_iterations
+
+    new_b_mask = np.repeat(b_mask[:, :, np.newaxis], image.shape[2], axis=2) == 0
+    for i in range(erosion_iterations):
+        new_b_mask[:,:,i] = new_b_mask[:,:,i] * (i+1) / erosion_iterations
+
+    new_b_mask_inv = np.ones(new_b_mask.shape) - new_b_mask
+
+    return new_b_mask, new_b_mask_inv
 
 version = 'zf13_v250808'
 
@@ -195,37 +222,7 @@ for i, path in enumerate(paths):
                     conv_raw_ng[i][1][1] + coors_in_vols[i][1] - conv_raw_ng[i][0][1],
                     conv_raw_ng[i][1][2] + coors_in_vols[i][0] - conv_raw_ng[i][0][0]]
     
-    """
-    ds_block_org = [round(((2 * patch_org_ng[0] + block_size)/2)/(2**si))-ds_block_size//2, 
-                    round(((2 * patch_org_ng[1] + block_size)/2)/(2**si))-ds_block_size//2, 
-                    round(((2 * patch_org_ng[2] + block_size)/2)/(2**si))-ds_block_size//2]
-    print(ds_block_org)
     
-    ds_block_max = [ds_block_org[0]+ds_block_size,
-                    ds_block_org[1]+ds_block_size,
-                    ds_block_org[2]+ds_block_size]
-    print(ds_block_max)
-    vol_out = np.zeros((ds_block_size, ds_block_size, ds_block_size), dtype=data_type)
-
-    ds_block_org_adjust = []
-    ds_block_max_adjust = []
-    vol_org = []
-    vol_max = []
-
-    for i in range(3):
-        if ds_block_org[i] < 0:
-            ds_block_org_adjust.append(0)
-            vol_org.append(-ds_block_org[i])
-        else:
-            ds_block_org_adjust.append(ds_block_org[i])
-            vol_org.append(0)
-        if ds_block_max[i] > dataset_3d.shape[i]:
-            ds_block_max_adjust.append(dataset_3d.shape[i])
-            vol_max.append(ds_block_size - (ds_block_max[i] - dataset_3d.shape[i]))
-        else:
-            ds_block_max_adjust.append(ds_block_max[i])
-            vol_max.append(ds_block_size)
-    """
     ds_block_org_adjust, ds_block_max_adjust, vol_org, vol_max = get_adjusted_coordinates(dataset_3d, patch_org_ng,block_size, ds_block_size,si)
 
     vol_xyz = dataset_3d[ds_block_org_adjust[0]:ds_block_max_adjust[0],
@@ -239,6 +236,7 @@ for i, path in enumerate(paths):
     
     ds_image = np.load(load_path)
     ds_image = correct_ds_image(ds_image)
+    b_mask, b_mask_inv = blending_mask(ds_image)
 
     ds_block_org_adjust, ds_block_max_adjust, vol_org, vol_max = get_adjusted_coordinates(ds_image, coors_in_vols[i],block_size, ds_block_size,si)
 
@@ -257,11 +255,30 @@ for i, path in enumerate(paths):
             vol_org[1]:vol_max[1],
             vol_org[2]:vol_max[2]] = ds_image_crop
     
+    b_mask_crop = b_mask[ds_block_org_adjust[0]:ds_block_max_adjust[0],
+                            ds_block_org_adjust[1]:ds_block_max_adjust[1],
+                            ds_block_org_adjust[2]:ds_block_max_adjust[2]]
+    b_mask_fill = np.zeros((ds_block_size, ds_block_size, ds_block_size))
+    b_mask_fill[vol_org[0]:vol_max[0],
+            vol_org[1]:vol_max[1],
+            vol_org[2]:vol_max[2]] = b_mask_crop
+    b_mask_inv_crop = b_mask_inv[ds_block_org_adjust[0]:ds_block_max_adjust[0],
+                            ds_block_org_adjust[1]:ds_block_max_adjust[1],
+                            ds_block_org_adjust[2]:ds_block_max_adjust[2]]
+    b_mask_inv_fill = np.zeros((ds_block_size, ds_block_size, ds_block_size))
+    b_mask_inv_fill[vol_org[0]:vol_max[0],
+            vol_org[1]:vol_max[1],
+            vol_org[2]:vol_max[2]] = b_mask_inv_crop
+    
     ds_image_fill = ds_image_fill.transpose((2,1,0))
+    b_mask_fill = b_mask_fill.transpose((2,1,0))
+    b_mask_inv_fill = b_mask_inv_fill.transpose((2,1,0))
 
     avg_fac = np.mean(vol_out[ds_image_fill>0]) / np.mean(ds_image_fill[ds_image_fill>0])
+
+    ds_image_fill = ds_image_fill * avg_fac
     
-    vol_out[ds_image_fill>0] = ds_image_fill[ds_image_fill>0] * avg_fac
+    vol_out = ds_image_fill * b_mask_fill + vol_out * b_mask_inv_fill
 
     tifffile.imwrite(save_path,vol_out)
 
