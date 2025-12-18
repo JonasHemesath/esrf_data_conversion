@@ -88,8 +88,11 @@ def blending_mask(image):
         b_mask = m.astype(int) * (i+1) / erosion_iterations
 
     new_b_mask = np.repeat(b_mask[:, :, np.newaxis], image.shape[2], axis=2)
+    new_b_mask[:,:,0] = 0
+    new_b_mask[:,:,-1] = 0
     for i in range(erosion_iterations):
-        new_b_mask[:,:,i] = new_b_mask[:,:,i] * (i+1) / erosion_iterations
+        new_b_mask[:,:,i+1] = new_b_mask[:,:,i+1] * (i+1) / erosion_iterations
+        new_b_mask[:,:,-(i+2)] = new_b_mask[:,:,-(i+2)] * (i+1) / erosion_iterations
 
     new_b_mask_inv = np.ones(new_b_mask.shape) - new_b_mask
 
