@@ -160,7 +160,7 @@ elif str(dataset_3d.dtype) == 'dtype("uint64")':
 
 for i, path in enumerate(paths):
     load_path = path.replace(".raw", f"_ds{ds_factor}.npy")
-    save_path = out_dir + names[1] + f"_ds{ds_factor}.tif"
+    save_path = out_dir + names[i] + f"_ds{ds_factor}.tif"
 
     patch_org_ng = [conv_raw_ng[i][1][0] + coors_in_vols[i][2] - conv_raw_ng[i][0][2],
                     conv_raw_ng[i][1][1] + coors_in_vols[i][1] - conv_raw_ng[i][0][1],
