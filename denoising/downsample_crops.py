@@ -7,6 +7,7 @@ import numpy as np
 import tifffile
 
 import math
+from scipy.ndimage import convolve
 
 
 def get_adjusted_coordinates(image, cube_coors, block_size, ds_block_size, si):
@@ -40,6 +41,32 @@ def get_adjusted_coordinates(image, cube_coors, block_size, ds_block_size, si):
             ds_block_max_adjust.append(ds_block_max[i])
             vol_max.append(ds_block_size)
     return ds_block_org_adjust, ds_block_max_adjust, vol_org, vol_max
+
+
+def correct_ds_image(image):
+    image[:,:,0] = 0
+    image[:,:,-1] = 0
+    
+    mask = np.sum(image, axis=2)
+    mask2d = mask > 0
+    erosion_iterations = 1
+    erosion_threshold = 8
+    # 3. Erode the 2D mask.
+    eroded_mask2d = mask2d.copy()
+    kernel = np.ones((3, 3), dtype=int)
+    kernel[1, 1] = 0  # exclude the center
+    for _ in range(erosion_iterations):
+        neighbor_count = convolve(eroded_mask2d.astype(int), kernel, mode='constant', cval=0)
+        eroded_mask2d = np.where((eroded_mask2d == True) & (neighbor_count < erosion_threshold),
+                                 False, eroded_mask2d)
+    
+    # 4. Replicate the eroded 2D mask into the 3rd dimension.
+    new_mask = np.repeat(eroded_mask2d[:, :, np.newaxis], image.shape[2], axis=2) == 0
+
+    image[new_mask] = 0
+
+    return image
+
 
 version = 'zf13_v250808'
 
@@ -211,6 +238,7 @@ for i, path in enumerate(paths):
     
     
     ds_image = np.load(load_path)
+    ds_image = correct_ds_image(ds_image)
 
     ds_block_org_adjust, ds_block_max_adjust, vol_org, vol_max = get_adjusted_coordinates(ds_image, coors_in_vols[i],block_size, ds_block_size,si)
 
