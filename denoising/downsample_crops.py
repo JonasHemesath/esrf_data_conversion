@@ -215,7 +215,7 @@ for i, path in enumerate(paths):
     ds_image_crop = ds_image[ds_block_org_adjust[0]:ds_block_max_adjust[0],
                             ds_block_org_adjust[1]:ds_block_max_adjust[1],
                             ds_block_org_adjust[2]:ds_block_max_adjust[2]]
-    ds_image_crop = np.ones(ds_image_crop.shape, dtype=np.uint16)  
+    ds_image_crop = ds_image_crop * 0.1 
     ds_image_fill = np.zeros((ds_block_size, ds_block_size, ds_block_size), dtype=data_type)
     ds_image_fill[vol_org[0]:vol_max[0],
             vol_org[1]:vol_max[1],
