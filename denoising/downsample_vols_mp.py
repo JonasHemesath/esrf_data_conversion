@@ -1,3 +1,4 @@
+import sys
 import subprocess
 
 paths = [
@@ -27,7 +28,7 @@ shapes = [
     (5937, 5136, 1999)
 ]
 
-downsample_factor = 64
+downsample_factor = sys.argv[1]
 
 save_paths = [path.replace(".raw", f"_ds{downsample_factor}.npy") for path in paths]
 
