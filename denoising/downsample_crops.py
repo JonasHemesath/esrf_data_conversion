@@ -282,6 +282,8 @@ for i, path in enumerate(paths):
     
     vol_out = ds_image_fill * b_mask_fill + vol_out * b_mask_inv_fill
     print(vol_out.dtype)
+    print(b_mask_fill[0,0,0])
+    print(b_mask_inv_fill[0,0,0])
 
     tifffile.imwrite(save_path,vol_out)
 
