@@ -265,7 +265,7 @@ for i, path in enumerate(paths):
     b_mask_inv_crop = b_mask_inv[ds_block_org_adjust[0]:ds_block_max_adjust[0],
                             ds_block_org_adjust[1]:ds_block_max_adjust[1],
                             ds_block_org_adjust[2]:ds_block_max_adjust[2]]
-    b_mask_inv_fill = np.zeros((ds_block_size, ds_block_size, ds_block_size))
+    b_mask_inv_fill = np.ones((ds_block_size, ds_block_size, ds_block_size))
     b_mask_inv_fill[vol_org[0]:vol_max[0],
             vol_org[1]:vol_max[1],
             vol_org[2]:vol_max[2]] = b_mask_inv_crop
