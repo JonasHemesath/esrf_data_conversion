@@ -259,9 +259,9 @@ for i, path in enumerate(paths):
     
     ds_image_fill = ds_image_fill.transpose((2,1,0))
 
-    avg = round(np.mean(vol_out[ds_image_fill>0]) - np.mean(ds_image_fill[ds_image_fill>0]))
+    avg_fac = np.mean(vol_out[ds_image_fill>0]) / np.mean(ds_image_fill[ds_image_fill>0])
     
-    vol_out[ds_image_fill>0] = ds_image_fill[ds_image_fill>0] + avg
+    vol_out[ds_image_fill>0] = ds_image_fill[ds_image_fill>0] * avg_fac
 
     tifffile.imwrite(save_path,vol_out)
 
