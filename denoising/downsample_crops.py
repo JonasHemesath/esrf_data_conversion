@@ -1,3 +1,5 @@
+import sys
+
 import tensorstore as ts
 
 import numpy as np
@@ -41,7 +43,7 @@ def get_adjusted_coordinates(image, cube_coors, block_size, ds_block_size, si):
 
 version = 'zf13_v250808'
 
-si = 4
+si = int(sys.argv[1])
 
 ds_factor = 2**si
 
@@ -160,7 +162,7 @@ elif str(dataset_3d.dtype) == 'dtype("uint64")':
 
 for i, path in enumerate(paths):
     load_path = path.replace(".raw", f"_ds{ds_factor}.npy")
-    save_path = out_dir + names[i] + f"_ds{ds_factor}.tif"
+    save_path = out_dir + names[i] + f"_ds{si}.tif"
 
     patch_org_ng = [conv_raw_ng[i][1][0] + coors_in_vols[i][2] - conv_raw_ng[i][0][2],
                     conv_raw_ng[i][1][1] + coors_in_vols[i][1] - conv_raw_ng[i][0][1],
