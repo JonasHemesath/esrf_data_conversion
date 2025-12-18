@@ -277,6 +277,8 @@ for i, path in enumerate(paths):
     avg_fac = np.mean(vol_out[ds_image_fill>0]) / np.mean(ds_image_fill[ds_image_fill>0])
 
     ds_image_fill = ds_image_fill * avg_fac
+    print(ds_image_fill.dtype)
+    print(vol_out.dtype)
     
     vol_out = ds_image_fill * b_mask_fill + vol_out * b_mask_inv_fill
 
