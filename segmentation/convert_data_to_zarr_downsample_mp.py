@@ -88,7 +88,7 @@ for ds in ds_levels:
     ds_levels_str = ds_levels_str + str(ds) + ' '
 
 ds_levels_str = ds_levels_str.rstrip()
-num_x_slabs=0
+
 processes = []
 for slab_id in range(num_x_slabs):
     processes.append(subprocess.Popen(['srun', '--time=7-0', '--gres=gpu:0', '--mem=900000', '--tasks', '1', '--cpus-per-task', '32', '--nice', 'python', '/cajal/nvmescratch/users/johem/esrf_data_conversion/segmentation/convert_data_to_zarr_downsample_block.py',
