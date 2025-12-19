@@ -97,8 +97,8 @@ for slab_id in range(num_x_slabs):
                                                             '--dataset_dtype', args.dataset_dtype,
                                                             '--stride', str(args.stride),
                                                             '--zarr_path', args.zarr_path,
-                                                            '--ds_levels', ds_levels_str,
-                                                            '--slab_id', str(slab_id)],
+                                                            '--slab_id', str(slab_id),
+                                                            '--ds_levels', ds_levels_str] + [str(ds) for ds in ds_levels],
                                                             stdout=subprocess.PIPE, stderr=subprocess.PIPE))
     
 
