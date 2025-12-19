@@ -634,7 +634,7 @@ def main(args):
             epoch_loss = 0.0
             for i, batch_data in enumerate(train_loader):
                 inputs = batch_data["image"].to(device)          # (B,C,96,96,96), float
-                markers = batch_data["label"].to(device).long()   # (B,1,96,96,96), long for one-hot
+                markers = batch_data["label"].to(device)   # (B,1,96,96,96), long for one-hot
 
                 optimizer.zero_grad(set_to_none=True)
                 outputs = model(inputs)
