@@ -537,7 +537,7 @@ def main(args):
                 marker_label_path = os.path.join(preprocessed_label_dir, f"{base_name}_markers.tif")
                 tifffile.imwrite(marker_label_path, marker_map)
 
-                item = {"markers": marker_label_path}
+                item = {"label": marker_label_path}
                 item.update(multires_paths)
                 train_files.append(item)
 
@@ -549,7 +549,7 @@ def main(args):
         print(f"\nFound {len(train_files)} training sets.")
 
         roi_size = (args.patch_size, args.patch_size, args.patch_size)
-        spatial_keys = list(image_keys) + ["markers"]
+        spatial_keys = list(image_keys) + ["label"]
 
         # ----------------------------
         # Split transforms:
@@ -634,7 +634,7 @@ def main(args):
             epoch_loss = 0.0
             for i, batch_data in enumerate(train_loader):
                 inputs = batch_data["image"].to(device)          # (B,C,96,96,96), float
-                markers = batch_data["markers"].to(device).long()   # (B,1,96,96,96), long for one-hot
+                markers = batch_data["label"].to(device).long()   # (B,1,96,96,96), long for one-hot
 
                 optimizer.zero_grad(set_to_none=True)
                 outputs = model(inputs)
