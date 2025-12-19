@@ -53,7 +53,7 @@ ds_levels = sorted(list(set(args.ds_levels)))
 for i, lvl in enumerate(ds_levels):
     item = [lvl, os.path.join(args.zarr_path, 'mip' + str(lvl)) + '.zarr']
     lvl_factor = (2**lvl) / (2**path_shape[i][0])
-    lvl_shape = (math.ceil(path_shape[i][2][j]/lvl_factor) for j in range(3))
+    lvl_shape = tuple([math.ceil(path_shape[i][2][j]/lvl_factor) for j in range(3)])
     item.append(lvl_shape)
     path_shape.append(item)
 
