@@ -47,6 +47,8 @@ if not os.path.isdir(args.zarr_path):
 
 # Create zarr dirs
 path_shape = [[0, os.path.join(args.zarr_path, 'mip0.zarr'), tuple(args.dataset_shape)]]
+print(tuple(args.dataset_shape))
+print(type(tuple(args.dataset_shape)))
 ds_levels = sorted(list(set(args.ds_levels)))
 for i, lvl in enumerate(ds_levels):
     item = [lvl, os.path.join(args.zarr_path, 'mip' + str(lvl)) + '.zarr']
