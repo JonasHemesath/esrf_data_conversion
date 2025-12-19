@@ -638,7 +638,7 @@ def main(args):
 
                 optimizer.zero_grad(set_to_none=True)
                 outputs = model(inputs)
-                loss = loss_function(outputs, markers)
+                loss = loss_function(outputs, markers) * args.marker_loss_weight
                 loss.backward()
                 optimizer.step()
 
@@ -764,6 +764,7 @@ if __name__ == "__main__":
     parser.add_argument("--repeat_times", type=int, default=1,
                     help="Repeat dataset this many times per epoch to make epochs longer.")
     parser.add_argument('--marker_creation_sigma', type=float, default=1.0, help='Sigma for Gaussian blobs in ground truth marker creation.')
+    parser.add_argument('--marker_loss_weight', type=float, default=100.0, help='Weight for the marker prediction loss.')
 
     # Prediction args
     parser.add_argument("--predict_image", type=str, help="(predict mode) Path to the HIGH-res volume '*_raw.tif'. Lower-res inputs are inferred via naming.")
