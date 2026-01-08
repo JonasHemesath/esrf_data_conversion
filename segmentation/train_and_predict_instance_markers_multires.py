@@ -758,9 +758,9 @@ def main(args):
     #    num_res_units=2,
     #).to(device)
 
-    model = MultiPathUNet_ds2_ds4_DecCtx(out_channels=2).to(device)
+    model = MultiPathUNet_ds2_ds4_DecCtx(out_channels=1).to(device)
     if args.attention:
-        model = MultiPathUNet_Attn_ds2_ds4(out_channels=2).to(device)
+        model = MultiPathUNet_Attn_ds2_ds4(out_channels=1).to(device)
 
     # Transfer learning
     if args.mode == "train" and args.pretrained_path:
