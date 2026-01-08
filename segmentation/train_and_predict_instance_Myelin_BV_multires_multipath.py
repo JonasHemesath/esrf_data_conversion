@@ -799,6 +799,7 @@ def main(args):
         for root, _, files in os.walk(args.train_data_dir):
             for file in files:
                 if not file.endswith("_raw.tif"):
+                    print(f"Skipping non-raw file: {file}")
                     continue
 
                 raw_path = os.path.join(root, file)
