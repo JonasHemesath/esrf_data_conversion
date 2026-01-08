@@ -1,4 +1,6 @@
 import os
+
+#from segmentation.train_and_predict_instance_Soma_multires_multipath import MultiPathUNet_ds2_ds4_DecCtx
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["MKL_NUM_THREADS"] = "1"
@@ -36,6 +38,308 @@ from scipy.ndimage import label, center_of_mass, gaussian_filter
 
 
 from torch.utils.data import Dataset
+
+import torch.nn as nn
+
+
+def center_crop_3d(x, target_zyx):
+    tz, ty, tx = target_zyx
+    _, _, D, H, W = x.shape
+    sz = (D - tz) // 2
+    sy = (H - ty) // 2
+    sx = (W - tx) // 2
+    return x[:, :, sz:sz+tz, sy:sy+ty, sx:sx+tx]
+
+class ConvBlock(nn.Module):
+    def __init__(self, c_in, c_out):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Conv3d(c_in, c_out, 3, padding=1, bias=False),
+            nn.InstanceNorm3d(c_out),
+            nn.LeakyReLU(inplace=True),
+            nn.Conv3d(c_out, c_out, 3, padding=1, bias=False),
+            nn.InstanceNorm3d(c_out),
+            nn.LeakyReLU(inplace=True),
+        )
+    def forward(self, x): return self.net(x)
+
+class Down(nn.Module):
+    def __init__(self, c_in, c_out):
+        super().__init__()
+        self.conv = nn.Conv3d(c_in, c_out, kernel_size=3, stride=2, padding=1, bias=False)
+        self.norm = nn.InstanceNorm3d(c_out)
+        self.act  = nn.LeakyReLU(inplace=True)
+        self.block = ConvBlock(c_out, c_out)
+    def forward(self, x):
+        x = self.act(self.norm(self.conv(x)))
+        return self.block(x)
+
+class UpCtx(nn.Module):
+    """
+    Upsample + concat(skip) + concat(context) + convblock.
+    """
+    def __init__(self, c_in, c_skip, c_ctx, c_out):
+        super().__init__()
+        self.up = nn.ConvTranspose3d(c_in, c_out, kernel_size=2, stride=2)
+        self.block = ConvBlock(c_out + c_skip + c_ctx, c_out)
+
+    def forward(self, x, skip, ctx):
+        x = self.up(x)
+        # ctx must already be same spatial size as x and skip
+        x = torch.cat([x, skip, ctx], dim=1)
+        return self.block(x)
+
+class MultiPathUNet_ds2_ds4_DecCtx(nn.Module):
+    def __init__(self, out_channels=3, c_base=16, c_ds2=32, c_ds4=64, c_ctx=16):
+        super().__init__()
+
+        # -------------------------
+        # High-res UNet (s0)
+        # -------------------------
+        self.e0 = ConvBlock(1, c_base)           # 16, 96
+        self.e1 = Down(c_base, c_base*2)         # 32, 48
+        self.e2 = Down(c_base*2, c_base*4)       # 64, 24  (stride 4)
+        self.e3 = Down(c_base*4, c_base*8)       # 128, 12
+        self.e4 = Down(c_base*8, c_base*16)      # 256, 6   (stride 16, bottleneck)
+
+        # -------------------------
+        # ds2 context path (96³ grid, already coarse physically)
+        # -------------------------
+        self.ds2_ctx = nn.Sequential(
+            ConvBlock(1, c_ds2),
+            ConvBlock(c_ds2, c_ds2),
+        )
+        self.ds2_proj = nn.Conv3d(c_ds2, c_ctx, kernel_size=1, bias=False)
+
+        # fuse ds2 at encoder stage s2 (24³)
+        self.fuse2 = ConvBlock(c_base*4 + c_ctx, c_base*4)
+
+        # -------------------------
+        # ds4 context path
+        # -------------------------
+        self.ds4_ctx = nn.Sequential(
+            ConvBlock(1, c_ds4),
+            ConvBlock(c_ds4, c_ds4),
+        )
+        self.ds4_proj = nn.Conv3d(c_ds4, c_ctx, kernel_size=1, bias=False)
+
+        # fuse ds4 at bottleneck (6³)
+        self.fuse4 = ConvBlock(c_base*16 + c_ctx, c_base*16)
+
+        # -------------------------
+        # Decoder with context injection
+        # -------------------------
+        # u3: 6->12, inject ds4 context at 12
+        self.u3 = UpCtx(c_base*16, c_base*8,  c_ctx,      c_base*8)  # out 128
+        # u2: 12->24, inject BOTH ds2@24 and ds4@24 (concat them => 2*c_ctx)
+        self.u2 = UpCtx(c_base*8,  c_base*4,  2*c_ctx,    c_base*4)  # out 64
+        # u1: 24->48, inject ds2@48
+        self.u1 = UpCtx(c_base*4,  c_base*2,  c_ctx,      c_base*2)  # out 32
+        # u0: 48->96, inject ds2@96
+        self.u0 = UpCtx(c_base*2,  c_base,    c_ctx,      c_base)    # out 16
+
+        self.out = nn.Conv3d(c_base, out_channels, kernel_size=1)
+
+    def forward(self, x):
+        # x: (B,3,96,96,96) with channels [s0, ds2, ds4]
+        x_s0  = x[:, 0:1]
+        x_ds2 = x[:, 1:2]
+        x_ds4 = x[:, 2:3]
+
+        # -------------------------
+        # Compute context features
+        # -------------------------
+        f2 = self.ds2_proj(self.ds2_ctx(x_ds2))   # (B,c_ctx,96,96,96)
+        f4 = self.ds4_proj(self.ds4_ctx(x_ds4))   # (B,c_ctx,96,96,96)
+
+        # Anchor crops that correspond to the same physical 96³ high-res region
+        f2_24 = center_crop_3d(f2, (24,24,24))  # stride-4 aligned context
+        f4_6  = center_crop_3d(f4, (6,6,6))     # stride-16 aligned context
+
+        # Prepare decoder-scale context maps by interpolation (no new info, but aligned conditioning)
+        # If you ever suspect a 1-voxel shift, try align_corners=True consistently.
+        f2_48 = F.interpolate(f2_24, size=(48,48,48), mode="trilinear", align_corners=False)
+        f2_96 = F.interpolate(f2_24, size=(96,96,96), mode="trilinear", align_corners=False)
+
+        f4_12 = F.interpolate(f4_6,  size=(12,12,12), mode="trilinear", align_corners=False)
+        f4_24 = F.interpolate(f4_6,  size=(24,24,24), mode="trilinear", align_corners=False)
+
+        # -------------------------
+        # High-res encoder
+        # -------------------------
+        s0 = self.e0(x_s0)  # 96
+        s1 = self.e1(s0)    # 48
+        s2 = self.e2(s1)    # 24
+
+        # Fuse ds2 at s2 (24³)
+        s2 = self.fuse2(torch.cat([s2, f2_24], dim=1))
+
+        s3 = self.e3(s2)    # 12
+        b  = self.e4(s3)    # 6
+
+        # Fuse ds4 at bottleneck (6³)
+        b = self.fuse4(torch.cat([b, f4_6], dim=1))
+
+        # -------------------------
+        # Decoder with context injection
+        # -------------------------
+        x = self.u3(b,  s3, f4_12)
+        x = self.u2(x,  s2, torch.cat([f2_24, f4_24], dim=1))
+        x = self.u1(x,  s1, f2_48)
+        x = self.u0(x,  s0, f2_96)
+
+        return self.out(x)
+
+class AttnGate3D(nn.Module):
+    """
+    Additive attention gate (Attention U-Net style), extended with optional context term.
+    Produces alpha in [0,1] with shape (B,1,D,H,W), broadcast-multipliable with skip.
+    """
+    def __init__(self, c_skip, c_g, c_ctx, c_int):
+        super().__init__()
+        self.Ws = nn.Conv3d(c_skip, c_int, kernel_size=1, bias=False)
+        self.Wg = nn.Conv3d(c_g,    c_int, kernel_size=1, bias=False)
+        self.Wc = nn.Conv3d(c_ctx,  c_int, kernel_size=1, bias=False) if c_ctx > 0 else None
+
+        self.norm = nn.InstanceNorm3d(c_int)
+        self.act = nn.LeakyReLU(inplace=True)
+
+        self.psi = nn.Conv3d(c_int, 1, kernel_size=1, bias=True)
+
+    def forward(self, skip, g, ctx=None):
+        # skip, g, ctx expected same spatial shape
+        x = self.Ws(skip) + self.Wg(g)
+        if self.Wc is not None:
+            if ctx is None:
+                raise ValueError("ctx is required but was None")
+            x = x + self.Wc(ctx)
+        x = self.act(self.norm(x))
+        alpha = torch.sigmoid(self.psi(x))  # (B,1,D,H,W)
+        return skip * alpha
+
+class UpAttnCtx(nn.Module):
+    """
+    Upsample decoder feature, attention-gate the skip using (upsampled feature + ctx),
+    then concat and conv.
+    """
+    def __init__(self, c_in, c_skip, c_ctx, c_out, attn_int=None, concat_ctx=True):
+        super().__init__()
+        self.up = nn.ConvTranspose3d(c_in, c_out, kernel_size=2, stride=2)
+        self.concat_ctx = bool(concat_ctx)
+
+        # attention internal channels
+        if attn_int is None:
+            attn_int = max(8, c_out // 2)
+
+        self.attn = AttnGate3D(c_skip=c_skip, c_g=c_out, c_ctx=c_ctx, c_int=attn_int)
+
+        cat_in = c_out + c_skip + (c_ctx if self.concat_ctx else 0)
+        self.block = ConvBlock(cat_in, c_out)
+
+    def forward(self, x, skip, ctx):
+        x = self.up(x)  # gating signal g at target spatial size
+        skip_att = self.attn(skip, x, ctx)
+
+        if self.concat_ctx:
+            x = torch.cat([x, skip_att, ctx], dim=1)
+        else:
+            x = torch.cat([x, skip_att], dim=1)
+
+        return self.block(x)
+
+class MultiPathUNet_Attn_ds2_ds4(nn.Module):
+    def __init__(self, out_channels=3, c_base=16, c_ds2=32, c_ds4=64, c_ctx=16, concat_ctx=True):
+        super().__init__()
+
+        # -------------------------
+        # High-res encoder (s0)
+        # -------------------------
+        self.e0 = ConvBlock(1, c_base)           # 16, 96
+        self.e1 = Down(c_base, c_base*2)         # 32, 48
+        self.e2 = Down(c_base*2, c_base*4)       # 64, 24  (stride 4)
+        self.e3 = Down(c_base*4, c_base*8)       # 128, 12
+        self.e4 = Down(c_base*8, c_base*16)      # 256, 6   (stride 16, bottleneck)
+
+        # -------------------------
+        # ds2 context path
+        # -------------------------
+        self.ds2_ctx = nn.Sequential(
+            ConvBlock(1, c_ds2),
+            ConvBlock(c_ds2, c_ds2),
+        )
+        self.ds2_proj = nn.Conv3d(c_ds2, c_ctx, kernel_size=1, bias=False)
+        self.fuse2 = ConvBlock(c_base*4 + c_ctx, c_base*4)  # encoder fusion at 24³
+
+        # -------------------------
+        # ds4 context path
+        # -------------------------
+        self.ds4_ctx = nn.Sequential(
+            ConvBlock(1, c_ds4),
+            ConvBlock(c_ds4, c_ds4),
+        )
+        self.ds4_proj = nn.Conv3d(c_ds4, c_ctx, kernel_size=1, bias=False)
+        self.fuse4 = ConvBlock(c_base*16 + c_ctx, c_base*16)  # bottleneck fusion at 6³
+
+        # -------------------------
+        # Decoder with attention-gated skips
+        # -------------------------
+        # u3: 6->12, gate skip s3 using ds4@12
+        self.u3 = UpAttnCtx(c_in=c_base*16, c_skip=c_base*8,  c_ctx=c_ctx,    c_out=c_base*8,  concat_ctx=concat_ctx)
+
+        # u2: 12->24, gate skip s2 using (ds2@24 + ds4@24) as ctx (2*c_ctx)
+        self.u2 = UpAttnCtx(c_in=c_base*8,  c_skip=c_base*4,  c_ctx=2*c_ctx,  c_out=c_base*4,  concat_ctx=concat_ctx)
+
+        # u1: 24->48, gate skip s1 using ds2@48
+        self.u1 = UpAttnCtx(c_in=c_base*4,  c_skip=c_base*2,  c_ctx=c_ctx,    c_out=c_base*2,  concat_ctx=concat_ctx)
+
+        # u0: 48->96, gate skip s0 using ds2@96
+        self.u0 = UpAttnCtx(c_in=c_base*2,  c_skip=c_base,    c_ctx=c_ctx,    c_out=c_base,    concat_ctx=concat_ctx)
+
+        self.out = nn.Conv3d(c_base, out_channels, kernel_size=1)
+
+    def forward(self, x):
+        # x: (B,3,96,96,96) channels [s0, ds2, ds4]
+        x_s0  = x[:, 0:1]
+        x_ds2 = x[:, 1:2]
+        x_ds4 = x[:, 2:3]
+
+        # ---- context features (projected to c_ctx)
+        f2 = self.ds2_proj(self.ds2_ctx(x_ds2))  # (B,c_ctx,96,96,96)
+        f4 = self.ds4_proj(self.ds4_ctx(x_ds4))  # (B,c_ctx,96,96,96)
+
+        # anchor crops corresponding to the physical 96³ high-res region:
+        f2_24 = center_crop_3d(f2, (24,24,24))
+        f4_6  = center_crop_3d(f4, (6,6,6))
+
+        # resize context to decoder levels
+        f2_48 = F.interpolate(f2_24, size=(48,48,48), mode="trilinear", align_corners=False)
+        f2_96 = F.interpolate(f2_24, size=(96,96,96), mode="trilinear", align_corners=False)
+
+        f4_12 = F.interpolate(f4_6,  size=(12,12,12), mode="trilinear", align_corners=False)
+        f4_24 = F.interpolate(f4_6,  size=(24,24,24), mode="trilinear", align_corners=False)
+
+        # ---- high-res encoder
+        s0 = self.e0(x_s0)  # 96
+        s1 = self.e1(s0)    # 48
+        s2 = self.e2(s1)    # 24
+
+        # encoder fusion at stride-4
+        s2 = self.fuse2(torch.cat([s2, f2_24], dim=1))
+
+        s3 = self.e3(s2)    # 12
+        b  = self.e4(s3)    # 6
+
+        # bottleneck fusion at stride-16
+        b = self.fuse4(torch.cat([b, f4_6], dim=1))
+
+        # ---- decoder with attention-gated skips
+        x = self.u3(b,  s3, f4_12)
+        x = self.u2(x,  s2, torch.cat([f2_24, f4_24], dim=1))
+        x = self.u1(x,  s1, f2_48)
+        x = self.u0(x,  s0, f2_96)
+
+        return self.out(x)
+
 
 class RepeatDataset(Dataset):
     """Repeat an indexable dataset `times` times via modulo indexing."""
@@ -445,14 +749,18 @@ def main(args):
     print(f"Using resolution levels (as input channels): {image_keys}")
     print(f"Downsample factors: {factors}")
 
-    model = UNet(
-        spatial_dims=3,
-        in_channels=len(image_keys),
-        out_channels=1,
-        channels=(16, 32, 64, 128, 256),
-        strides=(2, 2, 2, 2),
-        num_res_units=2,
-    ).to(device)
+    #model = UNet(
+    #    spatial_dims=3,
+    #    in_channels=len(image_keys),
+    #    out_channels=1,
+    #    channels=(16, 32, 64, 128, 256),
+    #    strides=(2, 2, 2, 2),
+    #    num_res_units=2,
+    #).to(device)
+
+    model = MultiPathUNet_ds2_ds4_DecCtx(out_channels=2).to(device)
+    if args.attention:
+        model = MultiPathUNet_Attn_ds2_ds4(out_channels=2).to(device)
 
     # Transfer learning
     if args.mode == "train" and args.pretrained_path:
@@ -765,6 +1073,8 @@ if __name__ == "__main__":
                     help="Repeat dataset this many times per epoch to make epochs longer.")
     parser.add_argument('--marker_creation_sigma', type=float, default=1.0, help='Sigma for Gaussian blobs in ground truth marker creation.')
     parser.add_argument('--marker_loss_weight', type=float, default=100.0, help='Weight for the marker prediction loss.')
+    parser.add_argument("--attention", type=bool, default=False,
+                    help="Use attention gates.")
 
     # Prediction args
     parser.add_argument("--predict_image", type=str, help="(predict mode) Path to the HIGH-res volume '*_raw.tif'. Lower-res inputs are inferred via naming.")
