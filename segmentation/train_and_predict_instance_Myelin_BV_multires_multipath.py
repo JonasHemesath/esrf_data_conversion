@@ -808,6 +808,7 @@ def main(args):
                 myelin_path = os.path.join(root, f"{base_name}_Myelin.tif")
 
                 if not (os.path.exists(vessels_path) and os.path.exists(myelin_path)):
+                    print(f"Missing label files for base '{base_name}': expected '{base_name}_BV.tif' and '{base_name}_Myelin.tif'. Skipping.")
                     continue
 
                 multires_paths = build_multires_paths(raw_path, ds_levels)
