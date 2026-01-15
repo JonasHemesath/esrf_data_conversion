@@ -829,6 +829,7 @@ def main(args):
         
         if i == 0:
             image = CloudVolume(args.predict_image, mip=0)
+            print('highres image opened')
             arr = image[args.block_origin[0]:args.block_origin[0]+args.block_shape[0],
                         args.block_origin[1]:args.block_origin[1]+args.block_shape[1],
                         args.block_origin[2]:args.block_origin[2]+args.block_shape[2]].astype(np.float32)
