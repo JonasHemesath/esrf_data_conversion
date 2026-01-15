@@ -155,7 +155,7 @@ def main(args):
                                                                 '--ds_levels'] + [str(ds) for ds in args.ds_levels],
                                                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE))
                             process_id += 1
-                            if len(processes) >= 10:
+                            if len(processes) >= 50:
                                 for i, process in enumerate(processes):
                                     outs, errs = process.communicate()
                                     if errs:
