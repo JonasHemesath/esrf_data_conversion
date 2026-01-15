@@ -121,13 +121,13 @@ for x_i in [idx for idx in range(args.step)]:
                     print('Skipping x =', x)
                     continue
                 x_org = x * stride[0]
-                block_x = min(data_shape[0], args.dataset_shape[0]-x_org)
+                block_x = min(data_shape[0], data_shape[0]-x_org)
                 for y in range(y_i, y_chunks, args.step):
                     y_org = y * stride[1]
-                    block_y = min(data_shape[1], args.dataset_shape[1]-y_org)
+                    block_y = min(data_shape[1], data_shape[1]-y_org)
                     for z in range(z_i, z_chunks, args.step):
                         z_org = z * stride[2]
-                        block_z = min(data_shape[2], args.dataset_shape[2]-z_org)
+                        block_z = min(data_shape[2], data_shape[2]-z_org)
                         if args.export_debug:
                             processes.append(subprocess.Popen(['srun', '--time=7-0', '--gres=gpu:a40:1', '--mem=400000', '--tasks', '1', '--cpus-per-task', '32', 'python', '/cajal/nvmescratch/users/johem/esrf_data_conversion/segmentation/infer_block_semantic_multires.py',
                                                             '--predict_image', args.data_path,
