@@ -825,8 +825,12 @@ def main(args):
     vols: Dict[str, torch.Tensor] = {}
     for i, k in enumerate(image_keys):
         #arr = tifffile.imread(multires_paths[k]).astype(np.float32)
-        arr = read_from_multires(args.predict_image, image_levels[i], block_org=args.block_origin, block_size=args.block_shape[0], patch_size=args.patch_size).astype(np.float32)
+        
         if i == 0:
+            image = CloudVolume(args.predict_image, mip=0)
+            arr = image[args.block_origin[0]:args.block_origin[0]+args.block_shape[0],
+                        args.block_origin[1]:args.block_origin[1]+args.block_shape[1],
+                        args.block_origin[2]:args.block_origin[2]+args.block_shape[2]]
             sum_val = np.sum(arr)
             if sum_val == 0:
                 if args.debug_path is not None:
@@ -834,6 +838,8 @@ def main(args):
                     with open(os.path.join(args.debug_path, str(args.process_id) + '.txt'), 'w') as f:
                         f.write(msg)
                 return
+        else:
+            arr = read_from_multires(args.predict_image, image_levels[i], block_org=args.block_origin, block_size=args.block_shape[0], patch_size=args.patch_size).astype(np.float32)
         arr = np.clip(arr / 65535.0, 0.0, 1.0)
         arr = arr[None, ...]  # (1,D,H,W)
         vols[k] = torch.from_numpy(arr)  # keep on CPU
