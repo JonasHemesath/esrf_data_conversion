@@ -823,6 +823,7 @@ def main(args):
     #        raise FileNotFoundError(f"Missing prediction input for {k}: {p}")
 
     vols: Dict[str, torch.Tensor] = {}
+    print('loading data...')
     for i, k in enumerate(image_keys):
         #arr = tifffile.imread(multires_paths[k]).astype(np.float32)
         
