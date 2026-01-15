@@ -14,10 +14,6 @@ from cloudvolume import CloudVolume
 parser = argparse.ArgumentParser(description="3D Brain Tissue Segmentation")
 parser.add_argument('--data_path', type=str, required=True, 
                         help='Path to the dataset')
-parser.add_argument('--dataset_shape', nargs=3, type=int, required=True, 
-                        help='Shape of the dataset')
-parser.add_argument('--dataset_dtype', type=str, choices=['uint8', 'uint16'], required=True, 
-                        help='Datatype of the dataset')
 parser.add_argument('--mode', type=str, choices=['myelin_BV', 'soma', 'marker'], required=True, 
                         help='Mode of the segmentation')
 parser.add_argument('--block_shape', nargs=3, type=int, required=True, 
