@@ -129,7 +129,7 @@ for x_i in [idx for idx in range(args.step)]:
                         z_org = z * stride[2]
                         block_z = min(data_shape[2], data_shape[2]-z_org)
                         if args.export_debug:
-                            processes.append(subprocess.Popen(['srun', '--time=7-0', '--gres=gpu:a40:1', '--mem=400000', '--tasks', '1', '--cpus-per-task', '32', '--nice', 'python', '/cajal/nvmescratch/users/johem/esrf_data_conversion/segmentation/infer_block_semantic_multires.py',
+                            processes.append(subprocess.Popen(['srun', '--time=7-0', '--gres=gpu:a40:1', '--mem=400000', '--tasks', '1', '--cpus-per-task', '32', '--nice', '--pty', 'python', '/cajal/nvmescratch/users/johem/esrf_data_conversion/segmentation/infer_block_semantic_multires.py',
                                                             '--predict_image', args.data_path,
                                                             '--output_dir', args.output_name,
                                                             '--attention', str(args.attention),
@@ -142,7 +142,7 @@ for x_i in [idx for idx in range(args.step)]:
                                                             '--ds_levels'] + [str(ds) for ds in args.ds_levels],
                                                             stdout=subprocess.PIPE, stderr=subprocess.PIPE))
                         else:
-                            processes.append(subprocess.Popen(['srun', '--time=7-0', '--gres=gpu:a40:1', '--mem=400000', '--tasks', '1', '--cpus-per-task', '32', '--nice', 'python', '/cajal/nvmescratch/users/johem/esrf_data_conversion/segmentation/infer_block_semantic_multires.py',
+                            processes.append(subprocess.Popen(['srun', '--time=7-0', '--gres=gpu:a40:1', '--mem=400000', '--tasks', '1', '--cpus-per-task', '32', '--nice', '--pty', 'python', '/cajal/nvmescratch/users/johem/esrf_data_conversion/segmentation/infer_block_semantic_multires.py',
                                                             '--predict_image', args.data_path,
                                                             '--output_dir', args.output_name,
                                                             '--attention', str(args.attention),
