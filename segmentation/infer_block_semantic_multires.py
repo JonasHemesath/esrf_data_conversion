@@ -757,10 +757,9 @@ def read_from_multires(path, ds, block_org, block_size, patch_size):
             ds_block_max_adjust.append(ds_block_max[i])
             vol_max.append(ds_block_size)
 
-
-    vol_xyz = image[ds_block_org_adjust[0]:ds_block_max_adjust[0],
+    vol_xyz = np.squeeze(image[ds_block_org_adjust[0]:ds_block_max_adjust[0],
                             ds_block_org_adjust[1]:ds_block_max_adjust[1],
-                            ds_block_org_adjust[2]:ds_block_max_adjust[2]]
+                            ds_block_org_adjust[2]:ds_block_max_adjust[2]])
     
     vol_out[vol_org[0]:vol_max[0],
             vol_org[1]:vol_max[1],
