@@ -37,7 +37,8 @@ from torch.utils.data import Dataset
 
 import torch.nn as nn
 
-import cloud_volume as cv
+from cloudvolume import CloudVolume
+
 
 
 def center_crop_3d(x, target_zyx):
@@ -729,6 +730,10 @@ def multires_sliding_window_inference(
 
     output = output / torch.clamp_min(count_map, 1e-8)
     return output
+
+def read_from_multires(path, mip, block_org, block_size):
+    image = CloudVolume(path, mip=mip)
+    data_shape = [int(s) for s in image.info['scales'][mip]['size']]
 
 
 # --------------------------
