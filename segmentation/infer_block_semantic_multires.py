@@ -874,7 +874,7 @@ def main(args):
 
     t3 = time.time()
         
-    out_vol = CloudVolume(args.output_dir, parallel=1, non_aligned_writes=True)
+    out_vol = CloudVolume(args.output_dir, parallel=1, non_aligned_writes=True, fill_missing=True)
     out_vol[args.block_origin[0]+50:args.block_origin[0]+args.block_shape[0]-100,
             args.block_origin[1]+50:args.block_origin[1]+args.block_shape[1]-100,
             args.block_origin[2]+50:args.block_origin[2]+args.block_shape[2]-100] = pred_np[50:args.block_shape[0]-100, 50:args.block_shape[1]-100, 50:args.block_shape[2]-100]
