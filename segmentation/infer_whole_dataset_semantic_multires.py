@@ -154,17 +154,27 @@ for x_i in [idx for idx in range(args.step)]:
                                                             '--ds_levels'] + [str(ds) for ds in args.ds_levels],
                                                             stdout=subprocess.PIPE, stderr=subprocess.PIPE))
                         process_id += 1
+                        if len(processes) >= 100:
+                            for i, process in enumerate(processes):
+                                outs, errs = process.communicate()
+                                if errs:
+                                    print(f"Process {i+1} errors:")
+                                    print(errs.decode('utf-8') if isinstance(errs, bytes) else errs)
+                                if outs:
+                                    print(f"Process {i+1} output:")
+                                    print(outs.decode('utf-8') if isinstance(outs, bytes) else outs)
+                                print('Process', i+1, 'of', len(processes), 'done')
             
-
-            for i, process in enumerate(processes):
-                outs, errs = process.communicate()
-                if errs:
-                    print(f"Process {i+1} errors:")
-                    print(errs.decode('utf-8') if isinstance(errs, bytes) else errs)
-                if outs:
-                    print(f"Process {i+1} output:")
-                    print(outs.decode('utf-8') if isinstance(outs, bytes) else outs)
-                print('Process', i+1, 'of', len(processes), 'done')
+            if len(processes) > 0:
+                for i, process in enumerate(processes):
+                    outs, errs = process.communicate()
+                    if errs:
+                        print(f"Process {i+1} errors:")
+                        print(errs.decode('utf-8') if isinstance(errs, bytes) else errs)
+                    if outs:
+                        print(f"Process {i+1} output:")
+                        print(outs.decode('utf-8') if isinstance(outs, bytes) else outs)
+                    print('Process', i+1, 'of', len(processes), 'done')
 
 
 
