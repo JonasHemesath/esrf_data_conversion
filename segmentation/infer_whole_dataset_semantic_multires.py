@@ -58,7 +58,7 @@ def main(args):
                         "key": "0_0_0",
                         "size": data_shape,
                         "resolution": [727.8, 727.8, 727.8],     # Resolution in nm
-                        "chunk_sizes": [1024, 1024, 1024],
+                        "chunk_sizes": [[1024, 1024, 1024]],
                         "encoding": "compressed_segmentation",
                         "compressed_segmentation_block_size": [8, 8, 8],
                     }
@@ -83,7 +83,7 @@ def main(args):
                         "key": "0_0_0",
                         "size": data_shape,
                         "resolution": [727.8, 727.8, 727.8],     # Resolution in nm
-                        "chunk_sizes": [args.phase1chunks[::-1]],
+                        "chunk_sizes": [[1024, 1024, 1024]],
                         "encoding": "raw",
                     }
                 ]
