@@ -18,6 +18,8 @@ parser.add_argument('--dataset_shape', nargs=3, type=int, required=True,
                         help='Shape of the dataset')
 parser.add_argument('--dataset_dtype', type=str, choices=['uint8', 'uint16'], required=True, 
                         help='Datatype of the dataset')
+parser.add_argument('--mode', type=str, choices=['myelin_BV', 'soma', 'marker'], required=True, 
+                        help='Mode of the segmentation')
 parser.add_argument('--block_shape', nargs=3, type=int, required=True, 
                         help='Shape of the block to load, should be larger than 200')
 parser.add_argument('--output_name', type=str, required=True, 
@@ -106,6 +108,7 @@ for x_i in [0,1]:
                                                             '--data_path', args.data_path,
                                                             '--dataset_shape', str(args.dataset_shape[0]), str(args.dataset_shape[1]), str(args.dataset_shape[2]),
                                                             '--dataset_dtype', args.dataset_dtype,
+                                                            '--mode', args.mode,
                                                             '--block_origin', str(x_org), str(y_org), str(z_org),
                                                             '--block_shape', str(block_x), str(block_y), str(block_z),
                                                             '--zarr_path', zarr_path,
@@ -119,6 +122,7 @@ for x_i in [0,1]:
                                                             '--data_path', args.data_path,
                                                             '--dataset_shape', str(args.dataset_shape[0]), str(args.dataset_shape[1]), str(args.dataset_shape[2]),
                                                             '--dataset_dtype', args.dataset_dtype,
+                                                            '--mode', args.mode,
                                                             '--block_origin', str(x_org), str(y_org), str(z_org),
                                                             '--block_shape', str(block_x), str(block_y), str(block_z),
                                                             '--zarr_path', zarr_path,
