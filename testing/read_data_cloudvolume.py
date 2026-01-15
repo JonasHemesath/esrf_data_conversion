@@ -3,6 +3,7 @@ from cloudvolume import CloudVolume
 
 import tifffile
 import sys
+import numpy as np
 
 cube_size = int(sys.argv[1])
 pos = 4000
@@ -12,6 +13,6 @@ image = CloudVolume(path, mip=0, progress=True)
 print([int(i) for i in image.shape])
 print(image.info['scales'][5]['size'])
 
-data = image[pos:pos+cube_size,pos:pos+cube_size,pos:pos+cube_size]
+data = image[pos:pos+cube_size,pos:pos+cube_size,pos:pos+cube_size].astype(np.float32)
 print(data.shape)
 #tifffile.imwrite('zf13_mip5.tif', data, imagej=True)
