@@ -6,28 +6,11 @@ os.environ["MKL_NUM_THREADS"] = "1"
 import argparse
 import numpy as np
 import torch
-from torch.utils.data import DataLoader
-from monai.networks.nets import UNet
-from monai.losses import DiceLoss
-from torch.optim import AdamW
-from torch.optim.lr_scheduler import CosineAnnealingLR
-from monai.transforms import (
-    Compose,
-    LoadImaged,
-    EnsureChannelFirstd,
-    ScaleIntensityRanged,
-    RandAdjustContrastd,
-    RandRotate90d,
-    RandFlipd,
-    ConcatItemsd,
-    DeleteItemsd,
-    ToTensord,
-)
-from monai.data import CacheDataset
+
 import tifffile
 import torch.nn.functional as F
 from monai.data import ImageReader
-import matplotlib.pyplot as plt
+
 from monai.transforms import MapTransform, Randomizable
 from typing import Dict, Hashable, List, Sequence, Tuple
 #from monai.data import RepeatDataset
@@ -38,6 +21,9 @@ from torch.utils.data import Dataset
 import torch.nn as nn
 
 from cloudvolume import CloudVolume
+
+import math
+import time
 
 
 
@@ -731,20 +717,68 @@ def multires_sliding_window_inference(
     output = output / torch.clamp_min(count_map, 1e-8)
     return output
 
-def read_from_multires(path, mip, block_org, block_size):
-    image = CloudVolume(path, mip=mip)
-    data_shape = [int(s) for s in image.info['scales'][mip]['size']]
+def read_from_multires(path, ds, block_org, block_size, patch_size):
+    image = CloudVolume(path, mip=ds)
+    data_shape = image.info['scales'][ds]['size']
+    data_type_str = image.info['data_type']
+    if data_type_str == 'uint8':
+        data_type = np.uint8
+    elif data_type_str == 'uint16':
+        data_type = np.uint16
+    ds_block_size = math.ceil(block_size / (2**ds)) + patch_size - math.floor(patch_size/(2**ds))
+
+    ds_block_org = [round(((2 * block_org[0] + block_size)/2)/(2**ds))-ds_block_size//2, 
+                    round(((2 * block_org[1] + block_size)/2)/(2**ds))-ds_block_size//2, 
+                    round(((2 * block_org[2] + block_size)/2)/(2**ds))-ds_block_size//2]
+    print(ds_block_org)
+    
+    ds_block_max = [ds_block_org[0]+ds_block_size,
+                    ds_block_org[1]+ds_block_size,
+                    ds_block_org[2]+ds_block_size]
+    print(ds_block_max)
+    vol_out = np.zeros((ds_block_size, ds_block_size, ds_block_size), dtype=data_type)
+
+    ds_block_org_adjust = []
+    ds_block_max_adjust = []
+    vol_org = []
+    vol_max = []
+
+    for i in range(3):
+        if ds_block_org[i] < 0:
+            ds_block_org_adjust.append(0)
+            vol_org.append(-ds_block_org[i])
+        else:
+            ds_block_org_adjust.append(ds_block_org[i])
+            vol_org.append(0)
+        if ds_block_max[i] > data_shape[i]:
+            ds_block_max_adjust.append(data_shape[i])
+            vol_max.append(ds_block_size - (ds_block_max[i] - data_shape[i]))
+        else:
+            ds_block_max_adjust.append(ds_block_max[i])
+            vol_max.append(ds_block_size)
+
+
+    vol_xyz = image[ds_block_org_adjust[0]:ds_block_max_adjust[0],
+                            ds_block_org_adjust[1]:ds_block_max_adjust[1],
+                            ds_block_org_adjust[2]:ds_block_max_adjust[2]]
+    
+    vol_out[vol_org[0]:vol_max[0],
+            vol_org[1]:vol_max[1],
+            vol_org[2]:vol_max[2]] = vol_xyz
+    return vol_out
 
 
 # --------------------------
 # Main
 # --------------------------
 def main(args):
+    t1 = time.time()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
 
     ds_levels = sorted(list(set(args.ds_levels)))
     image_keys = ["image_s0"] + [f"image_ds{lvl}" for lvl in ds_levels]
+    image_levels = [0] + ds_levels
     factors = {"image_s0": 1.0}
     for lvl in ds_levels:
         factors[f"image_ds{lvl}"] = ds_level_to_factor(lvl)
@@ -773,34 +807,29 @@ def main(args):
         model = MultiPathUNet_Attn_ds2_ds4(out_channels=out_channels).to(device)
     
 
-    
-
-    
-
     print("--- Starting Prediction ---")
     if not args.predict_image or not os.path.exists(args.predict_image):
         raise ValueError("Prediction image must be provided and exist.")
     if not args.model_path or not os.path.exists(args.model_path):
         raise ValueError("Model path must be provided and exist for prediction.")
 
-    if not args.predict_image.endswith("_raw.tif"):
-        raise ValueError("In predict mode, --predict_image must be the HIGH-res file ending with '_raw.tif'.")
 
     model.load_state_dict(torch.load(args.model_path, map_location=device))
     model.eval()
 
-    multires_paths = build_multires_paths(args.predict_image, ds_levels)
-    for k, p in multires_paths.items():
-        if not os.path.exists(p):
-            raise FileNotFoundError(f"Missing prediction input for {k}: {p}")
+    #multires_paths = build_multires_paths(args.predict_image, ds_levels)
+    #for k, p in multires_paths.items():
+    #    if not os.path.exists(p):
+    #        raise FileNotFoundError(f"Missing prediction input for {k}: {p}")
 
     vols: Dict[str, torch.Tensor] = {}
-    for k in image_keys:
-        arr = tifffile.imread(multires_paths[k]).astype(np.float32)
+    for i, k in enumerate(image_keys):
+        #arr = tifffile.imread(multires_paths[k]).astype(np.float32)
+        arr = read_from_multires(args.predict_image, image_levels[i], block_org=args.block_origin, block_size=args.block_shape, patch_size=args.patch_size).astype(np.float32)
         arr = np.clip(arr / 65535.0, 0.0, 1.0)
         arr = arr[None, ...]  # (1,D,H,W)
         vols[k] = torch.from_numpy(arr)  # keep on CPU
-
+    t2 = time.time()
     roi_size = (args.patch_size, args.patch_size, args.patch_size)
     logits = multires_sliding_window_inference(
         vols=vols,
@@ -815,49 +844,35 @@ def main(args):
         padding_mode="border",
     )
 
-    if out_channels == 3:
+    if out_channels > 1:
         pred = torch.argmax(F.softmax(logits, dim=1), dim=1).squeeze(0)
-        pred_np = pred.cpu().numpy().astype(np.uint8)
+        pred_np = pred.cpu().numpy().astype(np.uint64)
 
-        vessels_pred = (pred_np == 1).astype(np.uint8)
-        myelin_pred = (pred_np == 2).astype(np.uint8)
-        myelin_pred[myelin_pred > 0] = 9
-
-        os.makedirs(args.output_dir, exist_ok=True)
-        tifffile.imwrite(os.path.join(args.output_dir, "vessels_prediction.tif"), vessels_pred)
-        tifffile.imwrite(os.path.join(args.output_dir, "myelin_prediction.tif"), myelin_pred)
-    elif out_channels == 2:
-        pred = torch.argmax(F.softmax(logits, dim=1), dim=1).squeeze(0)
-        pred_np = pred.cpu().numpy().astype(np.uint8)
-
-        soma_pred = (pred_np == 1).astype(np.uint8)
         
-
-        os.makedirs(args.output_dir, exist_ok=True)
-        tifffile.imwrite(os.path.join(args.output_dir, "soma_prediction.tif"), soma_pred)
-        
-        print(f"Semantic predictions for soma saved to: {args.output_dir}")
+    
     elif out_channels == 1:
-        pred_marker_map = torch.sigmoid(logits).squeeze(0).squeeze(0).cpu().numpy()
-                
-        os.makedirs(args.output_dir, exist_ok=True)
-        output_filename = os.path.join(args.output_dir, "predicted_markers.tif")
-        tifffile.imwrite(output_filename, pred_marker_map.astype(np.float32))
+        pred_np = torch.sigmoid(logits).squeeze(0).squeeze(0).cpu().numpy().astype(np.float32) 
+
+    t3 = time.time()
         
+    out_vol = CloudVolume(args.output_dir, parallel=1)
+    out_vol[args.block_origin[0]+50:args.block_origin[0]+args.block_shape[0]-100,
+            args.block_origin[1]+50:args.block_origin[1]+args.block_shape[1]-100,
+            args.block_origin[2]+50:args.block_origin[2]+args.block_shape[2]-100] = pred_np[50:args.block_shape[0]-100, 50:args.block_shape[1]-100, 50:args.block_shape[2]-100]
+    
 
-        print(f"Predicted marker map saved to: {output_filename}")
+    t4 = time.time()
 
+    if args.debug_path is not None:
+        msg = 'Time for reading: ' + str(round(t2-t1)) + ' s\nTime for inference: ' + str(round(t3-t2)) + ' s\nTime for writing: ' + str(round(t4-t3)) + ' s'
+        with open(os.path.join(args.debug_path, str(args.process_id) + '.txt'), 'w') as f:
+            f.write(msg)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="3D Brain Tissue Segmentation using a 3D U-Net (multi-resolution inputs)")
 
-    parser.add_argument(
-        "--mode",
-        type=str,
-        required=True,
-        choices=["train", "predict"],
-        help='Mode to run: "train" to train a new model, "predict" to run inference.',
-    )
+    parser.add_argument('--mode', type=str, choices=['myelin_BV', 'soma', 'marker'], required=True, 
+                        help='Mode of the segmentation')
 
     parser.add_argument(
         "--ds_levels",
@@ -868,30 +883,27 @@ if __name__ == "__main__":
              "Each level n expects '*_ds{n}.tif' and corresponds to factor 1/(2^n).",
     )
 
-    # Training args
-    parser.add_argument("--train_data_dir", type=str, help="(train mode) Directory containing *_raw.tif, *_BV.tif, *_Myelin.tif and optional *_dsN.tif files.")
-    parser.add_argument("--epochs", type=int, default=1000, help="(train mode) Number of training epochs.")
-    parser.add_argument("--batch_size", type=int, default=4, help="(train mode) Batch size for training.")
-    parser.add_argument("--num_cache_workers", type=int, default=4, help="(train mode) Number of workers to use for caching the dataset.")
-    parser.add_argument("--cache_rate", type=float, default=0.0, help="CacheDataset cache_rate. WARNING: caching includes random transforms. Use 0.0 for true random sampling.")
-    parser.add_argument("--resume_training", action="store_true", help="(train mode) Load weights from --model_path and continue training.")
-    parser.add_argument("--pretrained_path", type=str, help="(train mode) Path to a pretrained model to start from (transfer learning).")
-    parser.add_argument("--contrast_range_min", type=float, default=0.8, help="(train mode) Minimum gamma for random contrast adjustment.")
-    parser.add_argument("--contrast_range_max", type=float, default=1.2, help="(train mode) Maximum gamma for random contrast adjustment.")
-    parser.add_argument("--patch_size", type=int, default=96, help="Patch edge length (voxels) for both training and inference. Uses cubic patches.")
-    parser.add_argument("--repeat_times", type=int, default=1,
-                    help="Repeat dataset this many times per epoch to make epochs longer.")
+ 
+    # Prediction args
+    parser.add_argument("--predict_image", type=str, help="Path to the HIGH-res volume '*_raw.tif'. Lower-res inputs are inferred via naming.")
+    parser.add_argument("--output_dir", type=str, default="predictions", help="Directory to save prediction masks.")
+    parser.add_argument("--sw_batch_size", type=int, default=4, help="Sliding window batch size.")
+    parser.add_argument("--overlap", type=float, default=0.25, help="Sliding window overlap in [0,1).")
     parser.add_argument("--attention", type=bool, default=False,
                     help="Use attention gates.")
-
-    # Prediction args
-    parser.add_argument("--predict_image", type=str, help="(predict mode) Path to the HIGH-res volume '*_raw.tif'. Lower-res inputs are inferred via naming.")
-    parser.add_argument("--output_dir", type=str, default="predictions", help="(predict mode) Directory to save prediction masks.")
-    parser.add_argument("--sw_batch_size", type=int, default=4, help="(predict mode) Sliding window batch size.")
-    parser.add_argument("--overlap", type=float, default=0.25, help="(predict mode) Sliding window overlap in [0,1).")
+    parser.add_argument('--block_origin', nargs=3, type=int, required=True, 
+                        help='Origin of the block to load')
+    parser.add_argument('--block_shape', nargs=3, type=int, required=True, 
+                        help='Shape of the block to load')
+    parser.add_argument('--patch_size', type=int, default=96, 
+                        help='Patch size for prediction')
+    parser.add_argument('--process_id', type=int, required=True, 
+                        help='Process ID')
+    parser.add_argument('--debug_path', type=str, default=None, 
+                        help='Path to the debug_folder')
 
     # Model path
     parser.add_argument("--model_path", type=str, default="segmentation_model.pth", help="Path to save the trained model or load it for prediction.")
 
     args = parser.parse_args()
-    main(args)
+    main(args)  
