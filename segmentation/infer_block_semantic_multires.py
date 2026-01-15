@@ -831,7 +831,7 @@ def main(args):
             arr = image[args.block_origin[0]:args.block_origin[0]+args.block_shape[0],
                         args.block_origin[1]:args.block_origin[1]+args.block_shape[1],
                         args.block_origin[2]:args.block_origin[2]+args.block_shape[2]].astype(np.float32)
-            print('highres loaded')
+            print('highres loaded, shape: ', arr.shape)
             sum_val = np.sum(arr)
             if sum_val == 0:
                 if args.debug_path is not None:
@@ -841,7 +841,7 @@ def main(args):
                 return
         else:
             arr = read_from_multires(args.predict_image, image_levels[i], block_org=args.block_origin, block_size=args.block_shape[0], patch_size=args.patch_size).astype(np.float32)
-            print(f'lowres ds{image_levels[i]} loaded')
+            print(f'lowres ds{image_levels[i]} loaded, shape: {arr.shape}')
         arr = np.clip(arr / 65535.0, 0.0, 1.0)
         arr = arr[None, ...]  # (1,D,H,W)
         vols[k] = torch.from_numpy(arr)  # keep on CPU
