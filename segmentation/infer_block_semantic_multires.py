@@ -829,13 +829,14 @@ def main(args):
         if i == 0:
             image = CloudVolume(args.predict_image, mip=0)
             print('highres image opened')
-            arr = image[args.block_origin[0]:args.block_origin[0]+args.block_shape[0],
+            arr = np.squeeze(image[args.block_origin[0]:args.block_origin[0]+args.block_shape[0],
                         args.block_origin[1]:args.block_origin[1]+args.block_shape[1],
-                        args.block_origin[2]:args.block_origin[2]+args.block_shape[2]].astype(np.float32)
+                        args.block_origin[2]:args.block_origin[2]+args.block_shape[2]]).astype(np.float32)
             print('highres loaded, shape: ', arr.shape)
             sum_val = np.sum(arr)
             if sum_val == 0:
                 if args.debug_path is not None:
+                    print('Empty block detected, skipping process_id ', args.process_id)
                     msg = 'Empty block detected, skipping process_id ' + str(args.process_id)
                     with open(os.path.join(args.debug_path, str(args.process_id) + '.txt'), 'w') as f:
                         f.write(msg)
