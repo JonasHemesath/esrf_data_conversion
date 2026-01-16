@@ -16,8 +16,8 @@ if not os.path.isdir('out_files'):
 
 
 parser = argparse.ArgumentParser(description="3D Brain Tissue Segmentation")
-parser.add_argument('--zarr_path', type=str, required=True, 
-                        help='Path to the zarr array (input and output)')
+parser.add_argument('--data_path', type=str, required=True, 
+                        help='Path to the cloudvolume array (input and output)')
 parser.add_argument('--dataset_shape', nargs=3, type=int, required=True, 
                         help='Shape of the dataset')
 parser.add_argument('--block_origin', nargs=3, type=int, required=True, 
@@ -28,12 +28,14 @@ parser.add_argument('--process_id', type=int, required=True,
                         help='ID of the process')
 parser.add_argument('--soma_min_distance', type=int, default=5, 
                         help='The minimum distance between peaks of identified somata for watershed. (in pixels)')
+parser.add_argument('--marker_file', type=str, default=None, 
+                        help='Path to a cloudvolume marker array')
 
 args = parser.parse_args()
 
 # Read the block from zarr
-z = zarr.open_array(args.zarr_path, mode='r+')
-vol = z[args.block_origin[0]:args.block_origin[0]+args.block_shape[0],
+image = CloudVolume(args.data_path, mip=0, progress=True)
+vol = image[args.block_origin[0]:args.block_origin[0]+args.block_shape[0],
         args.block_origin[1]:args.block_origin[1]+args.block_shape[1],
         args.block_origin[2]:args.block_origin[2]+args.block_shape[2]]
 
@@ -48,9 +50,8 @@ if not np.any(vol_sem):
     max_id = np.max(vol)
     
     # Write back the unchanged volume
-    lock_file = f"{args.zarr_path}.lock"
-    with FileLock(lock_file):
-        z[args.block_origin[0]:args.block_origin[0]+args.block_shape[0],
+    
+    image[args.block_origin[0]:args.block_origin[0]+args.block_shape[0],
           args.block_origin[1]:args.block_origin[1]+args.block_shape[1],
           args.block_origin[2]:args.block_origin[2]+args.block_shape[2]] = vol
     
@@ -74,6 +75,7 @@ if not np.any(vol_sem):
     exit(0)
 
 # 1. Calculate the distance transform on the somata mask
+if args.marker_file is None:
 distance = distance_transform_edt(vol_sem)
 
 # 2. Find markers for the watershed using peak_local_max

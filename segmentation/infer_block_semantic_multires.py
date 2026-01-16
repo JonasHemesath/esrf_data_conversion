@@ -718,6 +718,7 @@ def multires_sliding_window_inference(
     return output
 
 def read_from_multires(path, ds, block_org, block_size, patch_size):
+    patch_size += 10
     image = CloudVolume(path, mip=ds)
     data_shape = image.info['scales'][ds]['size']
     data_type_str = image.info['data_type']
