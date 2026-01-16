@@ -30,6 +30,7 @@ parser.add_argument("--attention", type=bool, default=False,
                     help="Use attention gates.")
 parser.add_argument('--step', type=int, default=2,
                         help='step size for overlapping blocks')
+parser.add_argument("--sw_batch_size", type=int, default=4, help="Sliding window batch size.")
 args = parser.parse_args()
 
 def main(args):
@@ -134,6 +135,7 @@ def main(args):
                                                                 '--predict_image', args.data_path,
                                                                 '--output_dir', args.output_name,
                                                                 '--attention', str(args.attention),
+                                                                '--sw_batch_size', str(args.sw_batch_size),
                                                                 '--mode', args.mode,
                                                                 '--block_origin', str(x_org), str(y_org), str(z_org),
                                                                 '--block_shape', str(block_x), str(block_y), str(block_z),
@@ -147,6 +149,7 @@ def main(args):
                                                                 '--predict_image', args.data_path,
                                                                 '--output_dir', args.output_name,
                                                                 '--attention', str(args.attention),
+                                                                '--sw_batch_size', str(args.sw_batch_size),
                                                                 '--mode', args.mode,
                                                                 '--block_origin', str(x_org), str(y_org), str(z_org),
                                                                 '--block_shape', str(block_x), str(block_y), str(block_z),

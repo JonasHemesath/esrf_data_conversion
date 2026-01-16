@@ -726,18 +726,20 @@ def read_from_multires(path, ds, block_org, block_size, patch_size):
         data_type = np.uint8
     elif data_type_str == 'uint16':
         data_type = np.uint16
-    ds_block_size = math.ceil(block_size / (2**ds)) + patch_size - math.floor(patch_size/(2**ds))
+    ds_block_size = [math.ceil(block_size[0] / (2**ds)) + patch_size - math.floor(patch_size/(2**ds)),
+                     math.ceil(block_size[1] / (2**ds)) + patch_size - math.floor(patch_size/(2**ds)),
+                     math.ceil(block_size[2] / (2**ds)) + patch_size - math.floor(patch_size/(2**ds))]
 
-    ds_block_org = [round(((2 * block_org[0] + block_size)/2)/(2**ds))-ds_block_size//2, 
-                    round(((2 * block_org[1] + block_size)/2)/(2**ds))-ds_block_size//2, 
-                    round(((2 * block_org[2] + block_size)/2)/(2**ds))-ds_block_size//2]
+    ds_block_org = [round(((2 * block_org[0] + block_size[0])/2)/(2**ds))-ds_block_size[0]//2, 
+                    round(((2 * block_org[1] + block_size[1])/2)/(2**ds))-ds_block_size[1]//2, 
+                    round(((2 * block_org[2] + block_size[2])/2)/(2**ds))-ds_block_size[2]//2]
     print(ds_block_org)
-    
-    ds_block_max = [ds_block_org[0]+ds_block_size,
-                    ds_block_org[1]+ds_block_size,
-                    ds_block_org[2]+ds_block_size]
+
+    ds_block_max = [ds_block_org[0]+ds_block_size[0],
+                    ds_block_org[1]+ds_block_size[1],
+                    ds_block_org[2]+ds_block_size[2]]
     print(ds_block_max)
-    vol_out = np.zeros((ds_block_size, ds_block_size, ds_block_size), dtype=data_type)
+    vol_out = np.zeros((ds_block_size[0], ds_block_size[1], ds_block_size[2]), dtype=data_type)
 
     ds_block_org_adjust = []
     ds_block_max_adjust = []
@@ -753,10 +755,10 @@ def read_from_multires(path, ds, block_org, block_size, patch_size):
             vol_org.append(0)
         if ds_block_max[i] > data_shape[i]:
             ds_block_max_adjust.append(data_shape[i])
-            vol_max.append(ds_block_size - (ds_block_max[i] - data_shape[i]))
+            vol_max.append(ds_block_size[i] - (ds_block_max[i] - data_shape[i]))
         else:
             ds_block_max_adjust.append(ds_block_max[i])
-            vol_max.append(ds_block_size)
+            vol_max.append(ds_block_size[i])
 
     vol_xyz = np.squeeze(image[ds_block_org_adjust[0]:ds_block_max_adjust[0],
                             ds_block_org_adjust[1]:ds_block_max_adjust[1],
@@ -843,7 +845,7 @@ def main(args):
                         f.write(msg)
                 return
         else:
-            arr = read_from_multires(args.predict_image, image_levels[i], block_org=args.block_origin, block_size=args.block_shape[0], patch_size=args.patch_size).astype(np.float32)
+            arr = read_from_multires(args.predict_image, image_levels[i], block_org=args.block_origin, block_size=args.block_shape, patch_size=args.patch_size).astype(np.float32)
             print(f'lowres ds{image_levels[i]} loaded, shape: {arr.shape}')
         arr = np.clip(arr / 65535.0, 0.0, 1.0)
         arr = arr[None, ...]  # (1,D,H,W)
