@@ -165,6 +165,7 @@ def main(args):
                                         print(f"Process {i+1} output:")
                                         print(outs.decode('utf-8') if isinstance(outs, bytes) else outs)
                                     print('Process', i+1, 'of', len(processes), 'done')
+                                    print('Total jobs submitted', process_id, 'of', total_jobs)
                                 processes = []
                                 
                 
