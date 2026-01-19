@@ -15,4 +15,4 @@ print(image.info['scales'][0]['size'])
 
 data = image[pos:pos+cube_size,pos:pos+cube_size,pos:pos+cube_size].astype(np.uint8)
 print(data.shape)
-#tifffile.imwrite('zf13_mip5.tif', data, imagej=True)
+tifffile.imwrite('seg_test.tif', data, imagej=True)
