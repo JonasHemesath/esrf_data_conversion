@@ -11,7 +11,7 @@ path = '/cajal/scratch/projects/xray/bm05/ng/zf13_hr2_v251209_Soma_260108_Soma_m
 
 image = CloudVolume(path, mip=0, progress=True)
 print([int(i) for i in image.shape])
-print(image.info['scales'][5]['size'])
+print(image.info['scales'][0]['size'])
 
 data = image[pos:pos+cube_size,pos:pos+cube_size,pos:pos+cube_size].astype(np.uint8)
 print(data.shape)
