@@ -14,7 +14,7 @@ from monai.data import ImageReader
 from monai.transforms import MapTransform, Randomizable
 from typing import Dict, Hashable, List, Sequence, Tuple
 #from monai.data import RepeatDataset
-
+from monai.networks.nets import UNet
 
 from torch.utils.data import Dataset
 
@@ -804,9 +804,22 @@ def main(args):
     elif args.mode == 'markers':
         out_channels = 1
 
-    model = MultiPathUNet_ds2_ds4_DecCtx(out_channels=out_channels).to(device)
-    if args.attention:
-        model = MultiPathUNet_Attn_ds2_ds4(out_channels=out_channels).to(device)
+    if args.ds_levels == [2,4]:
+        model = MultiPathUNet_ds2_ds4_DecCtx(out_channels=out_channels).to(device)
+        if args.attention:
+            model = MultiPathUNet_Attn_ds2_ds4(out_channels=out_channels).to(device)
+    elif args.ds_levels == []:
+        model = UNet(
+                    spatial_dims=3,
+                    in_channels=1,
+                    out_channels=out_channels,
+                    channels=(16, 32, 64, 128, 256),
+                    strides=(2, 2, 2, 2),
+                    num_res_units=2,
+                ).to(device)
+    else:
+        raise NotImplementedError("Only ds_levels=[] and ds_levels=[2,4] are implemented in this script.")
+
     
 
     print("--- Starting Prediction ---")

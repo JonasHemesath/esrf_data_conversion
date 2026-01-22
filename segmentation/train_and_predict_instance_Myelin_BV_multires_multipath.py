@@ -753,9 +753,21 @@ def main(args):
     #    strides=(2, 2, 2, 2),
     #    num_res_units=2,
     #).to(device)
-    model = MultiPathUNet_ds2_ds4_DecCtx(out_channels=3).to(device)
-    if args.attention:
-        model = MultiPathUNet_Attn_ds2_ds4(out_channels=3).to(device)
+    if args.ds_levels == [2,4]:
+        model = MultiPathUNet_ds2_ds4_DecCtx(out_channels=3).to(device)
+        if args.attention:
+            model = MultiPathUNet_Attn_ds2_ds4(out_channels=3).to(device)
+    elif args.ds_levels == []:
+        model = UNet(
+            spatial_dims=3,
+            in_channels=len(image_keys),
+            out_channels=3,
+            channels=(16, 32, 64, 128, 256),
+            strides=(2, 2, 2, 2),
+            num_res_units=2,
+        ).to(device)
+    else:
+        raise NotImplementedError("Only ds_levels=[] (single-res) and ds_levels=[2,4] are implemented in this script.")
     # Transfer learning
     if args.mode == "train" and args.pretrained_path:
         if os.path.exists(args.pretrained_path):

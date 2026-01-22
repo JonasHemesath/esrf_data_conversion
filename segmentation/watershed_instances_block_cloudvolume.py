@@ -42,7 +42,7 @@ vol = image[args.block_origin[0]:args.block_origin[0]+args.block_shape[0],
 # FIXED: Create a boolean mask for class 3 (somata), not extract values
 # Original bug: vol_sem = vol[vol==3]  (extracts 1D array of values)
 # Fixed: vol_sem = (vol == 3)  (creates 3D boolean mask)
-vol_sem = (vol == 3)
+vol_sem = (vol == 1)
 
 # Check if there are any somata in this block
 if not np.any(vol_sem):
@@ -76,7 +76,13 @@ if not np.any(vol_sem):
 
 # 1. Calculate the distance transform on the somata mask
 if args.marker_file is None:
-distance = distance_transform_edt(vol_sem)
+    distance = distance_transform_edt(vol_sem)
+else:
+    # Load marker array from cloudvolume
+    marker_image = CloudVolume(args.marker_file, mip=0, progress=True)
+    distance = marker_image[args.block_origin[0]:args.block_origin[0]+args.block_shape[0],
+                              args.block_origin[1]:args.block_origin[1]+args.block_shape[1],
+                              args.block_origin[2]:args.block_origin[2]+args.block_shape[2]]
 
 # 2. Find markers for the watershed using peak_local_max
 # This finds the local maxima in the distance transform, which are good markers for the centers of objects.
@@ -135,8 +141,6 @@ with open(own_file, 'w') as f:
     json.dump(int(max_id), f)
 
 # Write back the modified volume to zarr
-lock_file = f"{args.zarr_path}.lock"
-with FileLock(lock_file):
-    z[args.block_origin[0]:args.block_origin[0]+args.block_shape[0],
+image[args.block_origin[0]:args.block_origin[0]+args.block_shape[0],
       args.block_origin[1]:args.block_origin[1]+args.block_shape[1],
       args.block_origin[2]:args.block_origin[2]+args.block_shape[2]] = somata_instances
