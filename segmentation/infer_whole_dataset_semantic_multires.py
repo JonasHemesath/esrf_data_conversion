@@ -25,7 +25,7 @@ parser.add_argument('--model_path', type=str, required=True,
 parser.add_argument('--testing_x_loc', type=int, default=None,
                         help='x location for testing pipeline')
 parser.add_argument('--export_debug', action=argparse.BooleanOptionalAction, help='Export debug information from the individual jobs')
-parser.add_argument('--ds_levels', default=[2,4], nargs="+", type=int, help="mips to include for the inference")
+parser.add_argument('--ds_levels', default=[], nargs="+", type=int, help="mips to include for the inference")
 parser.add_argument("--attention", type=bool, default=False,
                     help="Use attention gates.")
 parser.add_argument('--step', type=int, default=2,
