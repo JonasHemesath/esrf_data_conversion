@@ -18,8 +18,6 @@ if not os.path.isdir('out_files'):
 parser = argparse.ArgumentParser(description="3D Brain Tissue Segmentation")
 parser.add_argument('--data_path', type=str, required=True, 
                         help='Path to the cloudvolume array (input and output)')
-parser.add_argument('--dataset_shape', nargs=3, type=int, required=True, 
-                        help='Shape of the dataset')
 parser.add_argument('--block_origin', nargs=3, type=int, required=True, 
                         help='Origin of the block to load')
 parser.add_argument('--block_shape', nargs=3, type=int, required=True, 
@@ -34,7 +32,7 @@ parser.add_argument('--marker_file', type=str, default=None,
 args = parser.parse_args()
 
 # Read the block from zarr
-image = CloudVolume(args.data_path, mip=0, progress=True)
+image = CloudVolume(args.data_path, mip=0, progress=True, parallel=1, non_aligned_writes=True, fill_missing=True)
 vol = image[args.block_origin[0]:args.block_origin[0]+args.block_shape[0],
         args.block_origin[1]:args.block_origin[1]+args.block_shape[1],
         args.block_origin[2]:args.block_origin[2]+args.block_shape[2]]

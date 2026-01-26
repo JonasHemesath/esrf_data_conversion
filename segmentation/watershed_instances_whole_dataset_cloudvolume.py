@@ -10,7 +10,7 @@ import zarr
 
 
 parser = argparse.ArgumentParser(description="3D Brain Tissue Segmentation")
-parser.add_argument('--zarr_path', type=str, required=True, 
+parser.add_argument('--cloud_path', type=str, required=True, 
                         help='Path to the zarr array (input and output)')
 parser.add_argument('--dataset_shape', nargs=3, type=int, required=True, 
                         help='Shape of the dataset')
@@ -18,20 +18,11 @@ parser.add_argument('--block_shape', nargs=3, type=int, required=True,
                         help='Shape of the block to load')
 parser.add_argument('--soma_min_distance', type=int, default=5, 
                         help='The minimum distance between peaks of identified somata for watershed. (in pixels)')
+parser.add_argument('--marker_file', type=str, default=None, 
+                        help='Path to a cloudvolume marker array')
 
 args = parser.parse_args()
 
-# Verify zarr array exists and get its shape
-try:
-    z = zarr.open_array(args.zarr_path, mode='r')
-    zarr_shape = z.shape
-    zarr_dtype = z.dtype
-    print(f"Opened zarr array: shape={zarr_shape}, dtype={zarr_dtype}")
-    if tuple(zarr_shape) != tuple(args.dataset_shape):
-        print(f"WARNING: Dataset shape {args.dataset_shape} doesn't match zarr shape {zarr_shape}")
-    del z
-except Exception as e:
-    raise ValueError(f"Could not open zarr array at {args.zarr_path}: {e}")
 
 t0 = time.time()
 
@@ -62,12 +53,12 @@ for x_i in [0,1]:
                         block_z = min(args.block_shape[2], args.dataset_shape[2]-z_org)
 
                         processes.append([subprocess.Popen(['srun', '--time=7-0', '--gres=gpu:0', '--mem=400000', '--tasks', '1', '--cpus-per-task', '32', 'python', '/cajal/nvmescratch/users/johem/esrf_data_conversion/segmentation/watershed_instances_block_cloudvolume.py',
-                                               '--zarr_path', args.zarr_path,
-                                               '--dataset_shape', str(args.dataset_shape[0]), str(args.dataset_shape[1]), str(args.dataset_shape[2]),
+                                               '--data_path', args.cloud_path,
                                                '--block_origin', str(x_org), str(y_org), str(z_org),
                                                '--block_shape', str(block_x), str(block_y), str(block_z),
                                                '--process_id', str(process_id),
-                                               '--soma_min_distance', str(args.soma_min_distance)],
+                                               '--soma_min_distance', str(args.soma_min_distance),
+                                               '--marker_file', str(args.marker_file)],
                                             stdout=subprocess.PIPE, stderr=subprocess.PIPE), process_id])
                         process_id += 1
             
