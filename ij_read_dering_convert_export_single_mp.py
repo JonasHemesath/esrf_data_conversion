@@ -219,6 +219,7 @@ if __name__ == '__main__':
     
     if fn not in os.listdir(save_path):
         print(file)
+        print('Will save file to:', os.path.join(save_path, fn))
 
         # Get image shape from the first slice without reading the whole file
         try:
