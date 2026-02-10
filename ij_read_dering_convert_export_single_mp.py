@@ -274,7 +274,9 @@ if __name__ == '__main__':
             print('ij conversion done')
             ij.io().save(im_ij, os.path.join(save_path, fn))
             print('ImageJ: image saved')
+            print('File saved to:', os.path.join(save_path, fn))
         else:
             # Fallback to tifffile if ImageJ is not available
             tifffile.imwrite(os.path.join(save_path, fn), im_new, imagej=True)
             print('Saved with tifffile.')
+            print('File saved to:', os.path.join(save_path, fn))
