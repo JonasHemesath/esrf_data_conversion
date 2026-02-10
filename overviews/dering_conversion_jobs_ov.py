@@ -9,7 +9,7 @@ num_cpus = 32
 load_path = '/cajal/scratch/projects/xray/bm05/converted_data/new_Aug_2025/' + sample + '/32bit/'
 save_path = '/cajal/scratch/projects/xray/bm05/converted_data/new_Aug_2025/' 
 
-files = ['0.tif', '1.tif', '2.tif']
+files = ['0.tiff', '1.tiff', '2.tiff']
 
 processes = []
 
