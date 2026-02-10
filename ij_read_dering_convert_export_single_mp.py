@@ -161,7 +161,10 @@ def process_slice(slice_index, file_path, mask, value_range, iterations, n_segme
     It reads the slice from the file, processes it, and returns the result.
     """
     print(f"Processing slice {slice_index} from file {file_path}")
-    im_slice = tifffile.imread(file_path, key=slice_index)
+    if type(slice_index) is not int:
+        im_slice = slice_index
+    else:
+        im_slice = tifffile.imread(file_path, key=slice_index)
     
     no_ring_img = im_slice
     for _ in range(iterations):
@@ -224,6 +227,9 @@ if __name__ == '__main__':
                     sys.exit(1)
                 first_page = tif.pages[0]
                 im_shape = (z, first_page.shape[0], first_page.shape[1])
+                if len(tif.pages) < z:
+                    print(f"Warning: TIFF file {file} contains fewer than {z} pages. Adjusting z to {len(tif.pages)}.")
+                    preload_image = True
         except FileNotFoundError:
             print(f"Error: Input file not found at {file}")
             sys.exit(1)
@@ -243,7 +249,15 @@ if __name__ == '__main__':
         #num_processes = multiprocessing.cpu_count()
         num_processes = num_cpus
         print(f"Using {num_processes} processes.")
-
+        if preload_image:
+            preloaded_im = tifffile.imread(file)
+            with multiprocessing.Pool(processes=num_processes) as pool:
+                # Use imap_unordered for memory-efficient processing of results
+                results_iterator = pool.imap_unordered(worker_func, [preload_image[i,:,:] for i in range(im_shape[0])])
+                
+                # Process results as they complete and show progress
+                for i, processed_slice in tqdm(results_iterator, total=z):
+                    im_new[i, :, :] = processed_slice
         with multiprocessing.Pool(processes=num_processes) as pool:
             # Use imap_unordered for memory-efficient processing of results
             results_iterator = pool.imap_unordered(worker_func, range(z))
