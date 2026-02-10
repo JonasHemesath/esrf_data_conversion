@@ -160,9 +160,10 @@ def process_slice(slice_index, file_path, mask, value_range, iterations, n_segme
     Worker function to process a single slice.
     It reads the slice from the file, processes it, and returns the result.
     """
-    print(f"Processing slice {slice_index} from file {file_path}")
+    print(f"Processing slice {slice_index[0]} from file {file_path}")
     if type(slice_index) is not int:
-        im_slice = slice_index
+        im_slice = slice_index[1]
+        slice_index = slice_index[0]
     else:
         im_slice = tifffile.imread(file_path, key=slice_index)
     
@@ -253,7 +254,7 @@ if __name__ == '__main__':
             preloaded_im = tifffile.imread(file)
             with multiprocessing.Pool(processes=num_processes) as pool:
                 # Use imap_unordered for memory-efficient processing of results
-                results_iterator = pool.imap_unordered(worker_func, [preloaded_im[i,:,:] for i in range(im_shape[0])])
+                results_iterator = pool.imap_unordered(worker_func, [(i, preloaded_im[i,:,:]) for i in range(im_shape[0])])
                 
                 # Process results as they complete and show progress
                 for i, processed_slice in tqdm(results_iterator, total=z):
