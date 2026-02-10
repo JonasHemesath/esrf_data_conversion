@@ -201,7 +201,7 @@ if __name__ == '__main__':
         ij = None
 
     value_range = [-0.8, 1.5]
-    z = 1990
+    z = 1000
     iterations = 2
     n_segments = 1
     compactness = 10
