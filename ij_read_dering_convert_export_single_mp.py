@@ -253,7 +253,7 @@ if __name__ == '__main__':
             preloaded_im = tifffile.imread(file)
             with multiprocessing.Pool(processes=num_processes) as pool:
                 # Use imap_unordered for memory-efficient processing of results
-                results_iterator = pool.imap_unordered(worker_func, [preload_image[i,:,:] for i in range(im_shape[0])])
+                results_iterator = pool.imap_unordered(worker_func, [preloaded_im[i,:,:] for i in range(im_shape[0])])
                 
                 # Process results as they complete and show progress
                 for i, processed_slice in tqdm(results_iterator, total=z):
