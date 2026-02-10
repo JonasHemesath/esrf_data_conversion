@@ -253,6 +253,7 @@ if __name__ == '__main__':
         print(f"Using {num_processes} processes.")
         if preload_image:
             preloaded_im = tifffile.imread(file)
+            print('Preloaded image shape:', preloaded_im.shape)
             with multiprocessing.Pool(processes=num_processes) as pool:
                 # Use imap_unordered for memory-efficient processing of results
                 results_iterator = pool.imap_unordered(worker_func, [(i, preloaded_im[i,:,:]) for i in range(z)])
@@ -276,6 +277,8 @@ if __name__ == '__main__':
             ij.io().save(im_ij, os.path.join(save_path, fn))
             print('ImageJ: image saved')
             print('File saved to:', os.path.join(save_path, fn))
+            tifffile.imwrite(os.path.join(save_path, fn.replace('.tiff', '_tifffile.tiff')), im_new, imagej=True)
+            print('Saved with tifffile.')
         else:
             # Fallback to tifffile if ImageJ is not available
             tifffile.imwrite(os.path.join(save_path, fn), im_new, imagej=True)
