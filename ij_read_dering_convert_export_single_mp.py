@@ -200,7 +200,7 @@ if __name__ == '__main__':
         print(f"Failed to initialize ImageJ: {e}")
         ij = None
 
-    value_range = [-5, 5]
+    value_range = [-0.8, 1.5]
     z = 1990
     iterations = 2
     n_segments = 1
