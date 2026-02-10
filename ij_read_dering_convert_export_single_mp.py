@@ -160,6 +160,7 @@ def process_slice(slice_index, file_path, mask, value_range, iterations, n_segme
     Worker function to process a single slice.
     It reads the slice from the file, processes it, and returns the result.
     """
+    print(f"Processing slice {slice_index} from file {file_path}")
     im_slice = tifffile.imread(file_path, key=slice_index)
     
     no_ring_img = im_slice
