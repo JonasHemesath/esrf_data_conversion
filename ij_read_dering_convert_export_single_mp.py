@@ -192,6 +192,7 @@ if __name__ == '__main__':
     file = sys.argv[2]
     fn = sys.argv[3]
     num_cpus = int(sys.argv[4])
+    preload_image = False
 
     scyjava.config.add_option('-Xmx500g')
     try:
