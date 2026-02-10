@@ -160,7 +160,7 @@ def process_slice(slice_index, file_path, mask, value_range, iterations, n_segme
     Worker function to process a single slice.
     It reads the slice from the file, processes it, and returns the result.
     """
-    print(f"Processing slice {slice_index[0]} from file {file_path}")
+    #print(f"Processing slice {slice_index[0]} from file {file_path}")
     if type(slice_index) is not int:
         im_slice = slice_index[1]
         slice_index = slice_index[0]
