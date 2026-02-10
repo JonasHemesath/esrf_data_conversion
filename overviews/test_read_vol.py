@@ -7,8 +7,9 @@ with tifffile.TiffFile(path) as tif:
     if not tif.pages:
         print(f"Error: TIFF file {path} contains no pages.")
         sys.exit(1)
-    first_page = tif.pages[1]
     print(len(tif.pages))
+    first_page = tif.pages[1]
+    
     print(first_page)
     print(type(first_page))
     print(first_page.shape)
