@@ -8,7 +8,7 @@ import numpy as np
 #cube_size = int(sys.argv[1])
 #pos = [4614, 8480, 9831]
 #pos = [5165, 13872, 15512]
-path = '/cajal/scratch/projects/xray/bm05/ng/zf11_hr'
+path = '/cajal/scratch/projects/xray/bm05/ng/zf11_hr_v260204'
 #path='/cajal/nvmescratch/projects/from_ssdscratch/songbird/johem/ng/zf13_hr2_v251006_seg_unsharded'
 image = CloudVolume(path, mip=0, progress=True)
 print('Cloudvolume image')
