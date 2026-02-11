@@ -261,13 +261,14 @@ if __name__ == '__main__':
                 # Process results as they complete and show progress
                 for i, processed_slice in tqdm(results_iterator, total=z):
                     im_new[i, :, :] = processed_slice
-        with multiprocessing.Pool(processes=num_processes) as pool:
-            # Use imap_unordered for memory-efficient processing of results
-            results_iterator = pool.imap_unordered(worker_func, range(z))
-            
-            # Process results as they complete and show progress
-            for i, processed_slice in tqdm(results_iterator, total=z):
-                im_new[i, :, :] = processed_slice
+        else:
+            with multiprocessing.Pool(processes=num_processes) as pool:
+                # Use imap_unordered for memory-efficient processing of results
+                results_iterator = pool.imap_unordered(worker_func, range(z))
+                
+                # Process results as they complete and show progress
+                for i, processed_slice in tqdm(results_iterator, total=z):
+                    im_new[i, :, :] = processed_slice
         del results_iterator
         print('mapping finished')
         
