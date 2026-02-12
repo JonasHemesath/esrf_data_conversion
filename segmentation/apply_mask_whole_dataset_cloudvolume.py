@@ -102,11 +102,7 @@ def main(args):
     y_chunks = math.ceil(data_shape[1]/stride[1])
     z_chunks = math.ceil(data_shape[2]/stride[2])
 
-    if args.testing_x_loc is None:
-        test_x = None
-    else:
-        test_x = math.ceil(args.testing_x_loc/stride[0])
-    print(test_x)
+    
 
     total_jobs = x_chunks * y_chunks * z_chunks
     print(f"Launching {total_jobs} jobs ({x_chunks}x{y_chunks}x{z_chunks})")
