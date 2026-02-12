@@ -115,9 +115,7 @@ def main(args):
             for z_i in [idx for idx in range(args.step)]:
                 processes = []
                 for x in range(x_i, x_chunks, args.step):
-                    if test_x is not None and x != test_x:
-                        print('Skipping x =', x)
-                        continue
+                    
                     x_org = x * stride[0]
                     block_x = min(args.block_shape[0], data_shape[0]-x_org)
                     for y in range(y_i, y_chunks, args.step):
