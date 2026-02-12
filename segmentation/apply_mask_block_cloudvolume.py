@@ -26,6 +26,9 @@ def main(args):
         args.block_origin[1]//(2**args.mask_mip): (args.block_origin[1]+args.block_shape[1])//(2**args.mask_mip),
         args.block_origin[0]//(2**args.mask_mip): (args.block_origin[0]+args.block_shape[0])//(2**args.mask_mip)
     ]
+    if mask_region.shape[0] == 0 or mask_region.shape[1] == 0 or mask_region.shape[2] == 0:
+        print(f"Warning: Mask region is empty for block at origin {args.block_origin} with shape {args.block_shape}. Skipping this block.")
+        return
     zoom_factors = (
         args.block_shape[2]/mask_region.shape[0],
         args.block_shape[1]/mask_region.shape[1],
