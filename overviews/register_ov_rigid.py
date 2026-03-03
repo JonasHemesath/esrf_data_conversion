@@ -153,11 +153,12 @@ def main():
         shape = [int(x) for x in args.atlas.split('_')[-1].strip('.raw').split('x')]
         atlas = np.fromfile(args.atlas, dtype=np.uint16).reshape(shape)
         atlas_name = str(args.atlas).strip('.raw').split('\\')[-1]
+        atlas = np.transpose(atlas, (2, 1, 0))  # Ensure ZYX order
     print(f"Atlas shape: {atlas.shape}")
     print(f"Target X-ray shape: {tuple(args.xray_shape)}")
     
     print("\nLoading landmark correspondences from CSV...")
-    atlas_points, xray_points = load_points_from_csv(args.points_atlas)
+    atlas_points, xray_points = load_points_from_csv(args.points_atlas, args.mip)
     print(f"Loaded {len(atlas_points)} point pairs.")
 
     used_precomputed = False
