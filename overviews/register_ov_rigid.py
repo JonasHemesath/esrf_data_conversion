@@ -150,7 +150,7 @@ def main():
         atlas = tifffile.imread(args.atlas)
         atlas_name = str(args.atlas).strip('.tiff').strip('.tif').split('\\')[-1]
     elif args.atlas.endswith('.raw'):
-        shape = [int(x) for x in args.atlas.split('_')[-1].strip('raw').split('x')]
+        shape = [int(x) for x in args.atlas.split('_')[-1].strip('.raw').split('x')]
         atlas = np.fromfile(args.atlas, dtype=np.uint16).reshape(shape)
         atlas_name = str(args.atlas).strip('.raw').split('\\')[-1]
     print(f"Atlas shape: {atlas.shape}")
