@@ -202,17 +202,16 @@ def main():
     inverse_matrix, inverse_translation = build_inverse_affine(optimal_params)
 
     print("Applying rigid transform to atlas volume...")
-    transformed_atlas = np.zeros((*args.xray_shape, 3), dtype=np.uint8)
-    for channel in tqdm(range(3), desc="Channels"):
-        transformed_atlas[:, :, :, channel] = affine_transform(
-            atlas[:, :, :, channel],
-            inverse_matrix,
-            offset=inverse_translation,
-            output_shape=tuple(args.xray_shape),
-            order=0,
-            mode="constant",
-            cval=0,
-        )
+    
+    transformed_atlas = affine_transform(
+        atlas[:, :, :],
+        inverse_matrix,
+        offset=inverse_translation,
+        output_shape=tuple(args.xray_shape),
+        order=0,
+        mode="constant",
+        cval=0,
+    ).astype(atlas.dtype)
 
     base_name = atlas_name + "_registered_rigid"
     output_npy = os.path.join(args.save_dir, f"{base_name}.npy")
