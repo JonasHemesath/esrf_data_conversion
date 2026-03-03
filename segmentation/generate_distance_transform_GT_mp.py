@@ -20,4 +20,20 @@ def main(args):
                                                                 '--output_path', str(marker_path)],
                                                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE))
 
-            
+
+    for i, process in enumerate(processes):
+        outs, errs = process.communicate()
+        if errs:
+            print(f"Process {i+1} errors:")
+            print(errs.decode('utf-8') if isinstance(errs, bytes) else errs)
+        if outs:
+            print(f"Process {i+1} output:")
+            print(outs.decode('utf-8') if isinstance(outs, bytes) else outs)
+        print('Process', i+1, 'of', len(processes), 'done')
+
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description='Generate distance transform ground truth for all Soma segmentation labels in a directory.')
+    parser.add_argument('--train_data_dir', type=str, help='Path to the directory containing the training data with Soma segmentation labels (TIFF format).')
+    args = parser.parse_args()
+    main(args)
