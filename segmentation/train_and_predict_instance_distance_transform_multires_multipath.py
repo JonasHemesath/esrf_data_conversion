@@ -837,15 +837,15 @@ def main(args):
 
                 print(f"Found training set: {base_name}")
 
-                soma = tifffile.imread(soma_path).astype(np.uint8)
+                #labels = tifffile.imread(soma_path).astype(np.float32)
 
-                labels = np.zeros_like(soma, dtype=np.uint8)
-                labels[soma > 0] = 1
+                #labels = np.zeros_like(soma, dtype=np.uint8)
+                #labels[soma > 0] = 1
 
-                combined_label_path = os.path.join(preprocessed_label_dir, f"{base_name}_combined_label.tif")
-                tifffile.imwrite(combined_label_path, labels)
+                #combined_label_path = os.path.join(preprocessed_label_dir, f"{base_name}_combined_label.tif")
+                #tifffile.imwrite(combined_label_path, labels)
 
-                item = {"label": combined_label_path}
+                item = {"label": soma_path}
                 item.update(multires_paths)
                 train_files.append(item)
 
