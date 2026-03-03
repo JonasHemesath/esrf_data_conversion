@@ -16,6 +16,9 @@ def main(args):
             distance_transform = distance_transform_edt(binary_mask)
             out_image[image == label] = distance_transform[image == label]
         tifffile.imwrite(args.output_path, out_image)
+    else:
+        print("No labels found in the input image. Output will be all zeros.")
+        tifffile.imwrite(args.output_path, out_image)
 
 if __name__ == "__main__":
     import argparse
