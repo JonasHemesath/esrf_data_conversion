@@ -11,7 +11,7 @@ from monai.networks.nets import UNet
 from monai.losses import DiceLoss
 from torch.nn import MSELoss
 from torch.optim import AdamW
-from torch.optim.lr_scheduler import CosineAnnealingLR
+from torch.optim.lr_scheduler import CosineAnnealingLR, ExponentialLR, LinearLR
 from monai.transforms import (
     Compose,
     LoadImaged,
@@ -930,7 +930,12 @@ def main(args):
 
         loss_function = MSELoss()
         optimizer = AdamW(model.parameters(), lr=1e-4)
-        scheduler = CosineAnnealingLR(optimizer, T_max=args.epochs)
+        if args.scheduler == "cosine":
+            scheduler = CosineAnnealingLR(optimizer, T_max=args.epochs)
+        elif args.scheduler == "exponential":
+            scheduler = ExponentialLR(optimizer, gamma=0.9)
+        elif args.scheduler == "linear":
+            scheduler = LinearLR(optimizer, start_factor=1.0, end_factor=0.0, total_iters=args.epochs)
 
         model.train()
         epoch_losses = []
@@ -1076,6 +1081,8 @@ if __name__ == "__main__":
     parser.add_argument('--marker_loss_weight', type=float, default=100.0, help='Weight for the marker prediction loss.')
     parser.add_argument("--attention", type=bool, default=False,
                     help="Use attention gates.")
+    parser.add_argument("--scheduler", type=str, default="cosine", choices=["cosine", "exponential", "linear"],
+                    help="Learning rate scheduler type.")
 
     # Prediction args
     parser.add_argument("--predict_image", type=str, help="(predict mode) Path to the HIGH-res volume '*_raw.tif'. Lower-res inputs are inferred via naming.")
