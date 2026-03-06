@@ -494,7 +494,7 @@ class MultiResAlignedRandSpatialCropd(MapTransform, Randomizable):
 
         # default: interpolate everything except ref and label
         if interp_keys is None:
-            self.interp_keys = set(k for k in keys if k != ref_key and k != "label")
+            self.interp_keys = set(k for k in keys if k != ref_key and k != "label" and k != "marker")
         else:
             self.interp_keys = set(interp_keys)
 
@@ -553,7 +553,7 @@ class MultiResAlignedRandSpatialCropd(MapTransform, Randomizable):
             ok = True
 
             for k in self.keys:
-                if k == self.ref_key or k == "label":
+                if k == self.ref_key or k == "label" or k == "marker":
                     continue
                 if k not in d:
                     raise KeyError(f"Key '{k}' not found in data dict.")
@@ -576,7 +576,7 @@ class MultiResAlignedRandSpatialCropd(MapTransform, Randomizable):
                 if k == self.ref_key:
                     img = d[k]
                     d[k] = img[:, z0:z0 + rz, y0:y0 + ry, x0:x0 + rx]
-                elif k == "label":
+                elif k == "label" or k == "marker":
                     lab = d[k]
                     d[k] = lab[:, z0:z0 + rz, y0:y0 + ry, x0:x0 + rx]
                 else:
