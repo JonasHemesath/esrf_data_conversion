@@ -9,6 +9,7 @@ import torch
 from torch.utils.data import DataLoader
 from monai.networks.nets import UNet
 from monai.losses import DiceLoss
+from torch.nn import MSELoss
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import CosineAnnealingLR, ExponentialLR, LinearLR
 from monai.transforms import (
