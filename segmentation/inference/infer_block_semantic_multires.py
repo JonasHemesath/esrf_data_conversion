@@ -927,7 +927,7 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="3D Brain Tissue Segmentation using a 3D U-Net (multi-resolution inputs)")
 
-    parser.add_argument('--mode', type=str, choices=['myelin_BV', 'soma', 'marker'], required=True, 
+    parser.add_argument('--mode', type=str, choices=['myelin_BV', 'soma_dt'], required=True, 
                         help='Mode of the segmentation')
 
     parser.add_argument(
