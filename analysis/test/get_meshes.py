@@ -8,6 +8,6 @@ mesh = vol.mesh.get(3)
 print(mesh)
 print(type(mesh))
 
-mesh_t = mesh.trimesh()
+mesh_t = trimesh.Trimesh(vertices=mesh.vertices, faces=mesh.faces)
 print(mesh_t)
 print(type(mesh_t))
