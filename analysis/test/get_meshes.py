@@ -5,9 +5,11 @@ vol = CloudVolume('/cajal/scratch/projects/xray/bm05/ng/zf13_hr2_brain_regions_v
 
 mesh = vol.mesh.get(3)
 
-print(mesh)
-print(type(mesh))
+print(mesh[3])
+print(type(mesh[3]))
 
-mesh_t = trimesh.Trimesh(vertices=mesh.vertices, faces=mesh.faces)
+mesh_t = trimesh.Trimesh(vertices=mesh[3].vertices, faces=mesh[3].faces)
 print(mesh_t)
 print(type(mesh_t))
+
+print(mesh[3].trimesh())
