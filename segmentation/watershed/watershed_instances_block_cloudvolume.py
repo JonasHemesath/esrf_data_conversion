@@ -8,8 +8,7 @@ import numpy as np
 from scipy.ndimage import label, distance_transform_edt
 from skimage.segmentation import watershed
 from skimage.feature import peak_local_max
-import zarr
-from filelock import FileLock
+from cloudvolume import CloudVolume
 
 if not os.path.isdir('out_files'):
     os.makedirs('out_files')
