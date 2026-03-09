@@ -797,12 +797,23 @@ def main(args):
     #    num_res_units=2,
     #).to(device)
 
+    #if args.mode == 'myelin_BV':
+    #    out_channels = 3
+    #elif args.mode == 'soma':
+    #    out_channels = 2
+    #elif args.mode == 'markers':
+    #    out_channels = 1
+
     if args.mode == 'myelin_BV':
-        out_channels = 3
-    elif args.mode == 'soma':
-        out_channels = 2
-    elif args.mode == 'markers':
-        out_channels = 1
+        suffix1 = '_BV'
+        suffix2 = '_myelin'
+    elif args.mode == 'soma_dt':
+        suffix1 = '_soma'
+        suffix2 = '_dt'
+    
+    out_channels = 3
+
+
 
     if args.ds_levels == [2,4]:
         model = MultiPathUNet_ds2_ds4_DecCtx(out_channels=out_channels).to(device)
@@ -878,22 +889,32 @@ def main(args):
         keys_order=image_keys,       # enforce same channel order as training
         padding_mode="border",
     )
-
-    if out_channels > 1:
+    if args.mode == 'myelin_BV':
+        
         pred = torch.argmax(F.softmax(logits, dim=1), dim=1).squeeze(0)
-        pred_np = pred.cpu().numpy().astype(np.uint64)
+        pred_np = pred.cpu().numpy().astype(np.uint8)
+        vol1 = (pred_np == 1).astype(np.uint64)
+        vol2 = (pred_np == 2).astype(np.uint64)
 
         
     
-    elif out_channels == 1:
-        pred_np = torch.sigmoid(logits).squeeze(0).squeeze(0).cpu().numpy().astype(np.float32) 
+    elif args.mode == 'soma_dt':
+        pred = torch.argmax(F.softmax(logits[:, :2], dim=1), dim=1).squeeze(0)
+        pred_np = pred.cpu().numpy().astype(np.uint8)
+        vol1 = (pred_np == 1).astype(np.uint64)
+        vol2 = torch.sigmoid(logits[:, 2]).squeeze(0).squeeze(0).cpu().numpy().astype(np.float32) 
 
     t3 = time.time()
         
-    out_vol = CloudVolume(args.output_dir, parallel=1, non_aligned_writes=True, fill_missing=True)
-    out_vol[args.block_origin[0]+50:args.block_origin[0]+args.block_shape[0]-50,
+    out_vol1 = CloudVolume(args.output_dir + suffix1, parallel=1, non_aligned_writes=True, fill_missing=True)
+    out_vol1[args.block_origin[0]+50:args.block_origin[0]+args.block_shape[0]-50,
             args.block_origin[1]+50:args.block_origin[1]+args.block_shape[1]-50,
-            args.block_origin[2]+50:args.block_origin[2]+args.block_shape[2]-50] = pred_np[50:args.block_shape[0]-50, 50:args.block_shape[1]-50, 50:args.block_shape[2]-50]
+            args.block_origin[2]+50:args.block_origin[2]+args.block_shape[2]-50] = vol1[50:args.block_shape[0]-50, 50:args.block_shape[1]-50, 50:args.block_shape[2]-50]
+    
+    out_vol2 = CloudVolume(args.output_dir + suffix2, parallel=1, non_aligned_writes=True, fill_missing=True)
+    out_vol2[args.block_origin[0]+50:args.block_origin[0]+args.block_shape[0]-50,
+            args.block_origin[1]+50:args.block_origin[1]+args.block_shape[1]-50,
+            args.block_origin[2]+50:args.block_origin[2]+args.block_shape[2]-50] = vol2[50:args.block_shape[0]-50, 50:args.block_shape[1]-50, 50:args.block_shape[2]-50]
     
 
     t4 = time.time()
