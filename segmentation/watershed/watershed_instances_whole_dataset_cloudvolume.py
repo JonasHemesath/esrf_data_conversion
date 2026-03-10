@@ -6,8 +6,6 @@ import subprocess
 
 import time
 
-import zarr
-
 from cloudvolume import CloudVolume
 
 parser = argparse.ArgumentParser(description="3D Brain Tissue Segmentation")
@@ -17,7 +15,7 @@ parser.add_argument('--block_shape', nargs=3, type=int, required=True,
                         help='Shape of the block to load')
 parser.add_argument('--soma_min_distance', type=int, default=3, 
                         help='The minimum distance between peaks of identified somata for watershed. (in pixels)')
-parser.add_argument('--marker_file', type=str, default=None, 
+parser.add_argument('--marker_file', type=str, default='None', 
                         help='Path to a cloudvolume marker array')
 parser.add_argument('--step', type=int, default=2,
                         help='step size for overlapping blocks')

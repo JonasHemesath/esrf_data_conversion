@@ -73,7 +73,7 @@ if not np.any(vol_sem):
     exit(0)
 
 # 1. Calculate the distance transform on the somata mask
-if args.marker_file is None:
+if args.marker_file == 'None':
     distance = distance_transform_edt(vol_sem)
 else:
     # Load marker array from cloudvolume
