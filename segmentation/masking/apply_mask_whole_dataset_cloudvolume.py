@@ -102,7 +102,7 @@ def main(args):
                             z_org = z * stride[2]
                             block_z = min(args.block_shape[2], data_shape[2]-z_org)
                             if args.export_debug:
-                                processes.append(subprocess.Popen(['srun', '--time=7-0', '--gres=gpu:0', '--mem=400000', '--tasks', '1', '--cpus-per-task', '32', '--nice', 'python', '/cajal/nvmescratch/users/johem/esrf_data_conversion/segmentation/apply_mask_block_cloudvolume.py',
+                                processes.append(subprocess.Popen(['srun', '--time=7-0', '--gres=gpu:0', '--mem=400000', '--tasks', '1', '--cpus-per-task', '32', '--nice', 'python', '/cajal/nvmescratch/users/johem/esrf_data_conversion/segmentation/masking/apply_mask_block_cloudvolume.py',
                                                                 '--image', args.data_path,
                                                                 '--output_dir', args.output_name,
                                                                 '--block_origin', str(x_org), str(y_org), str(z_org),
@@ -114,7 +114,7 @@ def main(args):
                                                                 '--debug_path', debug_path],
                                                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE))
                             else:
-                                processes.append(subprocess.Popen(['srun', '--time=7-0', '--gres=gpu:0', '--mem=400000', '--tasks', '1', '--cpus-per-task', '32', '--nice', 'python', '/cajal/nvmescratch/users/johem/esrf_data_conversion/segmentation/apply_mask_block_cloudvolume.py',
+                                processes.append(subprocess.Popen(['srun', '--time=7-0', '--gres=gpu:0', '--mem=400000', '--tasks', '1', '--cpus-per-task', '32', '--nice', 'python', '/cajal/nvmescratch/users/johem/esrf_data_conversion/segmentation/masking/apply_mask_block_cloudvolume.py',
                                                                 '--image', args.data_path,
                                                                 '--output_dir', args.output_name,
                                                                 '--block_origin', str(x_org), str(y_org), str(z_org),
