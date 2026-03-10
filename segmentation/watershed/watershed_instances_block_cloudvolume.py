@@ -81,6 +81,7 @@ else:
     distance = marker_image[args.block_origin[0]:args.block_origin[0]+args.block_shape[0],
                               args.block_origin[1]:args.block_origin[1]+args.block_shape[1],
                               args.block_origin[2]:args.block_origin[2]+args.block_shape[2]]
+    print('Sum of distance values from marker file:', np.sum(distance))
 
 # 2. Find markers for the watershed using peak_local_max
 # This finds the local maxima in the distance transform, which are good markers for the centers of objects.
@@ -93,6 +94,7 @@ markers = label(markers_mask)[0]
 # The watershed algorithm finds basins in the inverted distance transform
 # The markers guide the flooding process.
 somata_instances = watershed(-distance, markers, mask=vol_sem).astype(np.uint64)
+print(f"Found {np.max(somata_instances)} somata instances in block at origin {args.block_origin}.")
 
 del distance
 del markers_mask
@@ -112,6 +114,8 @@ edge = list(np.unique(edge))
 for e in edge:
     if e > 0:
         somata_instances[somata_instances==e] = 0
+
+print(f"Removed edge-touching objects. Remaining somata instances: {np.max(somata_instances)}")
 
 # Sequential ID assignment: each process waits for previous one and adds max_id
 if args.process_id > 0: 
