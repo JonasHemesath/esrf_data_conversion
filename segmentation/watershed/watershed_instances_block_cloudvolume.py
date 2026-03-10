@@ -39,7 +39,7 @@ vol = image[args.block_origin[0]:args.block_origin[0]+args.block_shape[0],
 # FIXED: Create a boolean mask for class 3 (somata), not extract values
 # Original bug: vol_sem = vol[vol==3]  (extracts 1D array of values)
 # Fixed: vol_sem = (vol == 3)  (creates 3D boolean mask)
-vol_sem = (vol == 1)
+vol_sem = (vol == 1).astype(np.uint8)  # Assuming class 1 corresponds to somata in the semantic segmentation
 
 print('Sum of semantic mask values (should be >0 if somata are present):', np.sum(vol_sem))
 
