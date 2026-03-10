@@ -19,6 +19,8 @@ parser.add_argument('--soma_min_distance', type=int, default=3,
                         help='The minimum distance between peaks of identified somata for watershed. (in pixels)')
 parser.add_argument('--marker_file', type=str, default=None, 
                         help='Path to a cloudvolume marker array')
+parser.add_argument('--step', type=int, default=2,
+                        help='step size for overlapping blocks')
 
 args = parser.parse_args()
 
@@ -43,9 +45,9 @@ process_id = 0
 
 # Process in 8 batches (2x2x2 grid pattern) to avoid too many simultaneous writes
 # Each batch processes every 2nd block in each dimension starting from different offsets
-for x_i in [0,1]:
-    for y_i in [0,1]:
-        for z_i in [0,1]:
+for x_i in [idx for idx in range(args.step)]:
+    for y_i in [idx for idx in range(args.step)]:
+        for z_i in [idx for idx in range(args.step)]:
             processes = []
             for x in range(x_i, x_chunks, 2):
                 x_org = x * stride[0]
