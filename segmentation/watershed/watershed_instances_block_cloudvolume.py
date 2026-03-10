@@ -25,7 +25,7 @@ parser.add_argument('--process_id', type=int, required=True,
                         help='ID of the process')
 parser.add_argument('--soma_min_distance', type=int, default=5, 
                         help='The minimum distance between peaks of identified somata for watershed. (in pixels)')
-parser.add_argument('--marker_file', type=str, default=None, 
+parser.add_argument('--marker_file', type=str, default='None', 
                         help='Path to a cloudvolume marker array')
 
 args = parser.parse_args()
