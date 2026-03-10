@@ -91,7 +91,7 @@ markers = label(markers_mask)[0]
 # 3. Apply the watershed algorithm
 # The watershed algorithm finds basins in the inverted distance transform
 # The markers guide the flooding process.
-somata_instances = watershed(-distance, markers, mask=vol_sem)
+somata_instances = watershed(-distance, markers, mask=vol_sem).astype(np.uint64)
 
 del distance
 del markers_mask
@@ -127,7 +127,7 @@ if args.process_id > 0:
     somata_instances[somata_instances>0] = somata_instances[somata_instances>0] + max_prev_id
 
 # Keep non-somata classes unchanged
-somata_instances[vol!=3] = vol[vol!=3]
+#somata_instances[vol!=3] = vol[vol!=3]
 
 del vol
 
