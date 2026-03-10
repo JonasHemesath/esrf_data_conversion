@@ -43,6 +43,10 @@ vol_sem = (vol == 1).astype(np.uint8)  # Assuming class 1 corresponds to somata 
 
 print('Sum of semantic mask values (should be >0 if somata are present):', np.sum(vol_sem))
 
+# report skimage version in case the environment has an old release
+import skimage
+print('skimage version', skimage.__version__)
+
 # Check if there are any somata in this block
 if not np.any(vol_sem):
     # No somata in this block, just write back the original volume
