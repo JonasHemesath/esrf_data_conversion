@@ -8,15 +8,14 @@ import time
 
 import zarr
 
+from cloudvolume import CloudVolume
 
 parser = argparse.ArgumentParser(description="3D Brain Tissue Segmentation")
 parser.add_argument('--cloud_path', type=str, required=True, 
                         help='Path to the zarr array (input and output)')
-parser.add_argument('--dataset_shape', nargs=3, type=int, required=True, 
-                        help='Shape of the dataset')
 parser.add_argument('--block_shape', nargs=3, type=int, required=True, 
                         help='Shape of the block to load')
-parser.add_argument('--soma_min_distance', type=int, default=5, 
+parser.add_argument('--soma_min_distance', type=int, default=3, 
                         help='The minimum distance between peaks of identified somata for watershed. (in pixels)')
 parser.add_argument('--marker_file', type=str, default=None, 
                         help='Path to a cloudvolume marker array')
@@ -26,11 +25,14 @@ args = parser.parse_args()
 
 t0 = time.time()
 
+in_vol = CloudVolume(args.data_path, progress=True)
+data_shape = in_vol.info['scales'][0]['size']
+
 stride = [s-200 for s in args.block_shape]
 
-x_chunks = math.ceil(args.dataset_shape[0]/stride[0])
-y_chunks = math.ceil(args.dataset_shape[1]/stride[1])
-z_chunks = math.ceil(args.dataset_shape[2]/stride[2])
+x_chunks = math.ceil(data_shape[0]/stride[0])
+y_chunks = math.ceil(data_shape[1]/stride[1])
+z_chunks = math.ceil(data_shape[2]/stride[2])
 
 total_jobs = x_chunks * y_chunks * z_chunks
 print(f"Launching {total_jobs} jobs ({x_chunks}x{y_chunks}x{z_chunks})")
