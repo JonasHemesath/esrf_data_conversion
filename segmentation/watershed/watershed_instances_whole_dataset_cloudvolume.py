@@ -25,7 +25,7 @@ args = parser.parse_args()
 
 t0 = time.time()
 
-in_vol = CloudVolume(args.data_path, progress=True)
+in_vol = CloudVolume(args.cloud_path, progress=True)
 data_shape = in_vol.info['scales'][0]['size']
 
 stride = [s-200 for s in args.block_shape]
