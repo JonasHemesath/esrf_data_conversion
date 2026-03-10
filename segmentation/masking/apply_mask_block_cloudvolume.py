@@ -38,7 +38,7 @@ def main(args):
 
     
 
-    in_vol = CloudVolume(args.image, progress=True, mip=0)
+    in_vol = CloudVolume(args.image, progress=True, mip=0, fill_missing=True)
     image_block = in_vol[args.block_origin[0]:args.block_origin[0]+args.block_shape[0],
                          args.block_origin[1]:args.block_origin[1]+args.block_shape[1],
                          args.block_origin[2]:args.block_origin[2]+args.block_shape[2]]
