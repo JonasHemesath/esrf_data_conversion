@@ -68,6 +68,7 @@ if not np.any(vol_sem):
     own_file = os.path.join('out_files', str(args.process_id) + '.json')
     with open(own_file, 'w') as f:
         json.dump(int(max_id), f)
+    print(f"No somata found in block at origin {args.block_origin}. Wrote back original volume.")
     
     exit(0)
 
@@ -141,3 +142,4 @@ with open(own_file, 'w') as f:
 image[args.block_origin[0]:args.block_origin[0]+args.block_shape[0],
       args.block_origin[1]:args.block_origin[1]+args.block_shape[1],
       args.block_origin[2]:args.block_origin[2]+args.block_shape[2]] = somata_instances
+print(f"Processed block at origin {args.block_origin}. Wrote back modified volume with max ID {max_id}.")
