@@ -11,7 +11,7 @@ from skimage.feature import peak_local_max
 from cloudvolume import CloudVolume
 
 if not os.path.isdir('out_files'):
-    os.makedirs('out_files')
+    os.makedirs('out_files', exist_ok=True)
 
 
 parser = argparse.ArgumentParser(description="3D Brain Tissue Segmentation")
