@@ -12,4 +12,3 @@ mesh_t = trimesh.Trimesh(vertices=mesh[3].vertices, faces=mesh[3].faces)
 print(mesh_t)
 print(type(mesh_t))
 
-print(mesh[3].trimesh())
