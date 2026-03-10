@@ -76,7 +76,7 @@ if args.marker_file is None:
     distance = distance_transform_edt(vol_sem)
 else:
     # Load marker array from cloudvolume
-    marker_image = CloudVolume(args.marker_file, mip=0, progress=True)
+    marker_image = CloudVolume(args.marker_file, mip=0, progress=True, fill_missing=True)
     distance = marker_image[args.block_origin[0]:args.block_origin[0]+args.block_shape[0],
                               args.block_origin[1]:args.block_origin[1]+args.block_shape[1],
                               args.block_origin[2]:args.block_origin[2]+args.block_shape[2]]

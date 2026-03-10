@@ -32,6 +32,9 @@ x_chunks = math.ceil(args.dataset_shape[0]/stride[0])
 y_chunks = math.ceil(args.dataset_shape[1]/stride[1])
 z_chunks = math.ceil(args.dataset_shape[2]/stride[2])
 
+total_jobs = x_chunks * y_chunks * z_chunks
+print(f"Launching {total_jobs} jobs ({x_chunks}x{y_chunks}x{z_chunks})")
+
 print(f"Processing {x_chunks}x{y_chunks}x{z_chunks} blocks with stride {stride}")
 
 process_id = 0
@@ -61,8 +64,20 @@ for x_i in [0,1]:
                                                '--marker_file', str(args.marker_file)],
                                             stdout=subprocess.PIPE, stderr=subprocess.PIPE), process_id])
                         process_id += 1
+                        if len(processes) >= 300:
+                            for i, process in enumerate(processes):
+                                outs, errs = process[0].communicate()
+                                if errs:
+                                    print(f"Process {i+1} errors:")
+                                    print(errs.decode('utf-8') if isinstance(errs, bytes) else errs)
+                                if outs:
+                                    print(f"Process {i+1} output:")
+                                    print(outs.decode('utf-8') if isinstance(outs, bytes) else outs)
+                                print('Process', i+1, 'of', len(processes), 'done')
+                                print('Total jobs submitted', process_id, 'of', total_jobs)
+                            processes = []
             
-            print(f"Batch ({x_i},{y_i},{z_i}): Launching {len(processes)} processes (process_id {processes[0][1]} to {processes[-1][1]})")
+            
             
             for i, process in enumerate(processes):
                 outs, errs = process[0].communicate()
@@ -75,6 +90,7 @@ for x_i in [0,1]:
                     if out_str.strip():
                         print(f"Process {i+1} (id {process[1]}) output: {out_str.strip()}")
                 print('Process', i+1, 'of', len(processes), 'with process_id', process[1], 'done')
+                print('Total jobs submitted', process_id, 'of', total_jobs)
 
 
 
