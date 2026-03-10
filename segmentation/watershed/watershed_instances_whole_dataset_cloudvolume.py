@@ -49,13 +49,13 @@ for x_i in [0,1]:
             processes = []
             for x in range(x_i, x_chunks, 2):
                 x_org = x * stride[0]
-                block_x = min(args.block_shape[0], args.dataset_shape[0]-x_org)
+                block_x = min(args.block_shape[0], data_shape[0]-x_org)
                 for y in range(y_i, y_chunks, 2):
                     y_org = y * stride[1]
-                    block_y = min(args.block_shape[1], args.dataset_shape[1]-y_org)
+                    block_y = min(args.block_shape[1], data_shape[1]-y_org)
                     for z in range(z_i, z_chunks, 2):
                         z_org = z * stride[2]
-                        block_z = min(args.block_shape[2], args.dataset_shape[2]-z_org)
+                        block_z = min(args.block_shape[2], data_shape[2]-z_org)
 
                         processes.append([subprocess.Popen(['srun', '--time=7-0', '--gres=gpu:0', '--mem=400000', '--tasks', '1', '--cpus-per-task', '32', 'python', '/cajal/nvmescratch/users/johem/esrf_data_conversion/segmentation/watershed_instances_block_cloudvolume.py',
                                                '--data_path', args.cloud_path,
@@ -98,5 +98,5 @@ for x_i in [0,1]:
 
 print('All done')
 print('Took', round(time.time()-t0), 's')
-print(f'Modified zarr array at: {args.zarr_path}')
+print(f'Modified CV array at: {args.cloud_path}')
 
