@@ -89,8 +89,10 @@ else:
 # 2. Find markers for the watershed using peak_local_max
 # This finds the local maxima in the distance transform, which are good markers for the centers of objects.
 peak_coords = peak_local_max(distance, min_distance=args.soma_min_distance, labels=vol_sem)
+print('peak_coords shape:', peak_coords.shape)
 markers_mask = np.zeros(distance.shape, dtype=bool)
 markers_mask[tuple(peak_coords.T)] = True
+print('Sum of markers_mask values (should be >0 if peaks are found):', np.sum(markers_mask))
 markers = label(markers_mask)[0]
 
 # 3. Apply the watershed algorithm
