@@ -32,21 +32,21 @@ args = parser.parse_args()
 
 # Read the block from zarr
 image = CloudVolume(args.data_path, mip=0, progress=True, parallel=1, non_aligned_writes=True, fill_missing=True)
-vol = image[args.block_origin[0]:args.block_origin[0]+args.block_shape[0],
+vol = np.squeeze(image[args.block_origin[0]:args.block_origin[0]+args.block_shape[0],
         args.block_origin[1]:args.block_origin[1]+args.block_shape[1],
-        args.block_origin[2]:args.block_origin[2]+args.block_shape[2]]
+        args.block_origin[2]:args.block_origin[2]+args.block_shape[2]])
 
 # FIXED: Create a boolean mask for class 1 (somata), not extract values
 # Original bug: vol_sem = vol[vol==1]  (extracts 1D array of values)
 # Fixed: vol_sem = (vol == 1)  (creates 3D boolean mask)
-vol_sem = np.squeeze((vol == 1).astype(np.uint8))  # Assuming class 1 corresponds to somata in the semantic segmentation
+vol_sem = (vol == 1).astype(np.uint8)  # Assuming class 1 corresponds to somata in the semantic segmentation
 
 print('vol_sem.shape:', vol_sem.shape)
 #print('Sum of semantic mask values (should be >0 if somata are present):', np.sum(vol_sem))
 
 # report skimage version in case the environment has an old release
-import skimage
-print('skimage version', skimage.__version__)
+#import skimage
+#print('skimage version', skimage.__version__)
 
 # Check if there are any somata in this block
 if not np.any(vol_sem):
