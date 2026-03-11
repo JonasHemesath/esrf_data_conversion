@@ -36,9 +36,9 @@ vol = image[args.block_origin[0]:args.block_origin[0]+args.block_shape[0],
         args.block_origin[1]:args.block_origin[1]+args.block_shape[1],
         args.block_origin[2]:args.block_origin[2]+args.block_shape[2]]
 
-# FIXED: Create a boolean mask for class 3 (somata), not extract values
-# Original bug: vol_sem = vol[vol==3]  (extracts 1D array of values)
-# Fixed: vol_sem = (vol == 3)  (creates 3D boolean mask)
+# FIXED: Create a boolean mask for class 1 (somata), not extract values
+# Original bug: vol_sem = vol[vol==1]  (extracts 1D array of values)
+# Fixed: vol_sem = (vol == 1)  (creates 3D boolean mask)
 vol_sem = (vol == 1).astype(np.uint8)  # Assuming class 1 corresponds to somata in the semantic segmentation
 
 print('Sum of semantic mask values (should be >0 if somata are present):', np.sum(vol_sem))
@@ -81,6 +81,7 @@ if not np.any(vol_sem):
 # 1. Calculate the distance transform on the somata mask
 if args.marker_file == 'None':
     distance = distance_transform_edt(vol_sem)
+    print('Distance transform calculated. Distance shape:', distance.shape)
     print('Sum of distance values (should be >0 if somata are present):', np.sum(np.abs(distance)))
 else:
     # Load marker array from cloudvolume
@@ -88,6 +89,7 @@ else:
     distance = marker_image[args.block_origin[0]:args.block_origin[0]+args.block_shape[0],
                               args.block_origin[1]:args.block_origin[1]+args.block_shape[1],
                               args.block_origin[2]:args.block_origin[2]+args.block_shape[2]]
+    print('Loaded marker array from cloudvolume. Distance shape:', distance.shape)
     print('Sum of distance values from marker file:', np.sum(np.abs(distance)))
 
 # 2. Find markers for the watershed using peak_local_max
