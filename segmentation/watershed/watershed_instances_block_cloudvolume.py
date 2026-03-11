@@ -144,7 +144,7 @@ if args.process_id > 0:
     somata_instances[somata_instances>0] = somata_instances[somata_instances>0] + max_prev_id
 
 # Keep non-somata classes unchanged
-#somata_instances[vol!=3] = vol[vol!=3]
+somata_instances[vol!=1] = vol[vol!=1]
 
 del vol
 
