@@ -28,6 +28,20 @@ class BVDataGenerator:
             return skeleton
         return None
     
+    def get_brain_region_mesh(self, brain_region_label):
+        mesh = self.BV.mesh.get(brain_region_label)
+        if mesh is not None:
+            return trimesh.Trimesh(vertices=mesh.vertices, faces=mesh.faces)
+        return None
     
+    def get_brain_region_bbox(self, brain_region_label):
+        mesh = self.get_brain_region_mesh(brain_region_label)
+        
+        if bbox is not None:
+            return bbox
+        return None
+    
+    def get_skeleton_per_brain_region(self, label, brain_region_label):
+        brain_region_mesh = self.get_brain_region_mesh(brain_region_label)
 
     
