@@ -41,6 +41,7 @@ vol = image[args.block_origin[0]:args.block_origin[0]+args.block_shape[0],
 # Fixed: vol_sem = (vol == 1)  (creates 3D boolean mask)
 vol_sem = (vol == 1).astype(np.uint8)  # Assuming class 1 corresponds to somata in the semantic segmentation
 
+print('vol_sem.shape:', vol_sem.shape)
 print('Sum of semantic mask values (should be >0 if somata are present):', np.sum(vol_sem))
 
 # report skimage version in case the environment has an old release
