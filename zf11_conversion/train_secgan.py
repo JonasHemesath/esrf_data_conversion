@@ -144,7 +144,7 @@ def main():
     G_YX = Generator3D(in_ch=1, base_ch=32, num_blocks=8).to(device)
     D_X = PatchDiscriminator3D(in_ch=1).to(device)
     D_Y = PatchDiscriminator3D(in_ch=1).to(device)
-    D_S = PatchDiscriminator3D(in_ch=1).to(device)
+    D_S = PatchDiscriminator3D(in_ch=3).to(device)
 
     # Segmenter (frozen). Expects [0,1], returns logits.
     import importlib
