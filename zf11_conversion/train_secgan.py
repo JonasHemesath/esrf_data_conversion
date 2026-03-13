@@ -21,6 +21,8 @@ from secgan_models import (
     from_gan,
 )
 
+import matplotlib.pyplot as plt
+
 
 def center_crop_like(x: torch.Tensor, ref: torch.Tensor) -> torch.Tensor:
     _, _, d, h, w = x.shape
@@ -165,6 +167,15 @@ def main():
 
     it = infinite_zip(loader_x, loader_y)
 
+    losses = {
+        "G": [],
+        "D": [],
+        "cyc": [],
+        "adv_x": [],
+        "adv_y": [],
+        "adv_s": [],
+    }
+
     for step in range(1, args.steps + 1):
         batch_x, batch_y = next(it)
 
@@ -234,6 +245,13 @@ def main():
         scaler.step(opt_D)
         scaler.update()
 
+        losses["G"].append(loss_G.item())
+        losses["D"].append(loss_D.item())
+        losses["cyc"].append(loss_cyc.item())
+        losses["adv_x"].append(loss_adv_x.item())
+        losses["adv_y"].append(loss_adv_y.item())
+        losses["adv_s"].append(loss_adv_s.item())
+
         if step % 50 == 0:
             print(
                 f"[{step:07d}] "
@@ -246,6 +264,24 @@ def main():
                 os.path.join(args.outdir, f"ckpt_{step:07d}.pt"),
                 step, G_XY, G_YX, D_X, D_Y, D_S, opt_G, opt_D, scaler
             )
+            plt.plot(losses["G"], label="G")
+            plt.savefig(os.path.join(args.outdir, f"losses_G.png"))
+            plt.clf()
+            plt.plot(losses["D"], label="D")
+            plt.savefig(os.path.join(args.outdir, f"losses_D.png"))
+            plt.clf()
+            plt.plot(losses["cyc"], label="cyc")
+            plt.savefig(os.path.join(args.outdir, f"losses_cyc.png"))
+            plt.clf()
+            plt.plot(losses["adv_x"], label="adv_x")
+            plt.savefig(os.path.join(args.outdir, f"losses_adv_x.png"))
+            plt.clf()
+            plt.plot(losses["adv_y"], label="adv_y")
+            plt.savefig(os.path.join(args.outdir, f"losses_adv_y.png"))
+            plt.clf()
+            plt.plot(losses["adv_s"], label="adv_s")
+            plt.savefig(os.path.join(args.outdir, f"losses_adv_s.png"))
+            plt.clf()
 
 
 if __name__ == "__main__":
