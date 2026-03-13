@@ -60,3 +60,10 @@ class SomaDataGenerator:
                 'convex_hull_volume': convex_hull_volume
             }
         return soma_data
+    
+    def get_soma_data_np_array(self):
+        soma_data = self.get_soma_data()
+        data_array = []
+        for label, data in soma_data.items():
+            data_array.append([data['label'], data['brain_region'], data['surface_area'], data['volume'] if data['volume'] is not None else 0, data['convex_hull_volume']])
+        return np.array(data_array)

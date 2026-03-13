@@ -47,13 +47,13 @@ for x_i in [idx for idx in range(args.step)]:
     for y_i in [idx for idx in range(args.step)]:
         for z_i in [idx for idx in range(args.step)]:
             processes = []
-            for x in range(x_i, x_chunks, 2):
+            for x in range(x_i, x_chunks, args.step):
                 x_org = x * stride[0]
                 block_x = min(args.block_shape[0], data_shape[0]-x_org)
-                for y in range(y_i, y_chunks, 2):
+                for y in range(y_i, y_chunks, args.step):
                     y_org = y * stride[1]
                     block_y = min(args.block_shape[1], data_shape[1]-y_org)
-                    for z in range(z_i, z_chunks, 2):
+                    for z in range(z_i, z_chunks, args.step):
                         z_org = z * stride[2]
                         block_z = min(args.block_shape[2], data_shape[2]-z_org)
 
