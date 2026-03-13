@@ -9,36 +9,27 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-class ResBlock3DValid(nn.Module):
+class ResBlock3DSame(nn.Module):
     def __init__(self, channels: int):
         super().__init__()
-        self.conv1 = nn.Conv3d(channels, channels, kernel_size=3, padding=0, bias=True)
-        self.conv2 = nn.Conv3d(channels, channels, kernel_size=3, padding=0, bias=True)
-
-    @staticmethod
-    def _center_crop(x: torch.Tensor, target_shape: Tuple[int, int, int]) -> torch.Tensor:
-        _, _, d, h, w = x.shape
-        td, th, tw = target_shape
-        sd = (d - td) // 2
-        sh = (h - th) // 2
-        sw = (w - tw) // 2
-        return x[:, :, sd:sd + td, sh:sh + th, sw:sw + tw]
+        self.conv1 = nn.Conv3d(channels, channels, kernel_size=3, padding=1, bias=True)
+        self.conv2 = nn.Conv3d(channels, channels, kernel_size=3, padding=1, bias=True)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         y = F.relu(self.conv1(x), inplace=True)
         y = self.conv2(y)
-        skip = self._center_crop(x, y.shape[-3:])
-        return skip + y
+        # With padding=1, y has same size as x, so no cropping needed
+        return x + y
 
 
 class Generator3D(nn.Module):
     """
-    VALID conv generator (paper-like). Output is tanh in [-1,1].
+    Same-padding generator. Output is tanh in [-1,1], same size as input.
     """
     def __init__(self, in_ch: int = 1, base_ch: int = 32, num_blocks: int = 8):
         super().__init__()
-        self.in_conv = nn.Conv3d(in_ch, base_ch, kernel_size=3, padding=0, bias=True)
-        self.blocks = nn.ModuleList([ResBlock3DValid(base_ch) for _ in range(num_blocks)])
+        self.in_conv = nn.Conv3d(in_ch, base_ch, kernel_size=3, padding=1, bias=True)
+        self.blocks = nn.ModuleList([ResBlock3DSame(base_ch) for _ in range(num_blocks)])
         self.out_conv = nn.Conv3d(base_ch, 1, kernel_size=1, padding=0, bias=True)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
