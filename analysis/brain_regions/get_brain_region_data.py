@@ -20,9 +20,8 @@ class BrainRegionDataGenerator:
     
     def get_soma_data_per_brain_region(self, brain_region_label):
         soma_data_generator = SomaDataGenerator(self.brain_regions, self.soma, self.brain_regions_mip)
-        soma_data = soma_data_generator.get_soma_data()
-        soma_data_in_region = {label: data for label, data in soma_data.items() if data['brain_region'] == brain_region_label}
-        return soma_data_in_region
+        soma_data = soma_data_generator.get_soma_data_np_array()
+        
         
         
     def get_data_per_brain_region(self, brain_region_label):
