@@ -3,7 +3,7 @@ from cloudvolume import CloudVolume
 import numpy as np
 import trimesh
 import json
-
+from tqdm import tqdm
 
 class SomaDataGenerator:
     def __init__(self, brain_regions_path, soma_path, brain_regions_mip):
@@ -46,7 +46,7 @@ class SomaDataGenerator:
     
     def get_soma_data(self):
         soma_data = {}
-        for label in self.soma_labels:
+        for label in tqdm(self.soma_labels, desc="Processing somata"):
             try:
                 mesh = self.get_mesh(label)
                 if mesh is None:
