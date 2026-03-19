@@ -1,6 +1,8 @@
+import os
 from cloudvolume import CloudVolume
 import numpy as np
 import trimesh
+import json
 
 
 class SomaDataGenerator:
@@ -8,11 +10,13 @@ class SomaDataGenerator:
         self.brain_regions = CloudVolume(brain_regions_path)
         self.brain_regions_mip = brain_regions_mip
         self.soma = CloudVolume(soma_path)
-        self.soma_labels = self.get_soma_labels()
+        self.soma_labels = self.get_soma_labels(soma_path)
         
     
-    def get_soma_labels(self):
-        pass
+    def get_soma_labels(self, soma_path):
+        with open(os.path.join(soma_path, 'instance_number.json'), 'r') as f:
+            labels_info = json.load(f)
+        return [i for i in range(1, labels_info+1)]
 
     def get_mesh(self, label):
         mesh = self.soma.mesh.get(label)
@@ -43,22 +47,25 @@ class SomaDataGenerator:
     def get_soma_data(self):
         soma_data = {}
         for label in self.soma_labels:
-            mesh = self.get_mesh(label)
-            if mesh is None:
-                continue
-            centroid = self.get_centroid(mesh)
-            brain_region = self.get_brain_region(label, centroid)
-            surface_area = self.get_surface_area(mesh)
-            volume = self.get_volume(mesh)
-            convex_hull_volume = self.get_convex_hull_volume(mesh)
+            try:
+                mesh = self.get_mesh(label)
+                if mesh is None:
+                    continue
+                centroid = self.get_centroid(mesh)
+                brain_region = self.get_brain_region(label, centroid)
+                surface_area = self.get_surface_area(mesh)
+                volume = self.get_volume(mesh)
+                convex_hull_volume = self.get_convex_hull_volume(mesh)
 
-            soma_data[label] = {
-                'label': label,
-                'brain_region': brain_region,
-                'surface_area': surface_area,
-                'volume': volume,
-                'convex_hull_volume': convex_hull_volume
-            }
+                soma_data[label] = {
+                    'label': label,
+                    'brain_region': brain_region,
+                    'surface_area': surface_area,
+                    'volume': volume,
+                    'convex_hull_volume': convex_hull_volume
+                }
+            except Exception as e:
+                print(f"Error processing label {label}: {e}")
         return soma_data
     
     def get_soma_data_np_array(self, return_dict=False):
