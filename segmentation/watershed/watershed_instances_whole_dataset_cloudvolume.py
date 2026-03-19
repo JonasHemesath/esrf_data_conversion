@@ -1,3 +1,4 @@
+import os
 import math
 
 import argparse
@@ -5,6 +6,7 @@ import argparse
 import subprocess
 
 import time
+import json
 
 from cloudvolume import CloudVolume
 
@@ -95,6 +97,11 @@ for x_i in [idx for idx in range(args.step)]:
                 print('Total jobs submitted', process_id, 'of', total_jobs)
 
 
+with open('out_files/' + str(process_id) + '.json', 'r') as f:
+    max_num = json.load(f)
+with open(os.path.join(args.cloud_path, 'instance_number.json'), 'w') as f:
+    json.dump(max_num, f)
+print('Max ID across all blocks:', max_num)
 
 print('All done')
 print('Took', round(time.time()-t0), 's')

@@ -61,9 +61,21 @@ class SomaDataGenerator:
             }
         return soma_data
     
-    def get_soma_data_np_array(self):
+    def get_soma_data_np_array(self, return_dict=False):
         soma_data = self.get_soma_data()
         data_array = []
         for label, data in soma_data.items():
             data_array.append([data['label'], data['brain_region'], data['surface_area'], data['volume'] if data['volume'] is not None else 0, data['convex_hull_volume']])
+        if return_dict:
+            return np.array(data_array), soma_data
         return np.array(data_array)
+    
+    def save_soma_data(self, output_file_csv, output_file_np=None):
+        if output_file_np is not None:
+            output_np, output_dict =self.get_soma_data_np_array(return_dict=True)
+            np.save(output_file_np, output_np)
+        else:
+            output_dict = self.get_soma_data()
+        with open(output_file_csv, 'w') as f:
+            for label, data in output_dict.items():
+                f.write(f"{label},{data['brain_region']},{data['surface_area']},{data['volume'] if data['volume'] is not None else 0},{data['convex_hull_volume']}\n")
