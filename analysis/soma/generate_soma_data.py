@@ -4,6 +4,7 @@ import numpy as np
 import trimesh
 import json
 from tqdm import tqdm
+from scipy.spatial import QhullError
 
 class SomaDataGenerator:
     def __init__(self, brain_regions_path, soma_path, brain_regions_mip):
@@ -39,8 +40,14 @@ class SomaDataGenerator:
         return None
 
     def get_convex_hull_volume(self, mesh):
-        hull = mesh.convex_hull
-        return hull.volume
+        try:
+            hull = mesh.convex_hull
+            return hull.volume
+        except QhullError:
+            print("Convex hull computation failed for mesh with label:", mesh)
+            return None
+        return None
+        
 
     def get_centroid(self, mesh):
         return mesh.centroid
