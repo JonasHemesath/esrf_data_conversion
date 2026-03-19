@@ -49,13 +49,19 @@ class SomaDataGenerator:
         for label in tqdm(self.soma_labels, desc="Processing somata"):
             try:
                 mesh = self.get_mesh(label)
+                print(f"Label {label} mesh: got mesh")
                 if mesh is None:
                     continue
                 centroid = self.get_centroid(mesh)
+                print(f"Processing label {label} with centroid at {centroid}")
                 brain_region = self.get_brain_region(label, centroid)
+                print(f"Label {label} is in brain region {brain_region}")
                 surface_area = self.get_surface_area(mesh)
+                print(f"Label {label} has surface area {surface_area}")
                 volume = self.get_volume(mesh)
+                print(f"Label {label} has volume {volume}")
                 convex_hull_volume = self.get_convex_hull_volume(mesh)
+                print(f"Label {label} has convex hull volume {convex_hull_volume}")
 
                 soma_data[label] = {
                     'label': label,
