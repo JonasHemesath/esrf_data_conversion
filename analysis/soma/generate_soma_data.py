@@ -172,7 +172,7 @@ class SomaDataGenerator:
         print('Building numpy array from soma data dictionary...')
         data_array = np.zeros((self.soma_labels[-1] + 1, 5))  # label, brain_region, surface_area, volume, convex_hull_volume
         for label, data in tqdm(soma_data.items(), desc="Building numpy array"):
-            data_array[label] = [data['label'], data['brain_region'], data['surface_area'], data['volume'] if data['volume'] is not None else 0, data['convex_hull_volume']]
+            data_array[label] = [data['label'], data['brain_region'], data['surface_area'], data['volume'] if data['volume'] is not None else 0, data['convex_hull_volume'] if data['convex_hull_volume'] is not None else 0]
         if return_dict:
             return np.array(data_array), soma_data
         return np.array(data_array)
@@ -188,7 +188,7 @@ class SomaDataGenerator:
                 output_dict = self.get_soma_data()
         with open(output_file_csv, 'w') as f:
             for label, data in output_dict.items():
-                f.write(f"{label},{data['brain_region']},{data['surface_area']},{data['volume'] if data['volume'] is not None else 0},{data['convex_hull_volume']}\n")
+                f.write(f"{label},{data['brain_region']},{data['surface_area']},{data['volume'] if data['volume'] is not None else 0},{data['convex_hull_volume'] if data['convex_hull_volume'] is not None else 0}\n")
 
 
 if __name__ == "__main__":
