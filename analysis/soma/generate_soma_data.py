@@ -169,9 +169,9 @@ class SomaDataGenerator:
             soma_data = self.get_soma_data_parallel(num_workers=self.num_workers, chunksize=self.chunksize, show_progress=self.show_progress)
         else:
             soma_data = self.get_soma_data()
-        data_array = []
+        data_array = np.zeros((self.soma_labels[-1] + 1, 5))  # label, brain_region, surface_area, volume, convex_hull_volume
         for label, data in soma_data.items():
-            data_array.append([data['label'], data['brain_region'], data['surface_area'], data['volume'] if data['volume'] is not None else 0, data['convex_hull_volume']])
+            data_array[label] = [data['label'], data['brain_region'], data['surface_area'], data['volume'] if data['volume'] is not None else 0, data['convex_hull_volume']]
         if return_dict:
             return np.array(data_array), soma_data
         return np.array(data_array)
