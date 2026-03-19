@@ -26,6 +26,7 @@ class SomaDataGenerator:
     
     def get_brain_region(self, label, position):
         pos_mip = [p // (2**self.brain_regions_mip) for p in position]
+        print(f"Label {label} position at MIP {self.brain_regions_mip}: {pos_mip}")
         region_label = self.brain_regions[pos_mip[0], pos_mip[1], pos_mip[2]]
         return region_label
     
