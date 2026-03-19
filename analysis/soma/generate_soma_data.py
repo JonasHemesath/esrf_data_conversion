@@ -64,7 +64,7 @@ class SomaDataGenerator:
                     'volume': volume,
                     'convex_hull_volume': convex_hull_volume
                 }
-            except Exception as e:
+            except ValueError as e:
                 print(f"Error processing label {label}: {e}")
         return soma_data
     
