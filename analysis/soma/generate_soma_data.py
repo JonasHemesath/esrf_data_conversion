@@ -53,7 +53,7 @@ def _compute_soma_data_for_label(label):
         }
     except Exception as e:
         # Avoid crashing the entire pool on a single bad label.
-        print(f"Error processing label {label} in worker: {e}")
+        #print(f"Error processing label {label} in worker: {e}")
         return None
 
 
