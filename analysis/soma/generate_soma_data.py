@@ -21,7 +21,7 @@ class SomaDataGenerator:
     def get_mesh(self, label):
         mesh = self.soma.mesh.get(label)
         if mesh is not None:
-            return trimesh.Trimesh(vertices=mesh.vertices, faces=mesh.faces)
+            return trimesh.Trimesh(vertices=mesh[label].vertices, faces=mesh[label].faces)
         return None 
     
     def get_brain_region(self, label, position):
