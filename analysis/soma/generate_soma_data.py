@@ -86,3 +86,17 @@ class SomaDataGenerator:
         with open(output_file_csv, 'w') as f:
             for label, data in output_dict.items():
                 f.write(f"{label},{data['brain_region']},{data['surface_area']},{data['volume'] if data['volume'] is not None else 0},{data['convex_hull_volume']}\n")
+
+
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description="Generate soma data")
+    parser.add_argument("--brain_regions_path", type=str, help="Path to the brain regions file")
+    parser.add_argument("--soma_path", type=str, help="Path to the soma file")
+    parser.add_argument("--brain_regions_mip", type=int, help="MIP level of the brain regions data")
+    parser.add_argument("--output_file_csv", type=str, help="Path to the output CSV file")
+    parser.add_argument("--output_file_np", type=str, default=None, help="Path to the output NP file (optional)")
+    args = parser.parse_args()
+
+    soma_data_generator = SomaDataGenerator(args.brain_regions_path, args.soma_path, args.brain_regions_mip)
+    soma_data_generator.save_soma_data(args.output_file_csv, args.output_file_np)
