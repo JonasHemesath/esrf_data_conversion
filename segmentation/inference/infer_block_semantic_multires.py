@@ -25,6 +25,8 @@ from cloudvolume import CloudVolume
 import math
 import time
 
+import zarr
+
 
 
 def center_crop_3d(x, target_zyx):
@@ -809,7 +811,7 @@ def main(args):
         suffix2 = '_myelin'
     elif args.mode == 'soma_dt':
         suffix1 = '_soma'
-        suffix2 = '_dt'
+        suffix2 = '_dt.zarr'
     
     out_channels = 3
 
@@ -911,10 +913,17 @@ def main(args):
             args.block_origin[1]+50:args.block_origin[1]+args.block_shape[1]-50,
             args.block_origin[2]+50:args.block_origin[2]+args.block_shape[2]-50] = vol1[50:args.block_shape[0]-50, 50:args.block_shape[1]-50, 50:args.block_shape[2]-50]
     
-    out_vol2 = CloudVolume(args.output_dir + suffix2, parallel=1, non_aligned_writes=True, fill_missing=True)
-    out_vol2[args.block_origin[0]+50:args.block_origin[0]+args.block_shape[0]-50,
-            args.block_origin[1]+50:args.block_origin[1]+args.block_shape[1]-50,
-            args.block_origin[2]+50:args.block_origin[2]+args.block_shape[2]-50] = vol2[50:args.block_shape[0]-50, 50:args.block_shape[1]-50, 50:args.block_shape[2]-50]
+    if args.mode == 'myelin_BV':
+        out_vol2 = CloudVolume(args.output_dir + suffix2, parallel=1, non_aligned_writes=True, fill_missing=True)
+        out_vol2[args.block_origin[0]+50:args.block_origin[0]+args.block_shape[0]-50,
+                args.block_origin[1]+50:args.block_origin[1]+args.block_shape[1]-50,
+                args.block_origin[2]+50:args.block_origin[2]+args.block_shape[2]-50] = vol2[50:args.block_shape[0]-50, 50:args.block_shape[1]-50, 50:args.block_shape[2]-50]
+    elif args.mode == 'soma_dt':
+        out_vol2 = zarr.open_array(args.output_dir + suffix2, mode='a')
+        out_vol2[args.block_origin[0]+50:args.block_origin[0]+args.block_shape[0]-50,
+                args.block_origin[1]+50:args.block_origin[1]+args.block_shape[1]-50,
+                args.block_origin[2]+50:args.block_origin[2]+args.block_shape[2]-50] = vol2[50:args.block_shape[0]-50, 50:args.block_shape[1]-50, 50:args.block_shape[2]-50]
+
     
 
     t4 = time.time()
