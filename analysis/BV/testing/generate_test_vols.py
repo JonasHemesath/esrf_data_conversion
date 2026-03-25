@@ -5,7 +5,7 @@ parser = argparse.ArgumentParser(description="Generate test volumes for BV testi
 parser.add_argument("--BV_path", type=str, help="Path to the BV file")
 parser.add_argument("--output_path", type=str, help="Path to the output volume")
 parser.add_argument("--block_shape", nargs=3, type=int, default=[1024, 1024, 1024], help="Shape of the block to generate")
-parser.add_argument("--origins", nargs='+', type=int, help="List of origins for the blocks to generate, in the format 'x,y,z x,y,z ...'")
+parser.add_argument("--origins", nargs='+', type=str, help="List of origins for the blocks to generate, in the format 'x,y,z x,y,z ...'")
 args = parser.parse_args()
 
 if __name__ == "__main__":
