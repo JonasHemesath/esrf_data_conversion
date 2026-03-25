@@ -25,7 +25,7 @@ if __name__ == "__main__":
                         "voxel_offset": [0, 0, 0],
                         "key": "0_0_0",
                         "size": args.block_shape,
-                        "resolution": [727.8, 727.8, 727.8],     # Resolution in nm
+                        "resolution": [728, 728, 728],     # Resolution in nm
                         "chunk_sizes": [[1024, 1024, 1024]],
                         "encoding": "compressed_segmentation",
                         "compressed_segmentation_block_size": [8, 8, 8],
