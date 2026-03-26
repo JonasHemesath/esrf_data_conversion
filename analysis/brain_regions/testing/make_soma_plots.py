@@ -30,9 +30,9 @@ if __name__ == "__main__":
         print(f"{label}: {brain_region_labels[label]}")
         #idxs = np.where(soma_data[:, 1] == label and soma_data[:, 2] > 0 and soma_data[:, 3] > 0 and soma_data[:, 4] > 0)[0]
         idxs = np.where(soma_data[:, 1] == label)[0]
-        surface_areas = soma_data[idxs, 2].flatten()
-        volumes = soma_data[idxs, 3].flatten()
-        convex_hull_volumes = soma_data[idxs, 4].flatten()
+        surface_areas = soma_data[idxs, 2][soma_data[idxs, 2] > 0].flatten()
+        volumes = soma_data[idxs, 3][soma_data[idxs, 3] > 0].flatten()
+        convex_hull_volumes = soma_data[idxs, 4][soma_data[idxs, 4] > 0].flatten()
 
         plt.figure(figsize=(15, 5))
         plt.subplot(1, 3, 1)
