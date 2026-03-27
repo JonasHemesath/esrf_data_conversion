@@ -68,9 +68,9 @@ def _process_z_slab(args):
 
     for lz in range(z0, z1):
         zz = lz - z0
-        for ly in range(yL):
-            for lx in range(xL):
-                d = _density_for_low_voxel(lx, ly, lz, scale, block_shape_hi)
+        for ly in tqdm(range(yL), desc=f"Processing z={lz}", leave=False, dynamic_ncols=True):
+            for lx in tqdm(range(xL), desc=f"Processing y={ly}", leave=False, dynamic_ncols=True):
+                d = _density_for_low_voxel(lx, ly, lz, scale, block_shape_hi, highres_slab)
                 slab[lx, ly, zz] = d if d <= 65535 else 65535
 
     return z0, slab
