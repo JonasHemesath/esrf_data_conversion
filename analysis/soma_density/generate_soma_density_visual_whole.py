@@ -9,6 +9,8 @@ from multiprocessing import Pool, cpu_count
 
 from cloudvolume import CloudVolume
 
+from tqdm import tqdm
+
 # ---- multiprocessing globals (one CloudVolume per worker process) ----
 _VOL_HI = None
 _HI_SHAPE = None
@@ -95,7 +97,10 @@ def main():
     parser.add_argument("--block", default=200, type=int, help="High-res cube edge length (default: 200).")
     parser.add_argument("--processes", default=max(1, cpu_count() - 1), type=int, help="Worker processes.")
     parser.add_argument("--z_slab", default=1, type=int, help="How many low-res z-slices per task (default: 1).")
+    parser.add_argument("--no_progress", action="store_true", help="Disable progress bar")
     args = parser.parse_args()
+
+    show_progress=not args.no_progress
 
     # Low-res volume determines output shape
     vol_lo = CloudVolume(args.input_path, mip=args.mip_lo, progress=True, fill_missing=True)
@@ -134,7 +139,10 @@ def main():
         initargs=(args.input_path, args.mip_hi),
     ) as pool:
         # unordered gives better throughput if some slabs are slower (e.g., more somata)
-        for z0, slab_arr in pool.imap_unordered(_process_z_slab, tasks, chunksize=1):
+        iterator = pool.imap_unordered(_process_z_slab, tasks, chunksize=1)
+        if show_progress:
+            iterator = tqdm(iterator, total=len(tasks), desc="Processing somata (parallel)")
+        for z0, slab_arr in iterator:
             z1 = z0 + slab_arr.shape[2]
             out[:, :, z0:z1] = slab_arr
             out.flush()  # ensure progress is written to disk
