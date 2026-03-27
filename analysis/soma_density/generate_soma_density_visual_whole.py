@@ -133,7 +133,7 @@ def main():
     ) as pool:
         iterator = pool.imap_unordered(_process_z_slab, tasks, chunksize=1)
         if show_progress:
-            iterator = tqdm(iterator, total=len(tasks), desc="Processing z-slabs", dynamic_ncols=True)
+            iterator = tqdm(iterator, total=len(tasks), desc="Processing z-slabs", dynamic_ncols=True, leave=False)
 
         for z0, slab_arr in iterator:
             z1 = z0 + slab_arr.shape[2]
