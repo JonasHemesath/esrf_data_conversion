@@ -126,7 +126,7 @@ def main():
     )
 
     # Build tasks: z slabs
-    xL, yL, zL = low_shape
+    xL, yL, zL = low_shape[0:3]
     slab = max(1, int(args.z_slab))
     tasks = []
     for z0 in range(0, zL, slab):
