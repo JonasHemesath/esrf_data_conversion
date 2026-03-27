@@ -8,6 +8,7 @@ from multiprocessing import Pool, cpu_count
 
 from cloudvolume import CloudVolume
 from tqdm import tqdm
+import time
 
 # ---- multiprocessing globals (one CloudVolume per worker process) ----
 _VOL_HI = None
@@ -78,8 +79,8 @@ def _process_z_slab(args):
         if z0c >= z1c:
             continue
         highres_slab = _VOL_HI[:, :, z0c:z1c]
-        for ly in range(yL):
-            for lx in range(xL):
+        for ly in tqdm(range(yL), desc=f"Processing z={lz}", leave=False, dynamic_ncols=True):
+            for lx in tqdm(range(xL), desc=f"Processing y={ly}", leave=False, dynamic_ncols=True):
                 d = _density_for_low_voxel(lx, ly, lz, scale, block_shape_hi, highres_slab)
                 slab[lx, ly, zz] = d if d <= 65535 else 65535
 
