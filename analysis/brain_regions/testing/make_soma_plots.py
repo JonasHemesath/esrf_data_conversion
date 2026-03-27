@@ -33,6 +33,7 @@ if __name__ == "__main__":
         surface_areas = soma_data[idxs, 2][soma_data[idxs, 2] > 0].flatten()
         volumes = soma_data[idxs, 3][soma_data[idxs, 3] > 0].flatten()
         convex_hull_volumes = soma_data[idxs, 4][soma_data[idxs, 4] > 0].flatten()
+        print(f"Number of somata in {brain_region_labels[label]}: {len(idxs)}")
 
         plt.figure(figsize=(15, 5))
         plt.subplot(1, 3, 1)
