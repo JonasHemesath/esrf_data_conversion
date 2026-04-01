@@ -26,6 +26,7 @@ if __name__ == "__main__":
 
 
     out_shape = tuple(CloudVolume(args.soma_path, mip=args.out_mip).shape[0:3])
+    hi_shape = tuple(CloudVolume(args.soma_path, mip=0).shape[0:3])
 
     steps = [math.ceil(out_shape[i] / args.block_size) for i in range(3)]
 
@@ -53,7 +54,7 @@ if __name__ == "__main__":
                                                    "--kernel_size", str(args.kernel_size), 
                                                    "--x0", str(x0), "--y0", str(y0), "--z0", str(z0), 
                                                    "--x1", str(x1), "--y1", str(y1), "--z1", str(z1),
-                                                   "--final_shape"] + [str(int(s)) for s in out_shape],
+                                                   "--final_shape"] + [str(int(s)) for s in hi_shape],
                                                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE))
                 past_processes += 1
                 if len(processes) >= max_processes:

@@ -8,7 +8,8 @@ if __name__ == "__main__":
     parser.add_argument("--out_mip", type=int, help="MIP level of the output data")
     parser.add_argument("--output_dir", type=str, help="Path to the output file")
     parser.add_argument("--kernel_size", type=int, default=200, help="Size of the blocks to process in parallel")
-    parser.add_argument("--final_shape", type=int, nargs=3, help="Final shape of the output volume, in the format '(x,y,z)'")
+    parser.add_argument("--full_shape", type=int, nargs=3, help="Full shape of the highres soma volume, needed for padding")
+
     parser.add_argument("--x0", type=int, help="Starting x coordinate of the block in low resolution")
     parser.add_argument("--y0", type=int, help="Starting y coordinate of the block in low resolution")
     parser.add_argument("--z0", type=int, help="Starting z coordinate of the block in low resolution")
@@ -18,7 +19,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    final_shape = tuple(args.final_shape)
+    full_shape = tuple(args.full_shape)
 
     out_shape = tuple([args.x1 - args.x0, args.y1 - args.y0, args.z1 - args.z0])
     out_vol = np.zeros(out_shape, dtype=np.uint16)
@@ -29,19 +30,19 @@ if __name__ == "__main__":
     x0c = max(args.x0 * scale - args.kernel_size // 2, 0)
     y0c = max(args.y0 * scale - args.kernel_size // 2, 0)
     z0c = max(args.z0 * scale - args.kernel_size // 2, 0)
-    x1c = min(args.x0 * scale - args.kernel_size // 2 + block_shape_hi[0], final_shape[0] * scale)
-    y1c = min(args.y0 * scale - args.kernel_size // 2 + block_shape_hi[1], final_shape[1] * scale)
-    z1c = min(args.z0 * scale - args.kernel_size // 2 + block_shape_hi[2], final_shape[2] * scale)
+    x1c = min(args.x0 * scale - args.kernel_size // 2 + block_shape_hi[0], full_shape[0])
+    y1c = min(args.y0 * scale - args.kernel_size // 2 + block_shape_hi[1], full_shape[1])
+    z1c = min(args.z0 * scale - args.kernel_size // 2 + block_shape_hi[2], full_shape[2])
 
     
     soma_vol = np.squeeze(CloudVolume(args.soma_path, mip=0)[x0c:x1c, y0c:y1c, z0c:z1c])
     
-    x_offset_0 = args.x0 * scale - args.kernel_size // 2
-    y_offset_0 = args.y0 * scale - args.kernel_size // 2
-    z_offset_0 = args.z0 * scale - args.kernel_size // 2
-    x_offset_1 = args.x0 * scale - args.kernel_size // 2 + block_shape_hi[0] - final_shape[0] * scale
-    y_offset_1 = args.y0 * scale - args.kernel_size // 2 + block_shape_hi[1] - final_shape[1] * scale
-    z_offset_1 = args.z0 * scale - args.kernel_size // 2 + block_shape_hi[2] - final_shape[2] * scale
+    x_offset_0 = max(args.x0 * scale - args.kernel_size // 2, 0)
+    y_offset_0 = max(args.y0 * scale - args.kernel_size // 2, 0)
+    z_offset_0 = max(args.z0 * scale - args.kernel_size // 2, 0)
+    x_offset_1 = max(args.x0 * scale - args.kernel_size // 2 + block_shape_hi[0] - full_shape[0], 0)
+    y_offset_1 = max(args.y0 * scale - args.kernel_size // 2 + block_shape_hi[1] - full_shape[1], 0)
+    z_offset_1 = max(args.z0 * scale - args.kernel_size // 2 + block_shape_hi[2] - full_shape[2], 0)
     if any(offset > 0 for offset in [x_offset_0, y_offset_0, z_offset_0, x_offset_1, y_offset_1, z_offset_1]):
         soma_vol = np.pad(soma_vol, ((x_offset_0, x_offset_1), (y_offset_0, y_offset_1), (z_offset_0, z_offset_1)), mode='constant', constant_values=0)
 
