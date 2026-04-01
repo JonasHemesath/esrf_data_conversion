@@ -15,6 +15,7 @@ if __name__ == "__main__":
     parser.add_argument("--output_dir", type=str, help="Path to the output file")
     parser.add_argument("--block_size", type=int, default=32, help="Size of the blocks to process in parallel")
     parser.add_argument("--kernel_size", type=int, default=200, help="Size of the blocks to process in parallel")
+    parser.add_argument("--max_processes", type=int, default=1000, help="Maximum number of concurrent processes to use for parallel processing")
 
     args = parser.parse_args()
 
@@ -32,7 +33,7 @@ if __name__ == "__main__":
     processes = []
 
     past_processes = 0
-    max_processes = 1500  # Limit the number of concurrent processes to avoid overwhelming the system
+    max_processes = args.max_processes  # Limit the number of concurrent processes to avoid overwhelming the system
 
     for x in range(steps[0]):
         for y in range(steps[1]):
