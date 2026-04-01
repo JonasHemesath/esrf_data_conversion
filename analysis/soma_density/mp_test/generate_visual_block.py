@@ -1,6 +1,7 @@
 import argparse
 import numpy as np
 from cloudvolume import CloudVolume
+import time
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate visual representation of soma density for a block")
@@ -16,6 +17,8 @@ if __name__ == "__main__":
     parser.add_argument("--x1", type=int, help="Ending x coordinate of the block in low resolution")
     parser.add_argument("--y1", type=int, help="Ending y coordinate of the block in low resolution")
     parser.add_argument("--z1", type=int, help="Ending z coordinate of the block in low resolution")
+
+    t0 = time.time()
 
     args = parser.parse_args()
 
@@ -73,9 +76,12 @@ if __name__ == "__main__":
                     density = 0
                 else:
                     density = np.sum(np.unique(block) != 0)
-                print(f"Density for low-res voxel ({lx}, {ly}, {lz}): {density}")
+                #print(f"Density for low-res voxel ({lx}, {ly}, {lz}): {density}")
                 out_vol[lx, ly, lz] = density if density <= 65535 else 65535
     np.save(f"{args.output_dir}/temp/block_{args.x0}_{args.y0}_{args.z0}.npy", out_vol)
+
+    t1 = time.time()
+    print(f"Finished processing block in {t1 - t0:.2f} seconds")
 
     
     
