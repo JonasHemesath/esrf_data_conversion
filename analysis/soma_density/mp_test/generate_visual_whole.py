@@ -47,7 +47,7 @@ if __name__ == "__main__":
                 x1 = min(x0 + args.block_size, out_shape[0])
                 y1 = min(y0 + args.block_size, out_shape[1])
                 z1 = min(z0 + args.block_size, out_shape[2])
-                processes.append(subprocess.Popen(['srun', '--time=7-0', '--gres=gpu:0', '--mem=28000', '--tasks', '1', '--cpus-per-task', '2', '--nice', "python", "generate_visual_block.py", 
+                processes.append(subprocess.Popen(["srun", "--time=7-0", "--gres=gpu:0", "--mem=28000", "--tasks", "1", "--cpus-per-task", "2", "--nice", "python", "generate_visual_block.py", 
                                                    "--soma_path", args.soma_path, 
                                                    "--out_mip", str(args.out_mip), 
                                                    "--output_dir", args.output_dir,  
@@ -89,7 +89,7 @@ if __name__ == "__main__":
                 x0 = x * args.block_size
                 y0 = y * args.block_size
                 z0 = z * args.block_size
-                block_path = f"{args.output_dir}/temp/block_x{x0}_y{y0}_z{z0}.npy"
+                block_path = f"{args.output_dir}/temp/block_{x0}_{y0}_{z0}.npy"
                 block_arr = np.load(block_path)
                 x1 = min(x0 + args.block_size, out_shape[0])
                 y1 = min(y0 + args.block_size, out_shape[1])

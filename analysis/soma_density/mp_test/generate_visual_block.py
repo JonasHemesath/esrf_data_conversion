@@ -30,24 +30,39 @@ if __name__ == "__main__":
     scale = 2 ** args.out_mip
     block_shape_hi = (out_shape[0] * scale + args.kernel_size, out_shape[1] * scale + args.kernel_size, out_shape[2] * scale + args.kernel_size)
 
-    x0c = max(args.x0 * scale - args.kernel_size // 2, 0)
-    y0c = max(args.y0 * scale - args.kernel_size // 2, 0)
-    z0c = max(args.z0 * scale - args.kernel_size // 2, 0)
-    x1c = min(args.x0 * scale - args.kernel_size // 2 + block_shape_hi[0], full_shape[0])
-    y1c = min(args.y0 * scale - args.kernel_size // 2 + block_shape_hi[1], full_shape[1])
-    z1c = min(args.z0 * scale - args.kernel_size // 2 + block_shape_hi[2], full_shape[2])
+    start_x = args.x0 * scale - args.kernel_size // 2
+    start_y = args.y0 * scale - args.kernel_size // 2
+    start_z = args.z0 * scale - args.kernel_size // 2
 
-    
+    end_x = start_x + block_shape_hi[0]
+    end_y = start_y + block_shape_hi[1]
+    end_z = start_z + block_shape_hi[2]
+
+    x0c = max(start_x, 0);  x1c = min(end_x, full_shape[0])
+    y0c = max(start_y, 0);  y1c = min(end_y, full_shape[1])
+    z0c = max(start_z, 0);  z1c = min(end_z, full_shape[2])
+
     soma_vol = np.squeeze(CloudVolume(args.soma_path, mip=0)[x0c:x1c, y0c:y1c, z0c:z1c])
-    
-    x_offset_0 = max(args.x0 * scale - args.kernel_size // 2, 0)
-    y_offset_0 = max(args.y0 * scale - args.kernel_size // 2, 0)
-    z_offset_0 = max(args.z0 * scale - args.kernel_size // 2, 0)
-    x_offset_1 = max(args.x0 * scale - args.kernel_size // 2 + block_shape_hi[0] - full_shape[0], 0)
-    y_offset_1 = max(args.y0 * scale - args.kernel_size // 2 + block_shape_hi[1] - full_shape[1], 0)
-    z_offset_1 = max(args.z0 * scale - args.kernel_size // 2 + block_shape_hi[2] - full_shape[2], 0)
-    if any(offset > 0 for offset in [x_offset_0, y_offset_0, z_offset_0, x_offset_1, y_offset_1, z_offset_1]):
-        soma_vol = np.pad(soma_vol, ((x_offset_0, x_offset_1), (y_offset_0, y_offset_1), (z_offset_0, z_offset_1)), mode='constant', constant_values=0)
+
+    pad_left_x  = max(0, -start_x)
+    pad_left_y  = max(0, -start_y)
+    pad_left_z  = max(0, -start_z)
+    pad_right_x = max(0, end_x - full_shape[0])
+    pad_right_y = max(0, end_y - full_shape[1])
+    pad_right_z = max(0, end_z - full_shape[2])
+
+    print(f"soma_vol.shape: {soma_vol.shape}")
+
+    if any(p > 0 for p in (pad_left_x,pad_right_x,pad_left_y,pad_right_y,pad_left_z,pad_right_z)):
+        soma_vol = np.pad(
+            soma_vol,
+            ((pad_left_x, pad_right_x),
+            (pad_left_y, pad_right_y),
+            (pad_left_z, pad_right_z)),
+            mode="constant",
+            constant_values=0
+        )
+        print(f"soma_vol.shape after padding: {soma_vol.shape}")
 
     for lx in range(out_shape[0]):
         for ly in range(out_shape[1]):
