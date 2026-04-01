@@ -47,7 +47,7 @@ if __name__ == "__main__":
                 x1 = min(x0 + args.block_size, out_shape[0])
                 y1 = min(y0 + args.block_size, out_shape[1])
                 z1 = min(z0 + args.block_size, out_shape[2])
-                processes.append(subprocess.Popen(['srun', '--time=7-0', '--gres=gpu:0', '--mem=16000', '--tasks', '1', '--cpus-per-task', '2', '--nice', "python", "generate_visual_block.py", 
+                processes.append(subprocess.Popen(['srun', '--time=7-0', '--gres=gpu:0', '--mem=28000', '--tasks', '1', '--cpus-per-task', '2', '--nice', "python", "generate_visual_block.py", 
                                                    "--soma_path", args.soma_path, 
                                                    "--out_mip", str(args.out_mip), 
                                                    "--output_dir", args.output_dir,  
