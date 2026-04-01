@@ -20,7 +20,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if not os.path.exists(args.output_dir):
-        os.makedirs(args.output_dir)
+        os.makedirs(os.path.join(args.output_dir, "temp"), exist_ok=True)
 
 
     out_shape = tuple(CloudVolume(args.soma_path, mip=args.out_mip).shape[0:3])
