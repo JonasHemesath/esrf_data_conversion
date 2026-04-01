@@ -49,9 +49,9 @@ if __name__ == "__main__":
                                                    "--out_mip", str(args.out_mip), 
                                                    "--output_dir", args.output_dir,  
                                                    "--kernel_size", str(args.kernel_size), 
-                                                   "--final_shape", str(out_shape),
                                                    "--x0", str(x0), "--y0", str(y0), "--z0", str(z0), 
-                                                   "--x1", str(x1), "--y1", str(y1), "--z1", str(z1)],
+                                                   "--x1", str(x1), "--y1", str(y1), "--z1", str(z1),
+                                                   "--final_shape"] + [str(int(s)) for s in out_shape],
                                                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE))
                 past_processes += 1
                 if len(processes) >= max_processes:

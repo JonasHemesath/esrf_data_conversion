@@ -8,7 +8,7 @@ if __name__ == "__main__":
     parser.add_argument("--out_mip", type=int, help="MIP level of the output data")
     parser.add_argument("--output_dir", type=str, help="Path to the output file")
     parser.add_argument("--kernel_size", type=int, default=200, help="Size of the blocks to process in parallel")
-    parser.add_argument("--final_shape", type=str, help="Final shape of the output volume, in the format '(x,y,z)'")
+    parser.add_argument("--final_shape", type=int, nargs=3, help="Final shape of the output volume, in the format '(x,y,z)'")
     parser.add_argument("--x0", type=int, help="Starting x coordinate of the block in low resolution")
     parser.add_argument("--y0", type=int, help="Starting y coordinate of the block in low resolution")
     parser.add_argument("--z0", type=int, help="Starting z coordinate of the block in low resolution")
@@ -18,7 +18,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    final_shape = tuple(map(int, args.final_shape.strip('()').split(',')))
+    final_shape = tuple(args.final_shape)
 
     out_shape = tuple([args.x1 - args.x0, args.y1 - args.y0, args.z1 - args.z0])
     out_vol = np.zeros(out_shape, dtype=np.uint16)
