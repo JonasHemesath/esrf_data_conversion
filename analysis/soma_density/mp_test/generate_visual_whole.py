@@ -1,3 +1,4 @@
+import os
 import subprocess
 
 import argparse
@@ -16,7 +17,10 @@ if __name__ == "__main__":
     parser.add_argument("--kernel_size", type=int, default=200, help="Size of the blocks to process in parallel")
 
     args = parser.parse_args()
-    
+
+    if not os.path.exists(args.output_dir):
+        os.makedirs(args.output_dir)
+
 
     out_shape = tuple(CloudVolume(args.soma_path, mip=args.out_mip).shape[0:3])
 
