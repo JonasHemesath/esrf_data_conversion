@@ -20,6 +20,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if not os.path.exists(args.output_dir):
+        os.makedirs(args.output_dir, exist_ok=True)
+    if not os.path.exists(os.path.join(args.output_dir, "temp")):
         os.makedirs(os.path.join(args.output_dir, "temp"), exist_ok=True)
 
 
