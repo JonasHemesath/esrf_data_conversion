@@ -75,7 +75,7 @@ if __name__ == "__main__":
 
                             processes.append(subprocess.Popen(["srun", "--time=7-0", "--gres=gpu:0", "--mem=100000", "--tasks", "1", "--cpus-per-task", "4", "--nice", "python", "/cajal/nvmescratch/users/johem/esrf_data_conversion/segmentation/max_downsample/max_downsample.py", 
                                                                 "--input_path", args.input_path, 
-                                                                "--output_dir", args.output_dir, 
+                                                                "--output_path", args.output_dir, 
                                                                 "--input_mip", "0", 
                                                                 "--output_mip", str(args.out_mip), 
                                                                 "--block_shape_hr", str(xb1_hr - xb0_hr), str(yb1_hr - yb0_hr), str(zb1_hr - zb0_hr), 
