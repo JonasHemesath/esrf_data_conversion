@@ -18,7 +18,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     input_vol = CloudVolume(args.input_path, mip=args.input_mip)
-    output_vol = CloudVolume(args.output_path, mip=args.output_mip, fill_missing=True)
+    output_vol = CloudVolume(args.output_path, mip=0, fill_missing=True)
 
     xb0_hr = args.block_org_hr[0]
     yb0_hr = args.block_org_hr[1]
