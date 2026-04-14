@@ -73,7 +73,7 @@ if __name__ == "__main__":
                             yb1_lr = min(yb0_lr + args.block_size // (2 ** args.out_mip), out_shape[1])
                             zb1_lr = min(zb0_lr + args.block_size // (2 ** args.out_mip), out_shape[2])
 
-                            processes.append(subprocess.Popen(["srun", "--time=7-0", "--gres=gpu:a40:1", "--mem=400000", "--tasks", "1", "--cpus-per-task", "32", "--nice", "python", "/cajal/nvmescratch/users/johem/esrf_data_conversion/segmentation/max_downsample/max_downsample.py", 
+                            processes.append(subprocess.Popen(["srun", "--time=7-0", "--gres=gpu:0", "--mem=100000", "--tasks", "1", "--cpus-per-task", "4", "--nice", "python", "/cajal/nvmescratch/users/johem/esrf_data_conversion/segmentation/max_downsample/max_downsample.py", 
                                                                 "--input_path", args.input_path, 
                                                                 "--output_dir", args.output_dir, 
                                                                 "--input_mip", "0", 
