@@ -10,13 +10,14 @@ if __name__ == "__main__":
     parser.add_argument("--output_dir", type=str, help="Directory to save the output blocks")
     parser.add_argument("--block_size", type=int, help="Size of the blocks to process in parallel")
     parser.add_argument("--max_processes", type=int, help="Maximum number of parallel processes to run")
+    parser.add_argument("--lr_res", type=int, help="Resolution of the output downsampled data, in units of input voxels (e.g. 2 means output voxels are 2x2x2 blocks of input voxels)")
     #parser.add_argument("--stride", type=int, default=1, help="Stride to use when iterating over blocks, in units of output voxels")
     args = parser.parse_args()
 
     out_shape = tuple(CloudVolume(args.input_path, mip=args.out_mip).shape[0:3])
     in_shape = tuple(CloudVolume(args.input_path, mip=0).shape[0:3])
 
-    resolution = CloudVolume(args.input_path, mip=args.out_mip).scales[0]['resolution']
+    resolution = [args.lr_res, args.lr_res, args.lr_res]
     chunk_sizes = [[1024//(2**args.out_mip), 1024//(2**args.out_mip), 1024//(2**args.out_mip)]]
     stride = math.ceil(1024 / args.block_size) + 1
 
