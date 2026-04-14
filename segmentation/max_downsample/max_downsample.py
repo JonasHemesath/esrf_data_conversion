@@ -35,13 +35,13 @@ if __name__ == "__main__":
     for x in range(0, args.block_shape_lr[0]):
         for y in range(0, args.block_shape_lr[1]):
             for z in range(0, args.block_shape_lr[2]):
-                x0_hr = x * (2 ** (args.input_mip - args.output_mip))
-                y0_hr = y * (2 ** (args.input_mip - args.output_mip))
-                z0_hr = z * (2 ** (args.input_mip - args.output_mip))
+                x0_hr = x * (2 ** (args.output_mip - args.input_mip))
+                y0_hr = y * (2 ** (args.output_mip - args.input_mip))
+                z0_hr = z * (2 ** (args.output_mip - args.input_mip))
 
-                x1_hr = min((x + 1) * (2 ** (args.input_mip - args.output_mip)), args.block_shape_hr[0])
-                y1_hr = min((y + 1) * (2 ** (args.input_mip - args.output_mip)), args.block_shape_hr[1])
-                z1_hr = min((z + 1) * (2 ** (args.input_mip - args.output_mip)), args.block_shape_hr[2])
+                x1_hr = min((x + 1) * (2 ** (args.output_mip - args.input_mip)), args.block_shape_hr[0])
+                y1_hr = min((y + 1) * (2 ** (args.output_mip - args.input_mip)), args.block_shape_hr[1])
+                z1_hr = min((z + 1) * (2 ** (args.output_mip - args.input_mip)), args.block_shape_hr[2])
 
                 block_hr = np.squeeze(input_vol[x0_hr:x1_hr, y0_hr:y1_hr, z0_hr:z1_hr])
                 temp_block[x, y, z] = block_hr.max()
