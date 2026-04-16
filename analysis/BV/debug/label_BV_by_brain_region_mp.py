@@ -51,6 +51,7 @@ if __name__ == "__main__":
     total_jobs = steps[0] * steps[1] * steps[2]
     print(f"Launching {total_jobs} jobs to label the BV by brain region...")
     processes = []
+    process_id = 0
     for x in range(steps[0]):
         for y in range(steps[1]):
             for z in range(steps[2]):
@@ -63,11 +64,36 @@ if __name__ == "__main__":
                 z1_hr = min((z + 1) * block_size_hr, out_shape[2])
 
 
-                processes.append(subprocess.Popen(["python", "label_BV_by_brain_region.py", 
+                processes.append(subprocess.Popen(['srun', '--time=7-0', '--gres=gpu:0', '--mem=100000', '--tasks', '1', '--cpus-per-task', '4', '--nice', 'python', '/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/BV/debug/label_BV_by_brain_region.py', 
                                                     "--brain_regions_path", args.brain_regions_path, 
                                                     "--BV_path", args.BV_path, 
                                                     "--brain_regions_mip", str(args.brain_regions_mip), 
                                                     "--block_org_hr", str(x0_hr), str(y0_hr), str(z0_hr), 
                                                     "--block_shape_hr", str(x1_hr - x0_hr), str(y1_hr - y0_hr), str(z1_hr - z0_hr), 
                                                     "--output_file", args.output_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE))
+                
+                process_id += 1
+                if len(processes) >= args.num_processes:
+                    for i, process in enumerate(processes):
+                        outs, errs = process.communicate()
+                        if errs:
+                            print(f"Process {i+1} errors:")
+                            print(errs.decode('utf-8') if isinstance(errs, bytes) else errs)
+                        if outs:
+                            print(f"Process {i+1} output:")
+                            print(outs.decode('utf-8') if isinstance(outs, bytes) else outs)
+                        print('Process', i+1, 'of', len(processes), 'done')
+                        print('Total jobs submitted', process_id, 'of', total_jobs)
+                    processes = []
+    if len(processes) > 0:
+        for i, process in enumerate(processes):
+            outs, errs = process.communicate()
+            if errs:
+                print(f"Process {i+1} errors:")
+                print(errs.decode('utf-8') if isinstance(errs, bytes) else errs)
+            if outs:
+                print(f"Process {i+1} output:")
+                print(outs.decode('utf-8') if isinstance(outs, bytes) else outs)
+            print('Process', i+1, 'of', len(processes), 'done')
+            print('Total jobs submitted', process_id, 'of', total_jobs)
 
