@@ -13,4 +13,4 @@ cf = CloudFile(os.path.join(cloudpath, "stats", "voxel_counts.im"))
 #im = IntMap(cf)
 # for fast local access, but downloads the whole file
 im = IntMap(cf.get())
-print(im)
+print(im[12])
