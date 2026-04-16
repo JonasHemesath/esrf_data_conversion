@@ -1,0 +1,8 @@
+[
+    "https://syconn.esc.mpcdf.mpg.de/johem/ng/zf13_hr2_v251209/|neuroglancer-precomputed:",
+    "https://syconn.esc.mpcdf.mpg.de/johem/ng/260306_Soma_distance_transform_multires_multipath_linearLR_soma_masked/|neuroglancer-precomputed:",
+    "https://syconn.esc.mpcdf.mpg.de/johem/ng/260304_Myelin_BV_multires_multipath_linearLR_BV_masked/|neuroglancer-precomputed:",
+    "https://syconn.esc.mpcdf.mpg.de/johem/ng/zf13_hr2_brain_mask_v260305/|neuroglancer-precomputed:",
+    "https://syconn.esc.mpcdf.mpg.de/johem/ng/brain_areas_v260415/|neuroglancer-precomputed:",
+    "https://syconn.esc.mpcdf.mpg.de/johem/ng/zf13_hr2_brain_regions_v260409/|neuroglancer-precomputed:"
+]
