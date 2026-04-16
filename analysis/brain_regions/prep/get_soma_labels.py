@@ -47,7 +47,7 @@ if __name__ == "__main__":
             print(f"No somas found in region {label}, skipping...")
             continue
         
-        brain_region_block = np.squeeze(brain_regions_vol[min_bound_hr[0]:max_bound_hr[0], min_bound_hr[1]:max_bound_hr[1], min_bound_hr[2]:max_bound_hr[2]])
+        brain_region_block = np.squeeze(brain_regions_vol[min_bound[0]:max_bound[0], min_bound[1]:max_bound[1], min_bound[2]:max_bound[2]])
         factor = (soma_block.shape[0] / brain_region_block.shape[0], soma_block.shape[1] / brain_region_block.shape[1], soma_block.shape[2] / brain_region_block.shape[2])
         brain_region_block = zoom(brain_region_block,
                                         zoom=factor,
