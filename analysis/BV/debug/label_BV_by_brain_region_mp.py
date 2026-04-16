@@ -2,6 +2,7 @@ from cloudvolume import CloudVolume
 import subprocess
 import argparse
 import math
+import numpy as np
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -62,6 +63,19 @@ if __name__ == "__main__":
                 x1_hr = min((x + 1) * block_size_hr, out_shape[0])
                 y1_hr = min((y + 1) * block_size_hr, out_shape[1])
                 z1_hr = min((z + 1) * block_size_hr, out_shape[2])
+
+                x0_lr = x0_hr // (2 ** args.brain_regions_mip)
+                y0_lr = y0_hr // (2 ** args.brain_regions_mip)
+                z0_lr = z0_hr // (2 ** args.brain_regions_mip)
+
+                x1_lr = min(x1_hr // (2 ** args.brain_regions_mip), brain_regions_vol.shape[0])
+                y1_lr = min(y1_hr // (2 ** args.brain_regions_mip), brain_regions_vol.shape[1])
+                z1_lr = min(z1_hr // (2 ** args.brain_regions_mip), brain_regions_vol.shape[2])
+
+                temp = brain_regions_vol[x0_lr:x1_lr, y0_lr:y1_lr, z0_lr:z1_lr]
+                if np.sum(temp) == 0:
+                    print(f"No brain regions in block {x0_hr},{y0_hr},{z0_hr} with shape {x1_hr-x0_hr},{y1_hr-y0_hr},{z1_hr-z0_hr}, skipping...")
+                    continue
 
 
                 processes.append(subprocess.Popen(['srun', '--time=7-0', '--gres=gpu:0', '--mem=100000', '--tasks', '1', '--cpus-per-task', '4', '--nice', 'python', '/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/BV/debug/label_BV_by_brain_region.py', 
