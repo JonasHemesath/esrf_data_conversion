@@ -14,7 +14,7 @@ if __name__ == "__main__":
     parser.add_argument("--output_file", type=str, help="Path to the output file")
     args = parser.parse_args()
 
-    brain_regions_vol = CloudVolume(args.brain_regions_path, mip=args.brain_regions_mip)
+    brain_regions_vol = CloudVolume(args.brain_regions_path, mip=0)
     BV_vol = CloudVolume(args.BV_path, mip=0)
 
     x0_hr = args.block_org_hr[0]
