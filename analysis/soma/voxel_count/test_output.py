@@ -1,4 +1,4 @@
-from cloudfiles import CloudFile
+#from cloudfiles import CloudFile
 from mapbuffer import IntMap
 import sys
 
