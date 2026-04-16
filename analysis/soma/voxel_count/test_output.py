@@ -1,11 +1,12 @@
 from cloudfiles import CloudFile
 from mapbuffer import IntMap
 import sys
+import os
 
 cloudpath = sys.argv[1]
 
 
-cf = CloudFile("/".join(cloudpath, "stats", "voxel_counts.im"))
+cf = CloudFile(os.path.join(cloudpath, "stats", "voxel_counts.im"))
 
 # for (slow) remote access w/o having to download the file
 # only works if file is uncompressed on remote
