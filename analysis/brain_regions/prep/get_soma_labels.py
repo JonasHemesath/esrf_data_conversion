@@ -55,8 +55,9 @@ if __name__ == "__main__":
         
         soma_block[brain_region_block != label] = 0
         soma_label, soma_index = np.unique(soma_block, return_index=True)
-        soma_label = soma_label[soma_label != 0]
+        
         soma_index = soma_index[soma_label != 0]
+        soma_label = soma_label[soma_label != 0]
 
         np.save(f"{args.output_file}_label_{label}.npy", soma_label)
         np.save(f"{args.output_file}_index_{label}.npy", soma_index)
