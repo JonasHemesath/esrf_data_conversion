@@ -1,7 +1,7 @@
 from cloudvolume import CloudVolume
 import numpy as np
 import argparse
-import cv2
+from scipy.ndimage import zoom
 
 
 if __name__ == "__main__":
@@ -39,7 +39,11 @@ if __name__ == "__main__":
         exit(0)
     BV_block = np.squeeze(BV_vol[x0_hr:x1_hr, y0_hr:y1_hr, z0_hr:z1_hr])
 
-    brain_regions_block_upsampled = cv2.resize(brain_regions_block, dsize=(BV_block.shape[1], BV_block.shape[0], BV_block.shape[2]), interpolation=cv2.INTER_NEAREST)
+    factor = (brain_regions_block.shape[0] / BV_block.shape[0], brain_regions_block.shape[1] / BV_block.shape[1], brain_regions_block.shape[2] / BV_block.shape[2])
+    brain_regions_block_upsampled = zoom(brain_regions_block,
+                                     zoom=factor,
+                                     order=0)
+    
 
     out_vol = np.zeros(BV_block.shape, dtype=np.uint64)
     out_vol[BV_block > 0] = brain_regions_block_upsampled[BV_block > 0]
