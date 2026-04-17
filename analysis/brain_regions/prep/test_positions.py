@@ -14,12 +14,27 @@ from tqdm import tqdm
 
 _global_soma = None
 _global_use_faces = True
+_global_res_nm_mip0 = None
+_global_voxel_offset_mip0 = None
 
 
 def _init_worker(soma_path: str, use_faces: bool) -> None:
-    global _global_soma, _global_use_faces
+    global _global_soma, _global_use_faces, _global_res_nm_mip0, _global_voxel_offset_mip0
     _global_soma = CloudVolume(soma_path, progress=False, fill_missing=True)
     _global_use_faces = bool(use_faces)
+    info = _global_soma.info
+    scales = info.get('scales', [])
+    if not scales:
+        raise ValueError('CloudVolume info has no scales entry')
+    scale0 = scales[0]
+    _global_res_nm_mip0 = np.asarray(scale0['resolution'], dtype=np.float64)
+    _global_voxel_offset_mip0 = np.asarray(scale0.get('voxel_offset', [0, 0, 0]), dtype=np.float64)
+
+
+def _centroid_physical_to_mip0_voxel(centroid: np.ndarray) -> np.ndarray:
+    if _global_res_nm_mip0 is None:
+        raise RuntimeError('Worker not initialized with CloudVolume scale info')
+    return np.floor(centroid / _global_res_nm_mip0 - _global_voxel_offset_mip0).astype(np.float64)
 
 
 def _compute_mesh_centroid(label: int) -> np.ndarray | None:
@@ -36,8 +51,11 @@ def _compute_mesh_centroid(label: int) -> np.ndarray | None:
 
         if _global_use_faces and hasattr(md, 'faces') and md.faces is not None and len(md.faces) > 0:
             mesh = trimesh.Trimesh(vertices=verts, faces=md.faces, process=False)
-            return np.asarray(mesh.centroid, dtype=np.float64)
-        return verts.mean(axis=0)
+            centroid = np.asarray(mesh.centroid, dtype=np.float64)
+        else:
+            centroid = verts.mean(axis=0)
+
+        return _centroid_physical_to_mip0_voxel(centroid)
     except Exception:
         return None
 
