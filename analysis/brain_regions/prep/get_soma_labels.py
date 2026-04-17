@@ -15,12 +15,16 @@ def get_bounding_box_for_label(vol, label):
     max_bound = coords.max(axis=0)
     return min_bound, max_bound
 
+#def convert_index_to_coordinates(index, shape):
+#    """Convert a flat index to 3D coordinates given the shape of the volume."""
+#    z = index // (shape[0] * shape[1])
+#    y = (index % (shape[0] * shape[1])) // shape[0]
+#    x = index % shape[0]#
+#    return np.array([x, y, z], dtype=int)
+
 def convert_index_to_coordinates(index, shape):
-    """Convert a flat index to 3D coordinates given the shape of the volume."""
-    z = index // (shape[0] * shape[1])
-    y = (index % (shape[0] * shape[1])) // shape[0]
-    x = index % shape[0]
-    return np.array([x, y, z], dtype=int)
+    # shape is (X, Y, Z) for CloudVolume numpy arrays
+    return np.array(np.unravel_index(index, shape, order='C'), dtype=int)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Get the soma labels from the brain regions data")
@@ -64,7 +68,7 @@ if __name__ == "__main__":
             np.save(f"{args.output_file}_coordinates_{label}.npy", soma_coordinates)
             continue
         
-        brain_region_block = np.squeeze(brain_regions_vol[min_bound[0]:max_bound[0], min_bound[1]:max_bound[1], min_bound[2]:max_bound[2]])
+        brain_region_block = np.squeeze(brain_regions_vol[min_bound[0]:max_bound[0]+1, min_bound[1]:max_bound[1]+1, min_bound[2]:max_bound[2]+1])
         factor = (soma_block.shape[0] / brain_region_block.shape[0], soma_block.shape[1] / brain_region_block.shape[1], soma_block.shape[2] / brain_region_block.shape[2])
         brain_region_block = zoom(brain_region_block,
                                         zoom=factor,
