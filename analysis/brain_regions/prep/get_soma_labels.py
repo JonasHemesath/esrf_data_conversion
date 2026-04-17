@@ -60,7 +60,7 @@ if __name__ == "__main__":
         if os.path.exists(f"{args.output_file}_label_{label}.npy") and os.path.exists(f"{args.output_file}_index_{label}.npy") and not os.path.exists(f"{args.output_file}_coordinates_{label}.npy"):
             soma_index = np.load(f"{args.output_file}_index_{label}.npy")
             soma_label = np.load(f"{args.output_file}_label_{label}.npy")
-            soma_coordinates = np.array([convert_index_to_coordinates(idx, soma_block.shape) + min_bound_hr for idx in soma_index])
+            soma_coordinates = np.array([convert_index_to_coordinates(idx, soma_block.shape) + min_bound_hr[0:3] for idx in soma_index])
             np.save(f"{args.output_file}_coordinates_{label}.npy", soma_coordinates)
             continue
         
