@@ -9,6 +9,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from cloudvolume import CloudVolume
 import trimesh
+from tqdm import tqdm
 
 
 _global_soma = None
@@ -118,10 +119,13 @@ def process_region(region_id: str,
             num_workers = int(slurm_cpus) if slurm_cpus else max(1, (os.cpu_count() or 1) - 1)
         with mp.Pool(processes=num_workers, initializer=_init_worker, initargs=(soma_path, use_faces)) as pool:
             it = pool.imap(_compute_mesh_centroid, labels, chunksize=chunksize)
-            centroids = list(it)
+            centroids = list(tqdm(it, total=labels.shape[0], desc=f"centroids region {region_id}", dynamic_ncols=True))
     else:
         _init_worker(soma_path, use_faces)
-        centroids = [_compute_mesh_centroid(int(label)) for label in labels]
+        centroids = [
+            _compute_mesh_centroid(int(label))
+            for label in tqdm(labels, desc=f"centroids region {region_id}", dynamic_ncols=True)
+        ]
 
     distances = []
     missing_mesh = 0
@@ -178,6 +182,7 @@ def main() -> None:
         raise FileNotFoundError(f"No region label files found for base path {args.base_path}")
 
     for region_id, label_path, coord_path in region_files:
+        print(f"Processing region {region_id} with label file {label_path} and coord file {coord_path}")
         process_region(region_id, label_path, coord_path, args.soma_path,
                        args.output_dir, args.use_faces, args.parallel,
                        args.num_workers, args.chunksize)
