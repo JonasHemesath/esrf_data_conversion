@@ -50,16 +50,18 @@ if __name__ == "__main__":
         min_bound_hr = min_bound * (2 ** args.brain_regions_mip)
         max_bound_hr = (max_bound + 1) * (2 ** args.brain_regions_mip)
 
+        
+
+        soma_block = np.squeeze(soma_vol[min_bound_hr[0]:max_bound_hr[0], min_bound_hr[1]:max_bound_hr[1], min_bound_hr[2]:max_bound_hr[2]])
+        if np.sum(soma_block) == 0:
+            print(f"No somas found in region {label}, skipping...")
+            continue
+
         if os.path.exists(f"{args.output_file}_label_{label}.npy") and os.path.exists(f"{args.output_file}_index_{label}.npy") and not os.path.exists(f"{args.output_file}_coordinates_{label}.npy"):
             soma_index = np.load(f"{args.output_file}_index_{label}.npy")
             soma_label = np.load(f"{args.output_file}_label_{label}.npy")
             soma_coordinates = np.array([convert_index_to_coordinates(idx, soma_block.shape) + min_bound_hr for idx in soma_index])
             np.save(f"{args.output_file}_coordinates_{label}.npy", soma_coordinates)
-            continue
-
-        soma_block = np.squeeze(soma_vol[min_bound_hr[0]:max_bound_hr[0], min_bound_hr[1]:max_bound_hr[1], min_bound_hr[2]:max_bound_hr[2]])
-        if np.sum(soma_block) == 0:
-            print(f"No somas found in region {label}, skipping...")
             continue
         
         brain_region_block = np.squeeze(brain_regions_vol[min_bound[0]:max_bound[0], min_bound[1]:max_bound[1], min_bound[2]:max_bound[2]])
