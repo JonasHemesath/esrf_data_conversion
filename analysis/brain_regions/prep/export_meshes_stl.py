@@ -9,7 +9,7 @@ output_dir = sys.argv[2]
 soma_vol = CloudVolume(soma_path)
 
 for soma_id in soma_ids:
-    mesh = soma_vol.mesh.get(soma_id)
+    mesh = soma_vol.mesh.get(soma_id)[soma_id]
     if mesh is not None:
         mesh_t = trimesh.Trimesh(vertices=mesh.vertices, faces=mesh.faces)
         mesh_t.export(f"{output_dir}/soma_{soma_id}.stl")
