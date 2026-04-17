@@ -37,48 +37,48 @@ if __name__ == "__main__":
     region_labels = np.unique(regions)
 
     for label in region_labels:
+        
+        
+        if label == 0:
+            continue
+        print(label)
+        min_bound, max_bound = get_bounding_box_for_label(brain_regions_vol, label)
+        if min_bound is None:
+            print(f"No voxels found for label {label}, skipping...")
+            continue
+        
+        min_bound_hr = min_bound * (2 ** args.brain_regions_mip)
+        max_bound_hr = (max_bound + 1) * (2 ** args.brain_regions_mip)
+
         if os.path.exists(f"{args.output_file}_label_{label}.npy") and os.path.exists(f"{args.output_file}_index_{label}.npy") and not os.path.exists(f"{args.output_file}_coordinates_{label}.npy"):
             soma_index = np.load(f"{args.output_file}_index_{label}.npy")
             soma_label = np.load(f"{args.output_file}_label_{label}.npy")
             soma_coordinates = np.array([convert_index_to_coordinates(idx, soma_block.shape) + min_bound_hr for idx in soma_index])
             np.save(f"{args.output_file}_coordinates_{label}.npy", soma_coordinates)
-        else:
+            continue
 
-            if label == 0:
-                continue
-            print(label)
-            min_bound, max_bound = get_bounding_box_for_label(brain_regions_vol, label)
-            if min_bound is None:
-                print(f"No voxels found for label {label}, skipping...")
-                continue
-            
-            min_bound_hr = min_bound * (2 ** args.brain_regions_mip)
-            max_bound_hr = (max_bound + 1) * (2 ** args.brain_regions_mip)
+        soma_block = np.squeeze(soma_vol[min_bound_hr[0]:max_bound_hr[0], min_bound_hr[1]:max_bound_hr[1], min_bound_hr[2]:max_bound_hr[2]])
+        if np.sum(soma_block) == 0:
+            print(f"No somas found in region {label}, skipping...")
+            continue
+        
+        brain_region_block = np.squeeze(brain_regions_vol[min_bound[0]:max_bound[0], min_bound[1]:max_bound[1], min_bound[2]:max_bound[2]])
+        factor = (soma_block.shape[0] / brain_region_block.shape[0], soma_block.shape[1] / brain_region_block.shape[1], soma_block.shape[2] / brain_region_block.shape[2])
+        brain_region_block = zoom(brain_region_block,
+                                        zoom=factor,
+                                        order=0)
+        
+        soma_block[brain_region_block != label] = 0
+        soma_label, soma_index = np.unique(soma_block, return_index=True)
+        
+        soma_index = soma_index[soma_label != 0]
+        soma_label = soma_label[soma_label != 0]
 
-            
+        soma_coordinates = np.array([convert_index_to_coordinates(idx, soma_block.shape) + min_bound_hr for idx in soma_index])
 
-            soma_block = np.squeeze(soma_vol[min_bound_hr[0]:max_bound_hr[0], min_bound_hr[1]:max_bound_hr[1], min_bound_hr[2]:max_bound_hr[2]])
-            if np.sum(soma_block) == 0:
-                print(f"No somas found in region {label}, skipping...")
-                continue
-            
-            brain_region_block = np.squeeze(brain_regions_vol[min_bound[0]:max_bound[0], min_bound[1]:max_bound[1], min_bound[2]:max_bound[2]])
-            factor = (soma_block.shape[0] / brain_region_block.shape[0], soma_block.shape[1] / brain_region_block.shape[1], soma_block.shape[2] / brain_region_block.shape[2])
-            brain_region_block = zoom(brain_region_block,
-                                            zoom=factor,
-                                            order=0)
-            
-            soma_block[brain_region_block != label] = 0
-            soma_label, soma_index = np.unique(soma_block, return_index=True)
-            
-            soma_index = soma_index[soma_label != 0]
-            soma_label = soma_label[soma_label != 0]
-
-            soma_coordinates = np.array([convert_index_to_coordinates(idx, soma_block.shape) + min_bound_hr for idx in soma_index])
-
-            np.save(f"{args.output_file}_label_{label}.npy", soma_label)
-            np.save(f"{args.output_file}_index_{label}.npy", soma_index)
-            np.save(f"{args.output_file}_coordinates_{label}.npy", soma_coordinates)
+        np.save(f"{args.output_file}_label_{label}.npy", soma_label)
+        np.save(f"{args.output_file}_index_{label}.npy", soma_index)
+        np.save(f"{args.output_file}_coordinates_{label}.npy", soma_coordinates)
 
             
         
