@@ -80,7 +80,7 @@ if __name__ == "__main__":
         soma_index = soma_index[soma_label != 0]
         soma_label = soma_label[soma_label != 0]
 
-        soma_coordinates = np.array([convert_index_to_coordinates(idx, soma_block.shape) + min_bound_hr for idx in soma_index])
+        soma_coordinates = np.array([convert_index_to_coordinates(idx, soma_block.shape) + min_bound_hr[0:3] for idx in soma_index])
 
         np.save(f"{args.output_file}_label_{label}.npy", soma_label)
         np.save(f"{args.output_file}_index_{label}.npy", soma_index)
