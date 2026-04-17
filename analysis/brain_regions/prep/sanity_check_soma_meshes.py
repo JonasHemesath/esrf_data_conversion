@@ -146,14 +146,17 @@ def process_region(region_id: str,
         ]
 
     valid_max_distances = []
+    valid_labels_with_mesh = []
     missing_mesh = 0
-    for dist in max_distances:
+    for i, dist in enumerate(max_distances):
         if dist is None:
             missing_mesh += 1
         else:
             valid_max_distances.append(dist)
+            valid_labels_with_mesh.append(labels[i])
 
     valid_max_distances = np.array(valid_max_distances, dtype=np.float64)
+    valid_labels_with_mesh = np.array(valid_labels_with_mesh, dtype=np.uint64)
     num_with_mesh = valid_max_distances.size
     num_missing_mesh = missing_mesh
 
@@ -164,12 +167,37 @@ def process_region(region_id: str,
         plot_max_distance_distribution(valid_max_distances, os.path.join(region_dir, 'max_vertex_distance_distribution.png'))
     plot_missing_mesh_counts(num_with_mesh, num_missing_mesh, os.path.join(region_dir, 'missing_mesh_counts.png'))
 
+    # Save max distances with soma IDs
+    max_distances_arr = np.full(labels.shape[0], np.nan, dtype=np.float32)
+    has_mesh = np.zeros(labels.shape[0], dtype=np.bool_)
+    for i, (label, dist) in enumerate(zip(valid_labels_with_mesh, valid_max_distances)):
+        label_idx = np.where(labels == label)[0][0]
+        max_distances_arr[label_idx] = np.float32(dist)
+        has_mesh[label_idx] = True
+
+    max_dist_path = os.path.join(os.path.dirname(label_path), f"{Path(label_path).stem.rsplit('_label_', 1)[0]}_max_vertex_distances_{region_id}.npz")
+    np.savez_compressed(max_dist_path,
+                        labels=labels,
+                        max_distances=max_distances_arr,
+                        has_mesh=has_mesh)
+
+    # Find and print top 5 largest distances
+    print(f"\nRegion {region_id} - Top 5 largest vertex distances:")
+    if num_with_mesh > 0:
+        top_5_indices = np.argsort(valid_max_distances)[-5:][::-1]
+        for rank, idx in enumerate(top_5_indices, 1):
+            soma_id = valid_labels_with_mesh[idx]
+            distance = valid_max_distances[idx]
+            print(f"  {rank}. Soma ID {soma_id}: {distance:.2f} voxels")
+    print()
+
     summary_path = os.path.join(region_dir, 'summary.txt')
     with open(summary_path, 'w') as f:
         f.write(f"region_id={region_id}\n")
         f.write(f"labels_in_region={labels.shape[0]}\n")
         f.write(f"labels_with_mesh={num_with_mesh}\n")
         f.write(f"labels_missing_mesh={num_missing_mesh}\n")
+        f.write(f"max_distances_file={max_dist_path}\n")
         if num_with_mesh > 0:
             f.write(f"max_distance_mean={valid_max_distances.mean():.6f}\n")
             f.write(f"max_distance_std={valid_max_distances.std():.6f}\n")
