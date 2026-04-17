@@ -139,8 +139,22 @@ def process_region(region_id: str,
     num_with_mesh = distances.size
     num_missing_mesh = missing_mesh
 
+    # Save centroids alongside the region files
+    centroids_arr = np.full((labels.shape[0], 3), np.nan, dtype=np.float32)
+    has_centroid = np.zeros(labels.shape[0], dtype=np.bool_)
+    for i, centroid in enumerate(centroids):
+        if centroid is not None:
+            centroids_arr[i] = np.asarray(centroid, dtype=np.float32)
+            has_centroid[i] = True
+
     region_dir = os.path.join(output_dir, f"region_{region_id}")
     os.makedirs(region_dir, exist_ok=True)
+
+    centroid_path = os.path.join(os.path.dirname(label_path), f"{Path(label_path).stem.rsplit('_label_', 1)[0]}_centroids_{region_id}.npz")
+    np.savez_compressed(centroid_path,
+                        labels=labels,
+                        centroids=centroids_arr,
+                        has_centroid=has_centroid)
 
     if num_with_mesh > 0:
         plot_distance_distribution(distances, os.path.join(region_dir, 'distance_distribution.png'))
@@ -152,6 +166,7 @@ def process_region(region_id: str,
         f.write(f"labels_in_region={labels.shape[0]}\n")
         f.write(f"labels_with_mesh_centroid={num_with_mesh}\n")
         f.write(f"labels_missing_mesh={num_missing_mesh}\n")
+        f.write(f"centroids_file={centroid_path}\n")
         if num_with_mesh > 0:
             f.write(f"distance_mean={distances.mean():.6f}\n")
             f.write(f"distance_std={distances.std():.6f}\n")
