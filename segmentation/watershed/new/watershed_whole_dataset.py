@@ -100,6 +100,10 @@ def main():
     p.add_argument("--nice", type=int, default=0)
     p.add_argument("--max_parallel", type=int, default=300)
 
+    # passes
+    p.add_argument("--passes", type=int, choices=[1, 2], default=3,
+                   help="Which pass to run: 1=markers only, 2=watershed only, 3=both sequentially.")
+
     args = p.parse_args()
 
     t0 = time.time()
@@ -148,64 +152,67 @@ def main():
     blocks = list(blocks_iter)
 
     # --- PASS 1: generate global marker volume ---
-    print("\n=== PASS 1/2: Generating markers ===")
+    if args.passes in [1, 3]:
+        print("\n=== PASS 1/2: Generating markers ===")
 
-    marker_cmds = []
-    for (x0, y0, z0), (sx, sy, sz) in blocks:
-        cmd = [
-            "srun",
-            f"--time={args.srun_time}",
-            "--gres=gpu:0",
-            f"--mem={args.mem_mb}",
-            "--ntasks=1",
-            f"--cpus-per-task={args.cpus}",
-            f"--nice={args.nice}",
-            "python",
-            args.marker_script,
-            "--semantic_path", args.semantic_path,
-            "--marker_path", args.marker_path,
-            "--core_origin", str(x0), str(y0), str(z0),
-            "--core_shape", str(sx), str(sy), str(sz),
-            "--halo", str(args.halo),
-            "--soma_min_distance", str(args.soma_min_distance),
-        ]
-        marker_cmds.append(cmd)
+        marker_cmds = []
+        for (x0, y0, z0), (sx, sy, sz) in blocks:
+            cmd = [
+                "srun",
+                f"--time={args.srun_time}",
+                "--gres=gpu:0",
+                f"--mem={args.mem_mb}",
+                "--ntasks=1",
+                f"--cpus-per-task={args.cpus}",
+                f"--nice={args.nice}",
+                "python",
+                args.marker_script,
+                "--semantic_path", args.semantic_path,
+                "--marker_path", args.marker_path,
+                "--core_origin", str(x0), str(y0), str(z0),
+                "--core_shape", str(sx), str(sy), str(sz),
+                "--halo", str(args.halo),
+                "--soma_min_distance", str(args.soma_min_distance),
+            ]
+            marker_cmds.append(cmd)
 
-    # IMPORTANT:
-    # For correctness on reruns, make_markers_block_halo.py should write a core buffer
-    # (zeros + peaks) EVERY time, even when no peaks exist, so old markers are cleared.
-    run_jobs(marker_cmds, max_parallel=args.max_parallel)
+        # IMPORTANT:
+        # For correctness on reruns, make_markers_block_halo.py should write a core buffer
+        # (zeros + peaks) EVERY time, even when no peaks exist, so old markers are cleared.
+        run_jobs(marker_cmds, max_parallel=args.max_parallel)
 
-    print("PASS 1 complete.")
+        print("PASS 1 complete.")
 
-    # --- PASS 2: watershed using marker IDs as global instance IDs ---
-    print("\n=== PASS 2/2: Watershed from markers ===")
+    if args.passes in [2, 3]:
+    
+        # --- PASS 2: watershed using marker IDs as global instance IDs ---
+        print("\n=== PASS 2/2: Watershed from markers ===")
 
-    ws_cmds = []
-    for (x0, y0, z0), (sx, sy, sz) in blocks:
-        cmd = [
-            "srun",
-            f"--time={args.srun_time}",
-            "--gres=gpu:0",
-            f"--mem={args.mem_mb}",
-            "--ntasks=1",
-            f"--cpus-per-task={args.cpus}",
-            f"--nice={args.nice}",
-            "python",
-            args.watershed_script,
-            "--semantic_path", args.semantic_path,
-            "--marker_path", args.marker_path,
-            "--instance_path", args.instance_path,
-            "--core_origin", str(x0), str(y0), str(z0),
-            "--core_shape", str(sx), str(sy), str(sz),
-            "--halo", str(args.halo),
-        ]
-        ws_cmds.append(cmd)
+        ws_cmds = []
+        for (x0, y0, z0), (sx, sy, sz) in blocks:
+            cmd = [
+                "srun",
+                f"--time={args.srun_time}",
+                "--gres=gpu:0",
+                f"--mem={args.mem_mb}",
+                "--ntasks=1",
+                f"--cpus-per-task={args.cpus}",
+                f"--nice={args.nice}",
+                "python",
+                args.watershed_script,
+                "--semantic_path", args.semantic_path,
+                "--marker_path", args.marker_path,
+                "--instance_path", args.instance_path,
+                "--core_origin", str(x0), str(y0), str(z0),
+                "--core_shape", str(sx), str(sy), str(sz),
+                "--halo", str(args.halo),
+            ]
+            ws_cmds.append(cmd)
 
-    run_jobs(ws_cmds, max_parallel=args.max_parallel)
+        run_jobs(ws_cmds, max_parallel=args.max_parallel)
 
-    print("\nAll done.")
-    print("Took", round(time.time() - t0), "s")
+        print("\nAll done.")
+        print("Took", round(time.time() - t0), "s")
 
 
 if __name__ == "__main__":
