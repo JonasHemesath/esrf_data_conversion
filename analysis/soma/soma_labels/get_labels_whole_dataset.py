@@ -73,10 +73,11 @@ def main():
             print('Total jobs submitted', process_id, 'of', total_jobs)
 
 
-    labels_per_block = [np.load(f) for f in os.listdir(args.output_dir) if f.startswith("labels_block_") and f.endswith(".npy")]
+    labels_per_block = [np.load(os.path.join(args.output_dir, f)) for f in os.listdir(args.output_dir) if f.startswith("labels_block_") and f.endswith(".npy")]
     all_labels = np.unique(np.concatenate(labels_per_block))
     np.save(f"{args.output_dir}/all_labels.npy", all_labels)
     print(f"Saved all unique labels to {args.output_dir}/all_labels.npy")
+    print(f"Total unique labels across the whole dataset: {len(all_labels)}")
 
 if __name__ == "__main__":
     main()
