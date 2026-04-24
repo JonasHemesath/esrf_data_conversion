@@ -299,5 +299,6 @@ if __name__ == "__main__":
         num_workers=args.num_workers,
         chunksize=args.chunksize,
         show_progress=not args.no_progress,
+        soma_labels_file=args.soma_labels_file,
     )
     soma_data_generator.save_soma_data(args.output_file_csv, args.output_file_np, flush_every=args.flush_every)
