@@ -1,3 +1,4 @@
+from cProfile import label
 import os
 import json
 import numpy as np
@@ -32,12 +33,12 @@ def _init_worker(brain_regions_path, soma_path, brain_regions_mip):
     _global_brain_regions_mip = brain_regions_mip
 
 
-def _compute_soma_row_for_label(label):
+def _compute_soma_row_for_label(label, index):
     """
     Compute soma data for a single label in a worker process.
 
     Returns:
-      (label, brain_region, surface_area, volume, convex_hull_volume)
+      (index, label, brain_region, surface_area, volume, convex_hull_volume)
     or None if unavailable/failed.
     """
     if _global_soma is None or _global_brain_regions is None:
@@ -79,7 +80,7 @@ def _compute_soma_row_for_label(label):
         min_radius = np.min(np.linalg.norm(mesh.vertices - centroid, axis=1)).astype(np.float64)
         max_radius = np.max(np.linalg.norm(mesh.vertices - centroid, axis=1)).astype(np.float64)
 
-        return (int(label), int(brain_region), surface_area, volume, convex_hull_volume, min_radius, max_radius)
+        return (int(index),int(label), int(brain_region), surface_area, volume, convex_hull_volume, min_radius, max_radius)
 
     except Exception:
         # Avoid crashing the entire pool on a single bad label.
@@ -137,7 +138,7 @@ class SomaDataGenerator:
                     return labels_info[k]
         raise ValueError(f"Unrecognized instance_number.json format: {type(labels_info)} {labels_info}")
 
-    def _compute_row_serial(self, label):
+    def _compute_row_serial(self, label, index):
         """Serial version of the worker computation. Returns same tuple or None."""
         try:
             mesh_data = self.soma.mesh.get(label)
@@ -171,13 +172,13 @@ class SomaDataGenerator:
             min_radius = np.min(np.linalg.norm(mesh.vertices - centroid, axis=1)).astype(np.float64)
             max_radius = np.max(np.linalg.norm(mesh.vertices - centroid, axis=1)).astype(np.float64)
 
-            return (int(label), int(brain_region), surface_area, volume, convex_hull_volume, min_radius, max_radius)
+            return (int(index), int(label), int(brain_region), surface_area, volume, convex_hull_volume, min_radius, max_radius)
         except Exception:
             return None
 
     def iter_rows_parallel(self, num_workers=None, chunksize=10, show_progress=True):
         """
-        Yields (label, brain_region, surface_area, volume, convex_hull_volume, min_radius, max_radius) in parallel.
+        Yields (index, label, brain_region, surface_area, volume, convex_hull_volume, min_radius, max_radius) in parallel.
         """
         import multiprocessing
 
@@ -189,7 +190,7 @@ class SomaDataGenerator:
             initializer=_init_worker,
             initargs=(self.brain_regions_path, self.soma_path, self.brain_regions_mip),
         ) as pool:
-            iterator = pool.imap_unordered(_compute_soma_row_for_label, self.soma_labels, chunksize=chunksize)
+            iterator = pool.imap_unordered(_compute_soma_row_for_label, [(label, i) for i, label in enumerate(self.soma_labels)], chunksize=chunksize)
             if show_progress:
                 iterator = tqdm(iterator, total=self.num_label, desc="Processing somata (parallel)")
             for row in iterator:
@@ -199,13 +200,13 @@ class SomaDataGenerator:
 
     def iter_rows_serial(self, show_progress=True):
         """
-        Yields (label, brain_region, surface_area, volume, convex_hull_volume, min_radius, max_radius) serially.
+        Yields (index, label, brain_region, surface_area, volume, convex_hull_volume, min_radius, max_radius) serially.
         """
-        iterator = self.soma_labels
+        iterator = enumerate(self.soma_labels)
         if show_progress:
             iterator = tqdm(iterator, total=self.num_label, desc="Processing somata")
-        for label in iterator:
-            row = self._compute_row_serial(label)
+        for index, label in iterator:
+            row = self._compute_row_serial(label, index)
             if row is None:
                 continue
             yield row
@@ -216,7 +217,7 @@ class SomaDataGenerator:
           - CSV (line by line)
           - and optionally a .npy memory-mapped array on disk (updated as results arrive)
 
-        The .npy array has shape (num_label+1, 7) and columns:
+        The .npy array has shape (num_label+1, 8) and columns:
           [label, brain_region, surface_area, volume, convex_hull_volume, min_radius, max_radius]
 
         Rows for labels that fail/miss will remain all zeros.
@@ -228,7 +229,7 @@ class SomaDataGenerator:
                 output_file_np,
                 mode="w+",
                 dtype=np.float64,
-                shape=(self.num_label + 1, 7),
+                shape=(self.num_label + 1, 8),
             )
             mm[:] = 0.0
 
@@ -247,13 +248,13 @@ class SomaDataGenerator:
 
         with open(output_file_csv, "w") as f:
             # No header to match your previous output format
-            for (label, brain_region, surface_area, volume, convex_hull_volume, min_radius, max_radius) in row_iter:
+            for (index, label, brain_region, surface_area, volume, convex_hull_volume, min_radius, max_radius) in row_iter:
                 # Write to memmap
                 if mm is not None:
-                    mm[label, :] = (label, brain_region, surface_area, volume, convex_hull_volume, min_radius, max_radius)
+                    mm[index, :] = (index, label, brain_region, surface_area, volume, convex_hull_volume, min_radius, max_radius)
 
                 # Write to CSV
-                f.write(f"{label},{brain_region},{surface_area},{volume},{convex_hull_volume},{min_radius},{max_radius}\n")
+                f.write(f"{index},{label},{brain_region},{surface_area},{volume},{convex_hull_volume},{min_radius},{max_radius}\n")
                 written += 1
 
                 if mm is not None and (written % flush_every == 0):
