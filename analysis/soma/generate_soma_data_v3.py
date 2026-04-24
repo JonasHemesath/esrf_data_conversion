@@ -108,7 +108,7 @@ class SomaDataGenerator:
 
         if soma_labels_file is not None:
             self.soma_labels = np.load(soma_labels_file)
-            self.num_label = int(np.max(self.soma_labels))
+            self.num_label = self.soma_labels.shape[0]
         else:
             self.num_label = self.get_max_soma_label(soma_path)
             # IMPORTANT: use range instead of building a huge list
