@@ -39,7 +39,7 @@ def main():
                     print(f"Output file {output_file} already exists, skipping block at origin {block_origin}")
                     continue
                 cmd = [
-                    "srun", "--time=7-0", "--gres=gpu:0", "--mem=100000", "--tasks", "1", "--cpus-per-task", "4", "--nice", "python", "get_labels_block.py",
+                    "srun", "--time=7-0", "--gres=gpu:0", "--mem=100000", "--tasks", "1", "--cpus-per-task", "4", "--nice", "python", "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/soma/soma_labels/get_labels_block.py",
                     "--soma_path", args.soma_path,
                     "--output_dir", args.output_dir,
                     "--block_origin", str(block_origin[0]), str(block_origin[1]), str(block_origin[2]),
