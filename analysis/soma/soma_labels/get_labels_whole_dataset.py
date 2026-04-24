@@ -11,7 +11,7 @@ def main():
     parser.add_argument("--soma_path", required=True, help="Path to the soma CloudVolume dataset")
     parser.add_argument("--output_dir", required=True, help="Base path for output .npy files")
     parser.add_argument("--block_shape", nargs=3, type=int, required=True, help="Shape of the block to process, in the format 'x,y,z'")
-    parser.add_argument("--max_parallel", type=int, default=300, help="Maximum number of parallel jobs to run with srun")
+    parser.add_argument("--max_processes", type=int, default=300, help="Maximum number of parallel jobs to run with srun")
     args = parser.parse_args()
 
     os.makedirs(args.output_dir, exist_ok=True)
