@@ -96,6 +96,7 @@ class SomaDataGenerator:
         num_workers=None,
         chunksize=10,
         show_progress=True,
+        soma_labels_file=None,
     ):
         self.brain_regions_path = brain_regions_path
         self.soma_path = soma_path
@@ -105,9 +106,13 @@ class SomaDataGenerator:
         self.brain_regions = CloudVolume(brain_regions_path)
         self.soma = CloudVolume(soma_path)
 
-        self.max_label = self.get_max_soma_label(soma_path)
-        # IMPORTANT: use range instead of building a huge list
-        self.soma_labels = range(1, self.max_label + 1)
+        if soma_labels_file is not None:
+            self.soma_labels = np.load(soma_labels_file)
+            self.num_label = int(np.max(self.soma_labels))
+        else:
+            self.num_label = self.get_max_soma_label(soma_path)
+            # IMPORTANT: use range instead of building a huge list
+            self.soma_labels = range(1, self.num_label + 1)
 
         self.num_workers = num_workers
         self.chunksize = chunksize
@@ -186,7 +191,7 @@ class SomaDataGenerator:
         ) as pool:
             iterator = pool.imap_unordered(_compute_soma_row_for_label, self.soma_labels, chunksize=chunksize)
             if show_progress:
-                iterator = tqdm(iterator, total=self.max_label, desc="Processing somata (parallel)")
+                iterator = tqdm(iterator, total=self.num_label, desc="Processing somata (parallel)")
             for row in iterator:
                 if row is None:
                     continue
@@ -198,7 +203,7 @@ class SomaDataGenerator:
         """
         iterator = self.soma_labels
         if show_progress:
-            iterator = tqdm(iterator, total=self.max_label, desc="Processing somata")
+            iterator = tqdm(iterator, total=self.num_label, desc="Processing somata")
         for label in iterator:
             row = self._compute_row_serial(label)
             if row is None:
@@ -211,7 +216,7 @@ class SomaDataGenerator:
           - CSV (line by line)
           - and optionally a .npy memory-mapped array on disk (updated as results arrive)
 
-        The .npy array has shape (max_label+1, 7) and columns:
+        The .npy array has shape (num_label+1, 7) and columns:
           [label, brain_region, surface_area, volume, convex_hull_volume, min_radius, max_radius]
 
         Rows for labels that fail/miss will remain all zeros.
@@ -223,7 +228,7 @@ class SomaDataGenerator:
                 output_file_np,
                 mode="w+",
                 dtype=np.float64,
-                shape=(self.max_label + 1, 7),
+                shape=(self.num_label + 1, 7),
             )
             mm[:] = 0.0
 
@@ -265,6 +270,7 @@ if __name__ == "__main__":
     parser.add_argument("--brain_regions_path", type=str, required=True, help="Path to the brain regions file")
     parser.add_argument("--soma_path", type=str, required=True, help="Path to the soma file")
     parser.add_argument("--brain_regions_mip", type=int, required=True, help="MIP level of the brain regions data")
+    parser.add_argument("--soma_labels_file", type=str, default=None, help="Optional path to a .npy file containing an array of soma labels to process (overrides automatic max label detection)")
     parser.add_argument("--output_file_csv", type=str, required=True, help="Path to the output CSV file")
     parser.add_argument("--output_file_np", type=str, default=None, help="Path to the output NP file (optional)")
     parser.add_argument(
