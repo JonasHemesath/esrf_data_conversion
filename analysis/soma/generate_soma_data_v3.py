@@ -33,7 +33,7 @@ def _init_worker(brain_regions_path, soma_path, brain_regions_mip):
     _global_brain_regions_mip = brain_regions_mip
 
 
-def _compute_soma_row_for_label(label, index):
+def _compute_soma_row_for_label(label_index):
     """
     Compute soma data for a single label in a worker process.
 
@@ -41,6 +41,7 @@ def _compute_soma_row_for_label(label, index):
       (index, label, brain_region, surface_area, volume, convex_hull_volume)
     or None if unavailable/failed.
     """
+    label, index = label_index
     if _global_soma is None or _global_brain_regions is None:
         raise RuntimeError("Worker not initialized. Call _init_worker first.")
 
