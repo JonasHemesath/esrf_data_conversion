@@ -81,7 +81,7 @@ def _compute_soma_row_for_label(label_index):
         min_radius = np.min(np.linalg.norm(mesh.vertices - centroid, axis=1)).astype(np.float64)
         max_radius = np.max(np.linalg.norm(mesh.vertices - centroid, axis=1)).astype(np.float64)
 
-        return (int(index),int(label), int(brain_region), surface_area, volume, convex_hull_volume, min_radius, max_radius)
+        return (int(index),int(label), int(brain_region), surface_area, volume, convex_hull_volume, min_radius, max_radius, int(centroid[0]), int(centroid[1]), int(centroid[2]))
 
     except Exception:
         # Avoid crashing the entire pool on a single bad label.
@@ -173,7 +173,7 @@ class SomaDataGenerator:
             min_radius = np.min(np.linalg.norm(mesh.vertices - centroid, axis=1)).astype(np.float64)
             max_radius = np.max(np.linalg.norm(mesh.vertices - centroid, axis=1)).astype(np.float64)
 
-            return (int(index), int(label), int(brain_region), surface_area, volume, convex_hull_volume, min_radius, max_radius)
+            return (int(index), int(label), int(brain_region), surface_area, volume, convex_hull_volume, min_radius, max_radius, int(centroid[0]), int(centroid[1]), int(centroid[2]))
         except Exception:
             return None
 
@@ -218,8 +218,8 @@ class SomaDataGenerator:
           - CSV (line by line)
           - and optionally a .npy memory-mapped array on disk (updated as results arrive)
 
-        The .npy array has shape (num_label+1, 8) and columns:
-          [label, brain_region, surface_area, volume, convex_hull_volume, min_radius, max_radius]
+        The .npy array has shape (num_label+1, 11) and columns:
+          [label, brain_region, surface_area, volume, convex_hull_volume, min_radius, max_radius, centroid_x, centroid_y, centroid_z]
 
         Rows for labels that fail/miss will remain all zeros.
         """
@@ -230,7 +230,7 @@ class SomaDataGenerator:
                 output_file_np,
                 mode="w+",
                 dtype=np.float64,
-                shape=(self.num_label + 1, 8),
+                shape=(self.num_label + 1, 11),
             )
             mm[:] = 0.0
 
@@ -249,13 +249,13 @@ class SomaDataGenerator:
 
         with open(output_file_csv, "w") as f:
             # No header to match your previous output format
-            for (index, label, brain_region, surface_area, volume, convex_hull_volume, min_radius, max_radius) in row_iter:
+            for (index, label, brain_region, surface_area, volume, convex_hull_volume, min_radius, max_radius, centroid_x, centroid_y, centroid_z) in row_iter:
                 # Write to memmap
                 if mm is not None:
-                    mm[index, :] = (index, label, brain_region, surface_area, volume, convex_hull_volume, min_radius, max_radius)
+                    mm[index, :] = (index, label, brain_region, surface_area, volume, convex_hull_volume, min_radius, max_radius, centroid_x, centroid_y, centroid_z)
 
                 # Write to CSV
-                f.write(f"{index},{label},{brain_region},{surface_area},{volume},{convex_hull_volume},{min_radius},{max_radius}\n")
+                f.write(f"{index},{label},{brain_region},{surface_area},{volume},{convex_hull_volume},{min_radius},{max_radius},{centroid_x},{centroid_y},{centroid_z}\n")
                 written += 1
 
                 if mm is not None and (written % flush_every == 0):
