@@ -1,12 +1,20 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-from analysis.brain_regions.brain_region_generator import BrainRegionGenerator
+from cloudvolume import CloudVolume
+import trimesh
 import json
 
+def get_brain_region_mesh(brain_regions, brain_region_label):
+    # This function retrieves the mesh for a given brain region label
+    
+    mesh = brain_regions.mesh.get(brain_region_label)
+    if mesh is not None:
+        return trimesh.Trimesh(vertices=mesh.vertices, faces=mesh.faces)
+    return None
 
 def get_data_for_brain_region(brain_regions_path, brain_region_labels_path, soma_npy_path):
-    brain_regions = BrainRegionGenerator(brain_regions_path)
+    brain_regions = CloudVolume(brain_regions_path)
     with open(brain_region_labels_path, 'r') as f:
         brain_region_labels = json.load(f)
     soma_data = np.load(soma_npy_path)
