@@ -20,6 +20,7 @@ def get_data_for_brain_region(brain_regions_path, brain_region_labels_path, soma
     soma_data = np.load(soma_npy_path)
     data_per_brain_region = {}
     for k, v in brain_region_labels.items():
+        print(f"Processing brain region label: {k}")
         brain_region_label = int(k)
         brain_region_name = v[0]
         brain_region_hemisphere = v[1]
