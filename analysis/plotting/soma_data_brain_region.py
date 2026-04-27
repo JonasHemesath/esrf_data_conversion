@@ -219,3 +219,7 @@ def main():
     plot_soma_convex_hull_volume_per_brain_region(data_per_brain_region, output_dir)
     plot_soma_max_radius_per_brain_region(data_per_brain_region, output_dir)
     plot_soma_min_radius_per_brain_region(data_per_brain_region, output_dir)
+
+
+if __name__ == "__main__":
+    main()
