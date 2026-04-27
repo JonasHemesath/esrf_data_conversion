@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from cloudvolume import CloudVolume
 import trimesh
 import json
+import argparse
 
 def get_brain_region_mesh(brain_regions, brain_region_label):
     # This function retrieves the mesh for a given brain region label
@@ -105,7 +106,7 @@ def plot_soma_density_per_brain_region(data_per_brain_region, output_dir):
     plt.clf()
     plt.close()
 
-def plot_boxplot(data_l, data_r, brain_region_names, ylabel, title, output_path):
+def plot_boxplot(data_l, data_r, brain_region_names, ylabel, title, output_path, show_outliers=True):
     # Prepare data for boxplot: list of arrays for each group
     data = []
     labels = []
@@ -122,7 +123,7 @@ def plot_boxplot(data_l, data_r, brain_region_names, ylabel, title, output_path)
         pos += 1.5  # Space between regions
     
     fig, ax = plt.subplots(figsize=(16, 8))
-    bp = ax.boxplot(data, positions=positions, patch_artist=True, widths=0.6)
+    bp = ax.boxplot(data, positions=positions, patch_artist=True, widths=0.6, showfliers=show_outliers)
     
     # Color the boxes
     colors = ['skyblue', 'salmon'] * len(brain_region_names)
@@ -140,7 +141,7 @@ def plot_boxplot(data_l, data_r, brain_region_names, ylabel, title, output_path)
     plt.clf()
     plt.close()
 
-def plot_soma_surface_area_per_brain_region(data_per_brain_region, output_dir):
+def plot_soma_surface_area_per_brain_region(data_per_brain_region, output_dir, show_outliers=True):
     brain_region_names = []
     surface_areas_l = []
     surface_areas_r = []
@@ -151,9 +152,9 @@ def plot_soma_surface_area_per_brain_region(data_per_brain_region, output_dir):
     
     plot_boxplot(surface_areas_l, surface_areas_r, brain_region_names, 
                  'Soma Surface Area (µm²)', 'Soma Surface Area Distribution per Brain Region and Hemisphere',
-                 os.path.join(output_dir, 'soma_surface_area_per_brain_region_boxplot.png'))
+                 os.path.join(output_dir, 'soma_surface_area_per_brain_region_boxplot.png'), show_outliers=show_outliers)
 
-def plot_soma_volume_per_brain_region(data_per_brain_region, output_dir):
+def plot_soma_volume_per_brain_region(data_per_brain_region, output_dir, show_outliers=True):
     brain_region_names = []
     volumes_l = []
     volumes_r = []
@@ -164,9 +165,9 @@ def plot_soma_volume_per_brain_region(data_per_brain_region, output_dir):
     
     plot_boxplot(volumes_l, volumes_r, brain_region_names, 
                  'Soma Volume (µm³)', 'Soma Volume Distribution per Brain Region and Hemisphere',
-                 os.path.join(output_dir, 'soma_volume_per_brain_region_boxplot.png'))
+                 os.path.join(output_dir, 'soma_volume_per_brain_region_boxplot.png'), show_outliers=show_outliers)
 
-def plot_soma_convex_hull_volume_per_brain_region(data_per_brain_region, output_dir):
+def plot_soma_convex_hull_volume_per_brain_region(data_per_brain_region, output_dir, show_outliers=True):
     brain_region_names = []
     convex_hull_volumes_l = []
     convex_hull_volumes_r = []
@@ -177,9 +178,9 @@ def plot_soma_convex_hull_volume_per_brain_region(data_per_brain_region, output_
     
     plot_boxplot(convex_hull_volumes_l, convex_hull_volumes_r, brain_region_names, 
                  'Soma Convex Hull Volume (µm³)', 'Soma Convex Hull Volume Distribution per Brain Region and Hemisphere',
-                 os.path.join(output_dir, 'soma_convex_hull_volume_per_brain_region_boxplot.png'))
+                 os.path.join(output_dir, 'soma_convex_hull_volume_per_brain_region_boxplot.png'), show_outliers=show_outliers)
 
-def plot_soma_max_radius_per_brain_region(data_per_brain_region, output_dir):
+def plot_soma_max_radius_per_brain_region(data_per_brain_region, output_dir, show_outliers=True):
     brain_region_names = []
     max_radii_l = []
     max_radii_r = []
@@ -190,9 +191,9 @@ def plot_soma_max_radius_per_brain_region(data_per_brain_region, output_dir):
     
     plot_boxplot(max_radii_l, max_radii_r, brain_region_names, 
                  'Soma Max Radius (µm)', 'Soma Max Radius Distribution per Brain Region and Hemisphere',
-                 os.path.join(output_dir, 'soma_max_radius_per_brain_region_boxplot.png'))
+                 os.path.join(output_dir, 'soma_max_radius_per_brain_region_boxplot.png'), show_outliers=show_outliers)
 
-def plot_soma_min_radius_per_brain_region(data_per_brain_region, output_dir):
+def plot_soma_min_radius_per_brain_region(data_per_brain_region, output_dir, show_outliers=True):
     brain_region_names = []
     min_radii_l = []
     min_radii_r = []
@@ -203,9 +204,13 @@ def plot_soma_min_radius_per_brain_region(data_per_brain_region, output_dir):
     
     plot_boxplot(min_radii_l, min_radii_r, brain_region_names, 
                  'Soma Min Radius (µm)', 'Soma Min Radius Distribution per Brain Region and Hemisphere',
-                 os.path.join(output_dir, 'soma_min_radius_per_brain_region_boxplot.png'))
+                 os.path.join(output_dir, 'soma_min_radius_per_brain_region_boxplot.png'), show_outliers=show_outliers)
 
 def main():
+    parser = argparse.ArgumentParser(description='Plot soma data per brain region')
+    parser.add_argument('--show_outliers', action='store_true', help='Whether to show outliers in the boxplots')
+    args = parser.parse_args()
+    show_outliers = args.show_outliers
     brain_regions_path = "/cajal/scratch/projects/xray/bm05/ng/zf13_hr2_brain_regions_v260409"
     brain_region_labels_path = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/brain_regions/brain_region_labels_v260409.json"
     soma_npy_path = "/cajal/scratch/projects/xray/bm05/ng/instances/new_04_2026/260306_Soma_distance_transform_multires_multipath_linearLR_soma_masked_260421/all_soma_data/all_soma_data.npy"
@@ -217,11 +222,11 @@ def main():
     # Do something with the retrieved data, e.g., plot it or save it to a file
     plot_soma_counts_per_brain_region(data_per_brain_region, output_dir)
     plot_soma_density_per_brain_region(data_per_brain_region, output_dir)
-    plot_soma_surface_area_per_brain_region(data_per_brain_region, output_dir)
-    plot_soma_volume_per_brain_region(data_per_brain_region, output_dir)
-    plot_soma_convex_hull_volume_per_brain_region(data_per_brain_region, output_dir)
-    plot_soma_max_radius_per_brain_region(data_per_brain_region, output_dir)
-    plot_soma_min_radius_per_brain_region(data_per_brain_region, output_dir)
+    plot_soma_surface_area_per_brain_region(data_per_brain_region, output_dir, show_outliers=show_outliers)
+    plot_soma_volume_per_brain_region(data_per_brain_region, output_dir, show_outliers=show_outliers)
+    plot_soma_convex_hull_volume_per_brain_region(data_per_brain_region, output_dir, show_outliers=show_outliers)
+    plot_soma_max_radius_per_brain_region(data_per_brain_region, output_dir, show_outliers=show_outliers)
+    plot_soma_min_radius_per_brain_region(data_per_brain_region, output_dir, show_outliers=show_outliers)
 
 
 if __name__ == "__main__":
