@@ -78,28 +78,23 @@ def plot_histograms_for_region(data, brain_region_name, hemisphere, output_dir, 
         metrics.append(('radius_ratio', 'Radius Ratio (max/min)', 30))
         data['radius_ratio'] = radius_ratio
     
-    fig, axes = plt.subplots(2, 3, figsize=(18, 12))
+    fig, axes = plt.subplots(1, 5, figsize=(25, 5))
     axes = axes.flatten()
     
     color = left_color if hemisphere == 'l' else right_color
     
     for i, (metric_key, ylabel, bins) in enumerate(metrics):
-        if i >= len(axes):
-            break
         ax = axes[i]
         values = data[metric_key]
         if len(values) > 0:
             ax.hist(values, bins=bins, alpha=0.7, color=color, edgecolor='black')
             ax.set_xlabel(ylabel, fontsize=title_fontsize)
-            ax.set_ylabel('Frequency', fontsize=title_fontsize)
+            if i == 0:  # Only set ylabel for the leftmost subplot
+                ax.set_ylabel('Frequency', fontsize=title_fontsize)
             ax.set_title(f'{brain_region_name} {hemisphere.upper()}\n{ylabel}', fontsize=title_fontsize)
             ax.tick_params(axis='both', labelsize=tick_fontsize)
         else:
             ax.text(0.5, 0.5, 'No data', transform=ax.transAxes, ha='center', va='center', fontsize=title_fontsize)
-    
-    # Hide unused subplots
-    for i in range(len(metrics), len(axes)):
-        axes[i].set_visible(False)
     
     plt.tight_layout()
     output_path = os.path.join(output_dir, f'histograms_{brain_region_name}_{hemisphere}.png')
