@@ -27,13 +27,15 @@ def get_data_for_brain_region(brain_regions_path, brain_region_labels_path, soma
         brain_region_name = v[0]
         brain_region_hemisphere = v[1]
         soma_data_in_region = soma_data[soma_data[:,2] == brain_region_label]
-        data_per_brain_region[brain_region_name] = {
-            "l": {},
-            "r": {},
-
-        }
+        if brain_region_name not in data_per_brain_region:
+            data_per_brain_region[brain_region_name] = {
+                "l": {},
+                "r": {},
+            }
+        mesh = get_brain_region_mesh(brain_regions, brain_region_label)
+        brain_region_volume = mesh.volume if mesh is not None else 0
         data_per_brain_region[brain_region_name][brain_region_hemisphere] = {
-            "brain_region_volume": get_brain_region_mesh(brain_regions, brain_region_label).volume,
+            "brain_region_volume": brain_region_volume,
             "soma_labels": soma_data_in_region[:, 1],
             "soma_count": soma_data_in_region.shape[0],
             "soma_surface_area": soma_data_in_region[:, 3],
