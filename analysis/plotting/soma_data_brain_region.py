@@ -33,7 +33,7 @@ def get_data_for_brain_region(brain_regions_path, brain_region_labels_path, soma
 
         }
         data_per_brain_region[brain_region_name][brain_region_hemisphere] = {
-            "brain_region_volume": brain_regions.get_brain_region_mesh(brain_region_label).volume,
+            "brain_region_volume": get_brain_region_mesh(brain_regions, brain_region_label).volume,
             "soma_labels": soma_data_in_region[:, 1],
             "soma_count": soma_data_in_region.shape[0],
             "soma_surface_area": soma_data_in_region[:, 3],
