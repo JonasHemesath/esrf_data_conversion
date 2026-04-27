@@ -8,6 +8,7 @@ import argparse
 from sklearn.preprocessing import StandardScaler
 from sklearn.manifold import TSNE
 import umap
+from tqdm import tqdm
 
 def color_type(s):
     """Parse color: either RGB tuple like '0.5,0.5,0.5' or named color/hex string"""
@@ -113,7 +114,7 @@ def plot_umap_for_region(data, brain_region_name, hemisphere, output_dir, left_c
     data_matrix = []
     valid_indices = []
     
-    for i in range(len(data['soma_volume'])):
+    for i in tqdm(range(len(data['soma_volume'])), desc=f"Preparing data for UMAP: {brain_region_name} {hemisphere}"):
         row = []
         valid = True
         for metric in metrics:
