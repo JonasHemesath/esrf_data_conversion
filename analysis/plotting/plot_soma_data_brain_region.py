@@ -227,10 +227,10 @@ def plot_soma_min_radius_per_brain_region(data_per_brain_region, output_dir, sho
 def main():
     parser = argparse.ArgumentParser(description='Plot soma data per brain region')
     parser.add_argument('--show_outliers', action='store_true', help='Whether to show outliers in the boxplots')
-    parser.add_argument('--left_color', type=color_type, default='skyblue', help='Color for left hemisphere (default: skyblue). Can be named color, hex, or RGB tuple like "0.5,0.5,0.5"')
-    parser.add_argument('--right_color', type=color_type, default='salmon', help='Color for right hemisphere (default: salmon). Can be named color, hex, or RGB tuple like "0.5,0.5,0.5"')
-    parser.add_argument('--tick_fontsize', type=int, default=10, help='Font size for tick labels (default: 10)')
-    parser.add_argument('--title_fontsize', type=int, default=12, help='Font size for axis titles and plot title (default: 12)')
+    parser.add_argument('--left_color', type=color_type, default='0.7529,0.6471,0.3882', help='Color for left hemisphere (default: skyblue). Can be named color, hex, or RGB tuple like "0.5,0.5,0.5"')
+    parser.add_argument('--right_color', type=color_type, default='0.3451,0.3137,0.6824', help='Color for right hemisphere (default: salmon). Can be named color, hex, or RGB tuple like "0.5,0.5,0.5"')
+    parser.add_argument('--tick_fontsize', type=int, default=16, help='Font size for tick labels (default: 10)')
+    parser.add_argument('--title_fontsize', type=int, default=18, help='Font size for axis titles and plot title (default: 12)')
     args = parser.parse_args()
     show_outliers = args.show_outliers
     left_color = args.left_color
