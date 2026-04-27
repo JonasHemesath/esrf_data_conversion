@@ -8,7 +8,7 @@ import json
 def get_brain_region_mesh(brain_regions, brain_region_label):
     # This function retrieves the mesh for a given brain region label
     
-    mesh = brain_regions.mesh.get(brain_region_label)
+    mesh = brain_regions.mesh.get(brain_region_label)[brain_region_label]
     if mesh is not None:
         return trimesh.Trimesh(vertices=mesh.vertices, faces=mesh.faces)
     return None
