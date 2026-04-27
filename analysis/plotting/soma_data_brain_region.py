@@ -33,16 +33,16 @@ def get_data_for_brain_region(brain_regions_path, brain_region_labels_path, soma
                 "r": {},
             }
         mesh = get_brain_region_mesh(brain_regions, brain_region_label)
-        brain_region_volume = mesh.volume if mesh is not None else 0
+        brain_region_volume = (mesh.volume if mesh is not None else 0) / 1e9  # Convert nm³ to µm³
         data_per_brain_region[brain_region_name][brain_region_hemisphere] = {
             "brain_region_volume": brain_region_volume,
             "soma_labels": soma_data_in_region[:, 1],
             "soma_count": soma_data_in_region.shape[0],
-            "soma_surface_area": soma_data_in_region[:, 3],
-            "soma_volume": soma_data_in_region[:, 4],
-            "soma_convex_hull_volume": soma_data_in_region[:, 5],
-            "soma_min_radius": soma_data_in_region[:, 6],
-            "soma_max_radius": soma_data_in_region[:, 7],
+            "soma_surface_area": soma_data_in_region[:, 3] / 1e6,  # Convert nm² to µm²
+            "soma_volume": soma_data_in_region[:, 4] / 1e9,  # Convert nm³ to µm³
+            "soma_convex_hull_volume": soma_data_in_region[:, 5] / 1e9,  # Convert nm³ to µm³
+            "soma_min_radius": soma_data_in_region[:, 6] / 1e3,  # Convert nm to µm
+            "soma_max_radius": soma_data_in_region[:, 7] / 1e3,  # Convert nm to µm
         }
     return data_per_brain_region
 
@@ -79,10 +79,11 @@ def plot_soma_density_per_brain_region(data_per_brain_region, output_dir):
     soma_densities_r = []
     for brain_region_name, hemispheres in data_per_brain_region.items():
         brain_region_names.append(brain_region_name)
-        region_volume_l = hemispheres['l']['brain_region_volume']
-        region_volume_r = hemispheres['r']['brain_region_volume']
-        soma_density_l = hemispheres['l']['soma_count'] / region_volume_l if region_volume_l > 0 else 0
-        soma_density_r = hemispheres['r']['soma_count'] / region_volume_r if region_volume_r > 0 else 0
+        region_volume_l = hemispheres['l']['brain_region_volume']  # in µm³
+        region_volume_r = hemispheres['r']['brain_region_volume']  # in µm³
+        # Convert from count/µm³ to count/mm³ by multiplying by 1e9 (1 mm³ = 1e9 µm³)
+        soma_density_l = (hemispheres['l']['soma_count'] / region_volume_l * 1e9) if region_volume_l > 0 else 0
+        soma_density_r = (hemispheres['r']['soma_count'] / region_volume_r * 1e9) if region_volume_r > 0 else 0
         soma_densities_l.append(soma_density_l)
         soma_densities_r.append(soma_density_r)
     
@@ -93,7 +94,7 @@ def plot_soma_density_per_brain_region(data_per_brain_region, output_dir):
     rects2 = ax.bar(x + width/2, soma_densities_r, width, label='Right Hemisphere', color='salmon')
     
     ax.set_xlabel('Brain Region')
-    ax.set_ylabel('Soma Density (count per unit volume)')
+    ax.set_ylabel('Soma Density (count per mm³)')
     ax.set_title('Soma Density per Brain Region and Hemisphere')
     ax.set_xticks(x)
     ax.set_xticklabels(brain_region_names, rotation=90)
@@ -149,7 +150,7 @@ def plot_soma_surface_area_per_brain_region(data_per_brain_region, output_dir):
         surface_areas_r.append(hemispheres['r']['soma_surface_area'])
     
     plot_boxplot(surface_areas_l, surface_areas_r, brain_region_names, 
-                 'Soma Surface Area', 'Soma Surface Area Distribution per Brain Region and Hemisphere',
+                 'Soma Surface Area (µm²)', 'Soma Surface Area Distribution per Brain Region and Hemisphere',
                  os.path.join(output_dir, 'soma_surface_area_per_brain_region_boxplot.png'))
 
 def plot_soma_volume_per_brain_region(data_per_brain_region, output_dir):
@@ -162,7 +163,7 @@ def plot_soma_volume_per_brain_region(data_per_brain_region, output_dir):
         volumes_r.append(hemispheres['r']['soma_volume'])
     
     plot_boxplot(volumes_l, volumes_r, brain_region_names, 
-                 'Soma Volume', 'Soma Volume Distribution per Brain Region and Hemisphere',
+                 'Soma Volume (µm³)', 'Soma Volume Distribution per Brain Region and Hemisphere',
                  os.path.join(output_dir, 'soma_volume_per_brain_region_boxplot.png'))
 
 def plot_soma_convex_hull_volume_per_brain_region(data_per_brain_region, output_dir):
@@ -175,7 +176,7 @@ def plot_soma_convex_hull_volume_per_brain_region(data_per_brain_region, output_
         convex_hull_volumes_r.append(hemispheres['r']['soma_convex_hull_volume'])
     
     plot_boxplot(convex_hull_volumes_l, convex_hull_volumes_r, brain_region_names, 
-                 'Soma Convex Hull Volume', 'Soma Convex Hull Volume Distribution per Brain Region and Hemisphere',
+                 'Soma Convex Hull Volume (µm³)', 'Soma Convex Hull Volume Distribution per Brain Region and Hemisphere',
                  os.path.join(output_dir, 'soma_convex_hull_volume_per_brain_region_boxplot.png'))
 
 def plot_soma_max_radius_per_brain_region(data_per_brain_region, output_dir):
@@ -188,7 +189,7 @@ def plot_soma_max_radius_per_brain_region(data_per_brain_region, output_dir):
         max_radii_r.append(hemispheres['r']['soma_max_radius'])
     
     plot_boxplot(max_radii_l, max_radii_r, brain_region_names, 
-                 'Soma Max Radius', 'Soma Max Radius Distribution per Brain Region and Hemisphere',
+                 'Soma Max Radius (µm)', 'Soma Max Radius Distribution per Brain Region and Hemisphere',
                  os.path.join(output_dir, 'soma_max_radius_per_brain_region_boxplot.png'))
 
 def plot_soma_min_radius_per_brain_region(data_per_brain_region, output_dir):
@@ -201,7 +202,7 @@ def plot_soma_min_radius_per_brain_region(data_per_brain_region, output_dir):
         min_radii_r.append(hemispheres['r']['soma_min_radius'])
     
     plot_boxplot(min_radii_l, min_radii_r, brain_region_names, 
-                 'Soma Min Radius', 'Soma Min Radius Distribution per Brain Region and Hemisphere',
+                 'Soma Min Radius (µm)', 'Soma Min Radius Distribution per Brain Region and Hemisphere',
                  os.path.join(output_dir, 'soma_min_radius_per_brain_region_boxplot.png'))
 
 def main():
