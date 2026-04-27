@@ -17,7 +17,9 @@ def get_data_for_brain_region(brain_regions_path, brain_region_labels_path, soma
     brain_regions = CloudVolume(brain_regions_path)
     with open(brain_region_labels_path, 'r') as f:
         brain_region_labels = json.load(f)
+    print("Loaded brain region labels:", brain_region_labels)
     soma_data = np.load(soma_npy_path)
+    print("Loaded soma data with shape:", soma_data.shape)
     data_per_brain_region = {}
     for k, v in brain_region_labels.items():
         print(f"Processing brain region label: {k}")
