@@ -182,8 +182,8 @@ def main():
     ap.add_argument("--tmp_dir", type=str, default=None,
                     help="Optional temp directory to store convolution temporaries as memmaps (reduces RAM usage).")
     
-    ap.add_argument("--labels_json", type=str, default=None,
-                    help="Optional JSON file mapping with the soma ids")
+    ap.add_argument("--labels_npy", type=str, default=None,
+                    help="Optional .npy file containing the soma ids")
 
     ap.add_argument("--no_progress", action="store_true")
     args = ap.parse_args()
@@ -196,11 +196,10 @@ def main():
     soma_lo = CloudVolume(args.soma_path, mip=args.out_mip, progress=True, fill_missing=True)
     out_shape_xyz = tuple(map(int, soma_lo.shape[:3]))
 
-    if args.labels_json is not None:
-        with open(args.labels_json, "r") as f:
-            labels = json.load(f)
-        if not isinstance(labels, list) or not all(isinstance(x, int) for x in labels):
-            raise ValueError(f"labels_json must be a list of integers, got: {type(labels)} {labels}")
+    if args.labels_npy is not None:
+        labels = np.load(args.labels_npy)
+        if not isinstance(labels, np.ndarray) or not all(isinstance(x, int) for x in labels):
+            raise ValueError(f"labels_npy must be a numpy array of integers, got: {type(labels)} {labels}")
         max_label = len(labels)
     else:
         max_label = get_max_soma_label(args.soma_path)
