@@ -44,6 +44,8 @@ def get_data_for_brain_region(brain_regions_path, brain_region_labels_path, soma
         brain_region_name = v[0]
         brain_region_hemisphere = v[1]
         soma_data_in_region = soma_data[soma_data[:,2] == brain_region_label]
+        # Filter out somata with non-positive volume
+        soma_data_in_region = soma_data_in_region[soma_data_in_region[:, 4] > 0]
         if brain_region_name not in data_per_brain_region:
             data_per_brain_region[brain_region_name] = {
                 "l": {},
