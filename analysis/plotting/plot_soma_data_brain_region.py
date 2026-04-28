@@ -77,7 +77,6 @@ def plot_soma_counts_per_brain_region(data_per_brain_region, output_dir, left_co
     
     ax.set_xlabel('Brain Region', fontsize=title_fontsize)
     ax.set_ylabel('Soma Count', fontsize=title_fontsize)
-    ax.set_title('Soma Counts per Brain Region and Hemisphere', fontsize=title_fontsize)
     ax.set_xticks(x)
     ax.set_xticklabels(brain_region_names, rotation=90, fontsize=tick_fontsize)
     ax.tick_params(axis='y', labelsize=tick_fontsize)
@@ -110,7 +109,6 @@ def plot_soma_density_per_brain_region(data_per_brain_region, output_dir, left_c
     
     ax.set_xlabel('Brain Region', fontsize=title_fontsize)
     ax.set_ylabel('Soma Density (count per mm³)', fontsize=title_fontsize)
-    ax.set_title('Soma Density per Brain Region and Hemisphere', fontsize=title_fontsize)
     ax.set_xticks(x)
     ax.set_xticklabels(brain_region_names, rotation=90, fontsize=tick_fontsize)
     ax.tick_params(axis='y', labelsize=tick_fontsize)
@@ -151,7 +149,6 @@ def plot_boxplot(data_l, data_r, brain_region_names, ylabel, title, output_path,
     
     ax.set_xlabel('Brain Region and Hemisphere', fontsize=title_fontsize)
     ax.set_ylabel(ylabel, fontsize=title_fontsize)
-    ax.set_title(title, fontsize=title_fontsize)
     ax.set_xticks(positions)
     ax.set_xticklabels(labels, rotation=90, fontsize=tick_fontsize)
     ax.tick_params(axis='y', labelsize=tick_fontsize)

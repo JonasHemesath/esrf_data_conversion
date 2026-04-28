@@ -94,7 +94,6 @@ def plot_histograms_for_region(data, brain_region_name, hemisphere, output_dir, 
             ax.set_xlabel(ylabel, fontsize=title_fontsize)
             if i == 0:  # Only set ylabel for the leftmost subplot
                 ax.set_ylabel('Frequency', fontsize=title_fontsize)
-            ax.set_title(f'{brain_region_name} {hemisphere.upper()}\n{ylabel}', fontsize=title_fontsize)
             ax.tick_params(axis='both', labelsize=tick_fontsize)
         else:
             ax.text(0.5, 0.5, 'No data', transform=ax.transAxes, ha='center', va='center', fontsize=title_fontsize)
@@ -145,7 +144,6 @@ def plot_umap_for_region(data, brain_region_name, hemisphere, output_dir, left_c
     scatter = ax.scatter(embedding[:, 0], embedding[:, 1], alpha=0.6, s=20, c=data_matrix[:, 0], cmap='viridis')  # Color by volume
     ax.set_xlabel('UMAP 1', fontsize=title_fontsize)
     ax.set_ylabel('UMAP 2', fontsize=title_fontsize)
-    ax.set_title(f'UMAP: {brain_region_name} {hemisphere.upper()}\nColored by Soma Volume', fontsize=title_fontsize)
     ax.tick_params(axis='both', labelsize=tick_fontsize)
     
     # Colorbar
@@ -199,7 +197,6 @@ def plot_tsne_for_region(data, brain_region_name, hemisphere, output_dir, left_c
     scatter = ax.scatter(embedding[:, 0], embedding[:, 1], alpha=0.6, s=20, c=data_matrix[:, 0], cmap='viridis')  # Color by volume
     ax.set_xlabel('t-SNE 1', fontsize=title_fontsize)
     ax.set_ylabel('t-SNE 2', fontsize=title_fontsize)
-    ax.set_title(f't-SNE: {brain_region_name} {hemisphere.upper()}\nColored by Soma Volume', fontsize=title_fontsize)
     ax.tick_params(axis='both', labelsize=tick_fontsize)
     
     # Colorbar
@@ -256,7 +253,6 @@ def plot_pca_for_region(data, brain_region_name, hemisphere, output_dir, left_co
     scatter = ax.scatter(embedding[:, 0], embedding[:, 1], alpha=0.6, s=20, c=data_matrix[:, 0], cmap='viridis')  # Color by volume
     ax.set_xlabel(f'PC1 ({explained_var[0]*100:.1f}%)', fontsize=title_fontsize)
     ax.set_ylabel(f'PC2 ({explained_var[1]*100:.1f}%)', fontsize=title_fontsize)
-    ax.set_title(f'PCA: {brain_region_name} {hemisphere.upper()}\nColored by Soma Volume', fontsize=title_fontsize)
     ax.tick_params(axis='both', labelsize=tick_fontsize)
     
     # Colorbar
