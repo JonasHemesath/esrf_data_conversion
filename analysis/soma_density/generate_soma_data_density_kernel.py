@@ -198,9 +198,9 @@ def main():
 
     if args.labels_npy is not None:
         labels = np.load(args.labels_npy)
-        if not isinstance(labels, np.ndarray) or not all(isinstance(x, int) for x in labels):
-            raise ValueError(f"labels_npy must be a numpy array of integers, got: {type(labels)} {labels}")
-        max_label = len(labels)
+        #if not isinstance(labels, np.ndarray) or not all(isinstance(x, int) for x in labels):
+        #    raise ValueError(f"labels_npy must be a numpy array of integers, got: {type(labels)} {labels}")
+        max_label = labels.shape[0]
     else:
         max_label = get_max_soma_label(args.soma_path)
         labels = range(1, max_label + 1)
