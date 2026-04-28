@@ -5,8 +5,9 @@ from cloudvolume import CloudVolume
 import trimesh
 import json
 import argparse
-from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
+from sklearn.preprocessing import StandardScaler
 import umap
 from tqdm import tqdm
 
@@ -155,6 +156,117 @@ def plot_umap_for_region(data, brain_region_name, hemisphere, output_dir, left_c
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
     plt.close()
 
+def plot_tsne_for_region(data, brain_region_name, hemisphere, output_dir, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
+    """Plot t-SNE for soma metrics in a brain region and hemisphere"""
+    
+    # Prepare data matrix
+    metrics = ['soma_volume', 'soma_surface_area', 'soma_min_radius', 'soma_max_radius']
+    data_matrix = []
+    valid_indices = []
+    
+    for i in tqdm(range(len(data['soma_volume'])), desc=f"Preparing data for t-SNE: {brain_region_name} {hemisphere}"):
+        row = []
+        valid = True
+        for metric in metrics:
+            val = data[metric][i]
+            if np.isfinite(val) and val > 0:
+                row.append(val)
+            else:
+                valid = False
+                break
+        if valid:
+            data_matrix.append(row)
+            valid_indices.append(i)
+    
+    if len(data_matrix) < 10:
+        print(f"Skipping t-SNE for {brain_region_name} {hemisphere}: insufficient data ({len(data_matrix)} points)")
+        return
+    
+    data_matrix = np.array(data_matrix)
+    
+    # Standardize
+    scaler = StandardScaler()
+    data_scaled = scaler.fit_transform(data_matrix)
+    
+    # t-SNE
+    tsne = TSNE(n_components=2, random_state=42, perplexity=min(30, len(data_matrix)-1))
+    embedding = tsne.fit_transform(data_scaled)
+    
+    # Plot
+    fig, ax = plt.subplots(figsize=(10, 8))
+    scatter = ax.scatter(embedding[:, 0], embedding[:, 1], alpha=0.6, s=20, c=data_matrix[:, 0], cmap='viridis')  # Color by volume
+    ax.set_xlabel('t-SNE 1', fontsize=title_fontsize)
+    ax.set_ylabel('t-SNE 2', fontsize=title_fontsize)
+    ax.set_title(f't-SNE: {brain_region_name} {hemisphere.upper()}\nColored by Soma Volume', fontsize=title_fontsize)
+    ax.tick_params(axis='both', labelsize=tick_fontsize)
+    
+    # Colorbar
+    cbar = plt.colorbar(scatter, ax=ax)
+    cbar.set_label('Soma Volume (µm³)', fontsize=title_fontsize)
+    cbar.ax.tick_params(labelsize=tick_fontsize)
+    
+    plt.tight_layout()
+    output_path = os.path.join(output_dir, f'tsne_{brain_region_name}_{hemisphere}.png')
+    plt.savefig(output_path, dpi=300, bbox_inches='tight')
+    plt.close()
+
+def plot_pca_for_region(data, brain_region_name, hemisphere, output_dir, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
+    """Plot PCA for soma metrics in a brain region and hemisphere"""
+    
+    # Prepare data matrix
+    metrics = ['soma_volume', 'soma_surface_area', 'soma_min_radius', 'soma_max_radius']
+    data_matrix = []
+    valid_indices = []
+    
+    for i in tqdm(range(len(data['soma_volume'])), desc=f"Preparing data for PCA: {brain_region_name} {hemisphere}"):
+        row = []
+        valid = True
+        for metric in metrics:
+            val = data[metric][i]
+            if np.isfinite(val) and val > 0:
+                row.append(val)
+            else:
+                valid = False
+                break
+        if valid:
+            data_matrix.append(row)
+            valid_indices.append(i)
+    
+    if len(data_matrix) < 2:
+        print(f"Skipping PCA for {brain_region_name} {hemisphere}: insufficient data ({len(data_matrix)} points)")
+        return
+    
+    data_matrix = np.array(data_matrix)
+    
+    # Standardize
+    scaler = StandardScaler()
+    data_scaled = scaler.fit_transform(data_matrix)
+    
+    # PCA
+    pca = PCA(n_components=2, random_state=42)
+    embedding = pca.fit_transform(data_scaled)
+    
+    # Explained variance
+    explained_var = pca.explained_variance_ratio_
+    
+    # Plot
+    fig, ax = plt.subplots(figsize=(10, 8))
+    scatter = ax.scatter(embedding[:, 0], embedding[:, 1], alpha=0.6, s=20, c=data_matrix[:, 0], cmap='viridis')  # Color by volume
+    ax.set_xlabel(f'PC1 ({explained_var[0]*100:.1f}%)', fontsize=title_fontsize)
+    ax.set_ylabel(f'PC2 ({explained_var[1]*100:.1f}%)', fontsize=title_fontsize)
+    ax.set_title(f'PCA: {brain_region_name} {hemisphere.upper()}\nColored by Soma Volume', fontsize=title_fontsize)
+    ax.tick_params(axis='both', labelsize=tick_fontsize)
+    
+    # Colorbar
+    cbar = plt.colorbar(scatter, ax=ax)
+    cbar.set_label('Soma Volume (µm³)', fontsize=title_fontsize)
+    cbar.ax.tick_params(labelsize=tick_fontsize)
+    
+    plt.tight_layout()
+    output_path = os.path.join(output_dir, f'pca_{brain_region_name}_{hemisphere}.png')
+    plt.savefig(output_path, dpi=300, bbox_inches='tight')
+    plt.close()
+
 def main():
     parser = argparse.ArgumentParser(description='Plot soma distributions and UMAP per brain region')
     parser.add_argument('--left_color', type=color_type, default='0.7529,0.6471,0.3882', help='Color for left hemisphere. Can be named color, hex, or RGB tuple like "0.5,0.5,0.5"')
@@ -189,6 +301,16 @@ def main():
             plot_umap_for_region(hemispheres[hemisphere], brain_region_name, hemisphere, output_dir,
                                left_color=left_color, right_color=right_color,
                                tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
+            
+            # t-SNE
+            plot_tsne_for_region(hemispheres[hemisphere], brain_region_name, hemisphere, output_dir,
+                               left_color=left_color, right_color=right_color,
+                               tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
+            
+            # PCA
+            plot_pca_for_region(hemispheres[hemisphere], brain_region_name, hemisphere, output_dir,
+                              left_color=left_color, right_color=right_color,
+                              tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
 
     print(f"\nAll plots saved to {output_dir}")
 
