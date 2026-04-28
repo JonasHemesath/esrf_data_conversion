@@ -64,6 +64,7 @@ def compute_summary_statistics(data_per_brain_region, metric):
                 'hemisphere': hemisphere,
                 'metric': metric,
                 'count': len(data),
+                'density': hemispheres[hemisphere]['soma_count'] / hemispheres[hemisphere]['brain_region_volume'] if hemispheres[hemisphere]['brain_region_volume'] > 0 else 0,
                 'mean': np.mean(data),
                 'median': np.median(data),
                 'std': np.std(data),

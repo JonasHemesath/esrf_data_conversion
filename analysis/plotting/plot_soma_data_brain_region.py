@@ -100,6 +100,9 @@ def plot_soma_density_per_brain_region(data_per_brain_region, output_dir, left_c
         soma_density_r = (hemispheres['r']['soma_count'] / region_volume_r * 1e9) if region_volume_r > 0 else 0
         soma_densities_l.append(soma_density_l)
         soma_densities_r.append(soma_density_r)
+
+    for i in range(len(brain_region_names)):
+        print(f"{brain_region_names[i]} - Left Density: {soma_densities_l[i]:.2f} count/mm³, Right Density: {soma_densities_r[i]:.2f} count/mm³")
     
     x = np.arange(len(brain_region_names))
     width = 0.35
