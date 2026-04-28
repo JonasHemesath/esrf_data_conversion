@@ -298,6 +298,9 @@ def main():
             plot_histograms_for_region(hemispheres[hemisphere], brain_region_name, hemisphere, output_dir, 
                                      left_color=left_color, right_color=right_color, 
                                      tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
+    for brain_region_name, hemispheres in data_per_brain_region.items():
+        for hemisphere in ['l', 'r']:
+            print(f"Processing UMAP/t-SNE/PCA for {brain_region_name} {hemisphere}")
             
             # UMAP
             plot_umap_for_region(hemispheres[hemisphere], brain_region_name, hemisphere, output_dir,
