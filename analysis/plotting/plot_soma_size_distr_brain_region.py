@@ -245,6 +245,7 @@ def main():
     data_per_brain_region = get_data_for_brain_region(brain_regions_path, brain_region_labels_path, soma_npy_path)
     for brain_region_name, hemispheres in data_per_brain_region.items():
         for hemisphere in ['l', 'r']:
+            print(f"Processing brain region: {brain_region_name}, hemisphere: {hemisphere}")
             center_points = get_center_points_for_somata_brain_region(data_per_brain_region, brain_region_name, hemisphere)
             if center_points.size > 0:
                 rotated_points = rotate_points(center_points, direction="fixed2moving")
