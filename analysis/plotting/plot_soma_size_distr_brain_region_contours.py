@@ -1,0 +1,280 @@
+#!/usr/bin/env python3
+"""
+Generate 2D contour plots of soma size distribution by brain region.
+
+This script:
+  1) Loads soma data by brain region
+  2) Rotates soma positions using the rotation-only part of elastix 3D AffineTransform
+  3) Creates filled contour plots (XY, XZ, YZ planes) with soma volume as Z
+  4) Applies rotation in physical space (nm) while keeping coordinates in nm
+"""
+
+import os
+import re
+import sys
+import argparse
+import numpy as np
+import json
+from cloudvolume import CloudVolume
+import trimesh
+import matplotlib.pyplot as plt
+from scipy.interpolate import griddata
+
+
+def format_elastix_params(txt):
+    """Parse elastix transform parameters and center of rotation."""
+    c = np.array(txt["center_of_rotation"], dtype=float)
+    p = np.array(txt["transform_parameters"], dtype=float)
+
+    A = p[:9].reshape(3, 3)  # row-major in elastix parameter files
+    t = p[9:]                # translation (ignored here)
+    return A, t, c
+
+
+def closest_rotation(A: np.ndarray) -> np.ndarray:
+    """Closest proper rotation matrix to A (SVD / polar decomposition)."""
+    U, _, Vt = np.linalg.svd(A)
+    R = U @ Vt
+    if np.linalg.det(R) < 0:  # fix reflection
+        U[:, -1] *= -1
+        R = U @ Vt
+    return R
+
+
+def apply_rotation(points_xyz, R, center):
+    """Apply y = R @ (x-center) + center to one point (3,) or array (N,3)."""
+    P = np.asarray(points_xyz, dtype=float)
+    if P.ndim == 1:
+        return (R @ (P - center)) + center
+    # row-wise: (R @ v).T == v @ R.T
+    return ((P - center) @ R.T) + center
+
+
+def convert_points_vox_to_nm(points_vox, resolution_nm=np.array([727.8, 727.8, 727.8]), mip=5):
+    """Convert points from voxel coordinates at the given mip to nanometers.
+    
+    Input: points in voxel coordinates
+    Output: points in nanometers
+    """
+    res = resolution_nm * (2 ** mip)
+    return points_vox * res
+
+
+def convert_points_nm_to_vox(points_nm, resolution_nm=np.array([727.8, 727.8, 727.8]), mip=5):
+    """Convert points from nanometers to voxel coordinates at the given mip.
+    
+    Input: points in nanometers
+    Output: points in voxel coordinates
+    """
+    res = resolution_nm * (2 ** mip)
+    return np.round(points_nm / res).astype(int)
+
+
+def rotate_points_physical_space(points_xyz_nm, direction="fixed2moving", 
+                                  resolution_nm=np.array([727.8, 727.8, 727.8]), mip=5):
+    """Apply rotation in physical space (nm) to soma center points.
+    
+    Input: points_xyz_nm in CloudVolume coordinates [Z, Y, X] in nm
+    Output: rotated points in [Z, Y, X] in nm
+    
+    Args:
+        points_xyz_nm: N x 3 array of soma centers in nm, CloudVolume [Z,Y,X]
+        direction: "fixed2moving" or "moving2fixed"
+        resolution_nm: voxel resolution in nm for each dimension
+        mip: mip level for voxel to nm conversion
+    """
+    # Elastix transform parameters and center
+    p = {"transform_parameters": [1.4372263772656602, 
+                                  0.18060631270722494, 
+                                  -0.04523011581660383, 
+                                  -0.16002875685226164, 
+                                  1.3882562508207221, 
+                                  0.4707432024639207, 
+                                  0.10191967385984288, 
+                                  -0.28354176294333977, 
+                                  1.412384260843851, 
+                                  13.142145659180052, 
+                                  62.21818155573298, 
+                                  83.15966600936764], 
+        "center_of_rotation": [399, 327.5, 173]}  # Elastix coordinates: [X, Y, Z] in voxels
+    
+    A, t, c_vox_elastix = format_elastix_params(p)
+    R = closest_rotation(A)
+    R_use = R if direction == "moving2fixed" else R.T
+    
+    # Convert center from voxels to nm (elastix [X,Y,Z] -> nm)
+    c_nm_elastix = convert_points_vox_to_nm(np.array([c_vox_elastix]), resolution_nm, mip)[0]
+    
+    # Convert center from elastix [X,Y,Z] to CloudVolume [Z,Y,X] order
+    c_nm_cloudvolume = np.array([c_nm_elastix[2], c_nm_elastix[1], c_nm_elastix[0]])
+    
+    # Transform rotation matrix for axis permutation [X,Y,Z] -> [Z,Y,X]
+    # Permutation matrix P: [X,Y,Z] -> [Z,Y,X] is P = [[0,0,1],[0,1,0],[1,0,0]]
+    P = np.array([[0, 0, 1], [0, 1, 0], [1, 0, 0]])
+    R_cloudvolume = P @ R_use @ P.T
+    
+    # Apply rotation directly in physical space
+    rotated_points_nm = apply_rotation(points_xyz_nm, R_cloudvolume, c_nm_cloudvolume)
+    
+    return rotated_points_nm
+
+
+def get_brain_region_mesh(brain_regions, brain_region_label):
+    """Retrieve the mesh for a given brain region label."""
+    mesh = brain_regions.mesh.get(brain_region_label)[brain_region_label]
+    if mesh is not None:
+        return trimesh.Trimesh(vertices=mesh.vertices, faces=mesh.faces)
+    return None
+
+
+def get_data_for_brain_region(brain_regions_path, brain_region_labels_path, soma_npy_path):
+    """Load soma data organized by brain region."""
+    brain_regions = CloudVolume(brain_regions_path)
+    with open(brain_region_labels_path, 'r') as f:
+        brain_region_labels = json.load(f)
+    print("Loaded brain region labels:", brain_region_labels)
+    soma_data = np.load(soma_npy_path)
+    print("Loaded soma data with shape:", soma_data.shape)
+    data_per_brain_region = {}
+    for k, v in brain_region_labels.items():
+        print(f"Processing brain region label: {k}")
+        brain_region_label = int(k)
+        brain_region_name = v[0]
+        brain_region_hemisphere = v[1]
+        soma_data_in_region = soma_data[soma_data[:,2] == brain_region_label]
+        # Filter out somata with non-positive volume
+        soma_data_in_region = soma_data_in_region[soma_data_in_region[:, 4] > 0]
+        if brain_region_name not in data_per_brain_region:
+            data_per_brain_region[brain_region_name] = {
+                "l": {},
+                "r": {},
+            }
+        mesh = get_brain_region_mesh(brain_regions, brain_region_label)
+        brain_region_volume = (mesh.volume if mesh is not None else 0) / 1e9  # Convert nm³ to µm³
+        data_per_brain_region[brain_region_name][brain_region_hemisphere] = {
+            "brain_region_volume": brain_region_volume,
+            "soma_labels": soma_data_in_region[:, 1],
+            "soma_count": soma_data_in_region.shape[0],
+            "soma_surface_area": soma_data_in_region[:, 3] / 1e6,  # Convert nm² to µm²
+            "soma_volume": soma_data_in_region[:, 4] / 1e9,  # Convert nm³ to µm³
+            "soma_convex_hull_volume": soma_data_in_region[:, 5] / 1e9,  # Convert nm³ to µm³
+            "soma_min_radius": soma_data_in_region[:, 6] / 1e3,  # Convert nm to µm
+            "soma_max_radius": soma_data_in_region[:, 7] / 1e3,  # Convert nm to µm
+            "soma_center_x": soma_data_in_region[:, 8],   # in nm
+            "soma_center_y": soma_data_in_region[:, 9],   # in nm
+            "soma_center_z": soma_data_in_region[:, 10],  # in nm
+        }
+    return data_per_brain_region
+
+
+def get_center_points_for_somata_brain_region(data_per_brain_region, brain_region_name, hemisphere):
+    """Get center points for all somata in a given brain region and hemisphere."""
+    if brain_region_name in data_per_brain_region:
+        if hemisphere in data_per_brain_region[brain_region_name]:
+            data = data_per_brain_region[brain_region_name][hemisphere]
+            center_points = np.concatenate([data['soma_center_x'][:, np.newaxis], 
+                                            data['soma_center_y'][:, np.newaxis], 
+                                            data['soma_center_z'][:, np.newaxis]], axis=1)
+            return center_points
+    return np.empty((0, 3), dtype=float)
+
+
+def create_contour_plots_physical_space(data_per_brain_region, brain_region_name, hemisphere, 
+                                        points_nm, output_dir):
+    """Create filled contour plots in physical space using interpolation.
+    
+    Creates 3 contour plots for the three orthogonal planes (XY, XZ, YZ)
+    with soma volume as the Z value.
+    
+    Args:
+        points_nm: N x 3 array of rotated soma centers in [Z, Y, X] nm
+        output_dir: directory to save plots
+    """
+    if brain_region_name not in data_per_brain_region:
+        return
+    if hemisphere not in data_per_brain_region[brain_region_name]:
+        return
+    
+    soma_volumes = data_per_brain_region[brain_region_name][hemisphere]['soma_volume']
+    
+    # Extract coordinates in CloudVolume order [Z, Y, X]
+    z = points_nm[:, 0]
+    y = points_nm[:, 1]
+    x = points_nm[:, 2]
+    
+    # Define grid resolution for interpolation
+    grid_resolution = 50
+    
+    # Create figure with 3 subplots
+    fig, axes = plt.subplots(1, 3, figsize=(18, 5))
+    
+    # XY plane (Z is constant for each point, so we use X-Y with volume as Z)
+    xi_xy = np.linspace(x.min(), x.max(), grid_resolution)
+    yi_xy = np.linspace(y.min(), y.max(), grid_resolution)
+    xi_grid_xy, yi_grid_xy = np.meshgrid(xi_xy, yi_xy)
+    zi_grid_xy = griddata((x, y), soma_volumes, (xi_grid_xy, yi_grid_xy), method='cubic')
+    
+    contour_xy = axes[0].contourf(xi_grid_xy, yi_grid_xy, zi_grid_xy, levels=15, cmap='hot')
+    axes[0].set_xlabel('X (nm)')
+    axes[0].set_ylabel('Y (nm)')
+    axes[0].set_title(f'{brain_region_name} {hemisphere} - XY Plane')
+    cbar_xy = plt.colorbar(contour_xy, ax=axes[0])
+    cbar_xy.set_label('Soma Volume (µm³)')
+    
+    # XZ plane (Y is constant for each point, so we use X-Z with volume as Z)
+    xi_xz = np.linspace(x.min(), x.max(), grid_resolution)
+    zi_xz = np.linspace(z.min(), z.max(), grid_resolution)
+    xi_grid_xz, zi_grid_xz = np.meshgrid(xi_xz, zi_xz)
+    vi_grid_xz = griddata((x, z), soma_volumes, (xi_grid_xz, zi_grid_xz), method='cubic')
+    
+    contour_xz = axes[1].contourf(xi_grid_xz, zi_grid_xz, vi_grid_xz, levels=15, cmap='hot')
+    axes[1].set_xlabel('X (nm)')
+    axes[1].set_ylabel('Z (nm)')
+    axes[1].set_title(f'{brain_region_name} {hemisphere} - XZ Plane')
+    cbar_xz = plt.colorbar(contour_xz, ax=axes[1])
+    cbar_xz.set_label('Soma Volume (µm³)')
+    
+    # YZ plane (X is constant for each point, so we use Y-Z with volume as Z)
+    yi_yz = np.linspace(y.min(), y.max(), grid_resolution)
+    zi_yz = np.linspace(z.min(), z.max(), grid_resolution)
+    yi_grid_yz, zi_grid_yz = np.meshgrid(yi_yz, zi_yz)
+    vi_grid_yz = griddata((y, z), soma_volumes, (yi_grid_yz, zi_grid_yz), method='cubic')
+    
+    contour_yz = axes[2].contourf(yi_grid_yz, zi_grid_yz, vi_grid_yz, levels=15, cmap='hot')
+    axes[2].set_xlabel('Y (nm)')
+    axes[2].set_ylabel('Z (nm)')
+    axes[2].set_title(f'{brain_region_name} {hemisphere} - YZ Plane')
+    cbar_yz = plt.colorbar(contour_yz, ax=axes[2])
+    cbar_yz.set_label('Soma Volume (µm³)')
+    
+    plt.tight_layout()
+    output_file = f"{output_dir}/{brain_region_name}_{hemisphere}_soma_size_distribution_contours.png"
+    plt.savefig(output_file, dpi=150)
+    print(f"Saved contour plot for {brain_region_name} hemisphere {hemisphere} to {output_file}")
+    plt.close()
+
+
+def main():
+    brain_regions_path = "/cajal/scratch/projects/xray/bm05/ng/zf13_hr2_brain_regions_v260409"
+    brain_region_labels_path = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/brain_regions/brain_region_labels_v260409.json"
+    soma_npy_path = "/cajal/scratch/projects/xray/bm05/ng/instances/new_04_2026/260306_Soma_distance_transform_multires_multipath_linearLR_soma_masked_260421/all_soma_data/all_soma_data_260427.npy"
+    output_dir = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/plotting/soma_distr_by_brain_region_contours"
+
+    os.makedirs(output_dir, exist_ok=True)
+    
+    data_per_brain_region = get_data_for_brain_region(brain_regions_path, brain_region_labels_path, soma_npy_path)
+    
+    for brain_region_name, hemispheres in data_per_brain_region.items():
+        for hemisphere in ['l', 'r']:
+            print(f"Processing brain region: {brain_region_name}, hemisphere: {hemisphere}")
+            center_points_nm = get_center_points_for_somata_brain_region(data_per_brain_region, brain_region_name, hemisphere)
+            if center_points_nm.size > 0:
+                # Rotate points in physical space (nm)
+                rotated_points_nm = rotate_points_physical_space(center_points_nm, direction="fixed2moving")
+                # Create contour plots using rotated physical coordinates
+                create_contour_plots_physical_space(data_per_brain_region, brain_region_name, hemisphere, 
+                                                     rotated_points_nm, output_dir)
+
+
+if __name__ == "__main__":
+    main()
