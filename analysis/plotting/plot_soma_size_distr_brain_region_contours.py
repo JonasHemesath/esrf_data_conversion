@@ -18,7 +18,7 @@ import json
 from cloudvolume import CloudVolume
 import trimesh
 import matplotlib.pyplot as plt
-from scipy.ndimage import gaussian_filter
+from scipy.ndimage import affine_transform, gaussian_filter
 
 
 def format_elastix_params(txt):
@@ -119,6 +119,70 @@ def rotate_points_physical_space(points_xyz_nm, direction="fixed2moving",
     return rotated_points_nm
 
 
+def rotate_segmentation_array(segmentation, direction="fixed2moving"):
+    """Rotate a segmentation volume using the elastix rotation component.
+
+    The segmentation volume is assumed to be in fixed-image voxel space with
+    axes [Z, Y, X], matching the fixed image used during elastix alignment.
+    """
+    p = {"transform_parameters": [1.4372263772656602, 
+                                  0.18060631270722494, 
+                                  -0.04523011581660383, 
+                                  -0.16002875685226164, 
+                                  1.3882562508207221, 
+                                  0.4707432024639207, 
+                                  0.10191967385984288, 
+                                  -0.28354176294333977, 
+                                  1.412384260843851, 
+                                  13.142145659180052, 
+                                  62.21818155573298, 
+                                  83.15966600936764], 
+        "center_of_rotation": [399, 327.5, 173]}  # Elastix coordinates: [X, Y, Z] in voxels
+
+    A, t, c_vox_elastix = format_elastix_params(p)
+    R = closest_rotation(A)
+    R_use = R if direction == "moving2fixed" else R.T
+
+    c_vox_cloudvolume = np.array([c_vox_elastix[2], c_vox_elastix[1], c_vox_elastix[0]])
+    P = np.array([[0, 0, 1], [0, 1, 0], [1, 0, 0]])
+    R_cloudvolume = P @ R_use @ P.T
+
+    inv_matrix = R_cloudvolume.T
+    offset = c_vox_cloudvolume - inv_matrix @ c_vox_cloudvolume
+    rotated_segmentation = affine_transform(
+        segmentation,
+        inv_matrix,
+        offset=offset,
+        order=0,
+        mode='constant',
+        cval=0,
+        prefilter=False,
+    )
+    return rotated_segmentation.astype(segmentation.dtype)
+
+
+def get_region_plane_masks(segmentation_rotated, label, bbox_vox):
+    """Project the rotated segmentation volume onto the three planes and crop."""
+    z_min, z_max, y_min, y_max, x_min, x_max = bbox_vox
+    z_min = max(0, z_min)
+    y_min = max(0, y_min)
+    x_min = max(0, x_min)
+    z_max = min(segmentation_rotated.shape[0] - 1, z_max)
+    y_max = min(segmentation_rotated.shape[1] - 1, y_max)
+    x_max = min(segmentation_rotated.shape[2] - 1, x_max)
+
+    region_mask = segmentation_rotated == label
+    xy_mask = np.any(region_mask, axis=0)[y_min:y_max + 1, x_min:x_max + 1]
+    xz_mask = np.any(region_mask, axis=1)[z_min:z_max + 1, x_min:x_max + 1]
+    yz_mask = np.any(region_mask, axis=2)[z_min:z_max + 1, y_min:y_max + 1]
+
+    return (
+        (xy_mask, (x_min, y_min)),
+        (xz_mask, (x_min, z_min)),
+        (yz_mask, (y_min, z_min)),
+    )
+
+
 def get_brain_region_mesh(brain_regions, brain_region_label):
     """Retrieve the mesh for a given brain region label."""
     mesh = brain_regions.mesh.get(brain_region_label)[brain_region_label]
@@ -152,6 +216,7 @@ def get_data_for_brain_region(brain_regions_path, brain_region_labels_path, soma
         mesh = get_brain_region_mesh(brain_regions, brain_region_label)
         brain_region_volume = (mesh.volume if mesh is not None else 0) / 1e9  # Convert nm³ to µm³
         data_per_brain_region[brain_region_name][brain_region_hemisphere] = {
+            "brain_region_label": brain_region_label,
             "brain_region_volume": brain_region_volume,
             "soma_labels": soma_data_in_region[:, 1],
             "soma_count": soma_data_in_region.shape[0],
@@ -186,7 +251,6 @@ def compute_smoothed_plane(coord_a, coord_b, values, grid_resolution=80, smoothi
 
     sum_grid, _, _ = np.histogram2d(coord_a, coord_b, bins=[a_edges, b_edges], weights=values)
     count_grid, _, _ = np.histogram2d(coord_a, coord_b, bins=[a_edges, b_edges])
-    raw_mask = count_grid > 0
 
     smoothed_sum = gaussian_filter(sum_grid, sigma=smoothing_sigma, mode='constant')
     smoothed_count = gaussian_filter(count_grid, sigma=smoothing_sigma, mode='constant')
@@ -200,11 +264,11 @@ def compute_smoothed_plane(coord_a, coord_b, values, grid_resolution=80, smoothi
     a_centers = (a_edges[:-1] + a_edges[1:]) / 2
     b_centers = (b_edges[:-1] + b_edges[1:]) / 2
     A, B = np.meshgrid(a_centers, b_centers, indexing='xy')
-    return A, B, smoothed_avg.T, raw_mask.T
+    return A, B, smoothed_avg.T
 
 
 def create_contour_plots_physical_space(data_per_brain_region, brain_region_name, hemisphere, 
-                                        points_nm, output_dir, grid_resolution=80, smoothing_sigma=2.0):
+                                        points_nm, output_dir, plane_masks, grid_resolution=80, smoothing_sigma=2.0):
     """Create filled contour plots in physical space using smoothed 2D maps."""
     if brain_region_name not in data_per_brain_region:
         return
@@ -216,10 +280,18 @@ def create_contour_plots_physical_space(data_per_brain_region, brain_region_name
     y = points_nm[:, 1]
     x = points_nm[:, 2]
 
+    (xy_mask, xy_origin), (xz_mask, xz_origin), (yz_mask, yz_origin) = plane_masks
+    resolution_nm = np.array([727.8, 727.8, 727.8])
+    res = resolution_nm * (2 ** 5)
+
     fig, axes = plt.subplots(1, 3, figsize=(18, 5))
 
-    X_xy, Y_xy, Z_xy, mask_xy = compute_smoothed_plane(x, y, soma_volumes, grid_resolution, smoothing_sigma)
-    Z_xy = np.where(mask_xy, Z_xy, np.nan)
+    X_xy, Y_xy, Z_xy = compute_smoothed_plane(x, y, soma_volumes, grid_resolution, smoothing_sigma)
+    x0_nm = xy_origin[0] * res[2]
+    y0_nm = xy_origin[1] * res[1]
+    x_idx = np.clip(np.round((X_xy - x0_nm) / res[2]).astype(int), 0, xy_mask.shape[1] - 1)
+    y_idx = np.clip(np.round((Y_xy - y0_nm) / res[1]).astype(int), 0, xy_mask.shape[0] - 1)
+    Z_xy = np.where(xy_mask[y_idx, x_idx], Z_xy, np.nan)
     contour_xy = axes[0].contourf(X_xy, Y_xy, Z_xy, levels=15, cmap='hot')
     axes[0].set_xlabel('X (nm)')
     axes[0].set_ylabel('Y (nm)')
@@ -228,8 +300,12 @@ def create_contour_plots_physical_space(data_per_brain_region, brain_region_name
     cbar_xy = plt.colorbar(contour_xy, ax=axes[0])
     cbar_xy.set_label('Soma Volume (µm³)')
 
-    X_xz, Z_xz, V_xz, mask_xz = compute_smoothed_plane(x, z, soma_volumes, grid_resolution, smoothing_sigma)
-    V_xz = np.where(mask_xz, V_xz, np.nan)
+    X_xz, Z_xz, V_xz = compute_smoothed_plane(x, z, soma_volumes, grid_resolution, smoothing_sigma)
+    x0_nm = xz_origin[0] * res[2]
+    z0_nm = xz_origin[1] * res[0]
+    x_idx = np.clip(np.round((X_xz - x0_nm) / res[2]).astype(int), 0, xz_mask.shape[1] - 1)
+    z_idx = np.clip(np.round((Z_xz - z0_nm) / res[0]).astype(int), 0, xz_mask.shape[0] - 1)
+    V_xz = np.where(xz_mask[z_idx, x_idx], V_xz, np.nan)
     contour_xz = axes[1].contourf(X_xz, Z_xz, V_xz, levels=15, cmap='hot')
     axes[1].set_xlabel('X (nm)')
     axes[1].set_ylabel('Z (nm)')
@@ -238,8 +314,12 @@ def create_contour_plots_physical_space(data_per_brain_region, brain_region_name
     cbar_xz = plt.colorbar(contour_xz, ax=axes[1])
     cbar_xz.set_label('Soma Volume (µm³)')
 
-    Y_yz, Z_yz, V_yz, mask_yz = compute_smoothed_plane(y, z, soma_volumes, grid_resolution, smoothing_sigma)
-    V_yz = np.where(mask_yz, V_yz, np.nan)
+    Y_yz, Z_yz, V_yz = compute_smoothed_plane(y, z, soma_volumes, grid_resolution, smoothing_sigma)
+    y0_nm = yz_origin[0] * res[1]
+    z0_nm = yz_origin[1] * res[0]
+    y_idx = np.clip(np.round((Y_yz - y0_nm) / res[1]).astype(int), 0, yz_mask.shape[1] - 1)
+    z_idx = np.clip(np.round((Z_yz - z0_nm) / res[0]).astype(int), 0, yz_mask.shape[0] - 1)
+    V_yz = np.where(yz_mask[z_idx, y_idx], V_yz, np.nan)
     contour_yz = axes[2].contourf(Y_yz, Z_yz, V_yz, levels=15, cmap='hot')
     axes[2].set_xlabel('Y (nm)')
     axes[2].set_ylabel('Z (nm)')
@@ -272,23 +352,34 @@ def main():
     output_dir = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/plotting/soma_distr_by_brain_region_contours"
 
     os.makedirs(output_dir, exist_ok=True)
-    
+
     data_per_brain_region = get_data_for_brain_region(brain_regions_path, brain_region_labels_path, soma_npy_path)
     
+    segmentation = np.squeeze(CloudVolume(brain_regions_path)[:, :, :])
+    segmentation_rotated = rotate_segmentation_array(segmentation, direction="fixed2moving")
+
     for brain_region_name, hemispheres in data_per_brain_region.items():
         for hemisphere in ['l', 'r']:
             print(f"Processing brain region: {brain_region_name}, hemisphere: {hemisphere}")
             center_points_nm = get_center_points_for_somata_brain_region(data_per_brain_region, brain_region_name, hemisphere)
             if center_points_nm.size > 0:
-                # Rotate points in physical space (nm)
                 rotated_points_nm = rotate_points_physical_space(center_points_nm, direction="fixed2moving")
-                # Create contour plots using rotated physical coordinates
+                rotated_points_vox = convert_points_nm_to_vox(rotated_points_nm)
+                z_min, y_min, x_min = np.maximum(rotated_points_vox.min(axis=0), 0)
+                z_max, y_max, x_max = np.minimum(rotated_points_vox.max(axis=0), np.array(segmentation_rotated.shape) - 1)
+                region_label = data_per_brain_region[brain_region_name][hemisphere]['brain_region_label']
+                plane_masks = get_region_plane_masks(
+                    segmentation_rotated,
+                    region_label,
+                    (z_min, z_max, y_min, y_max, x_min, x_max),
+                )
                 create_contour_plots_physical_space(
                     data_per_brain_region,
                     brain_region_name,
                     hemisphere,
                     rotated_points_nm,
                     output_dir,
+                    plane_masks,
                     grid_resolution=args.grid_resolution,
                     smoothing_sigma=args.smoothing_sigma,
                 )
