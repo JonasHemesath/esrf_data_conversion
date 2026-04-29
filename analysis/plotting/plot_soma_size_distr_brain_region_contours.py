@@ -18,7 +18,7 @@ import json
 from cloudvolume import CloudVolume
 import trimesh
 import matplotlib.pyplot as plt
-from scipy.interpolate import griddata
+from scipy.ndimage import gaussian_filter
 
 
 def format_elastix_params(txt):
@@ -179,74 +179,68 @@ def get_center_points_for_somata_brain_region(data_per_brain_region, brain_regio
     return np.empty((0, 3), dtype=float)
 
 
+def compute_smoothed_plane(coord_a, coord_b, values, grid_resolution=80, smoothing_sigma=1.5):
+    """Bin point values into a 2D grid and smooth with a Gaussian filter."""
+    a_edges = np.linspace(coord_a.min(), coord_a.max(), grid_resolution + 1)
+    b_edges = np.linspace(coord_b.min(), coord_b.max(), grid_resolution + 1)
+
+    sum_grid, _, _ = np.histogram2d(coord_a, coord_b, bins=[a_edges, b_edges], weights=values)
+    count_grid, _, _ = np.histogram2d(coord_a, coord_b, bins=[a_edges, b_edges])
+
+    smoothed_sum = gaussian_filter(sum_grid, sigma=smoothing_sigma, mode='constant')
+    smoothed_count = gaussian_filter(count_grid, sigma=smoothing_sigma, mode='constant')
+    smoothed_avg = np.divide(
+        smoothed_sum,
+        smoothed_count,
+        out=np.zeros_like(smoothed_sum),
+        where=smoothed_count > 0,
+    )
+
+    a_centers = (a_edges[:-1] + a_edges[1:]) / 2
+    b_centers = (b_edges[:-1] + b_edges[1:]) / 2
+    A, B = np.meshgrid(a_centers, b_centers, indexing='xy')
+    return A, B, smoothed_avg.T
+
+
 def create_contour_plots_physical_space(data_per_brain_region, brain_region_name, hemisphere, 
-                                        points_nm, output_dir):
-    """Create filled contour plots in physical space using interpolation.
-    
-    Creates 3 contour plots for the three orthogonal planes (XY, XZ, YZ)
-    with soma volume as the Z value.
-    
-    Args:
-        points_nm: N x 3 array of rotated soma centers in [Z, Y, X] nm
-        output_dir: directory to save plots
-    """
+                                        points_nm, output_dir, grid_resolution=80, smoothing_sigma=2.0):
+    """Create filled contour plots in physical space using smoothed 2D maps."""
     if brain_region_name not in data_per_brain_region:
         return
     if hemisphere not in data_per_brain_region[brain_region_name]:
         return
-    
+
     soma_volumes = data_per_brain_region[brain_region_name][hemisphere]['soma_volume']
-    
-    # Extract coordinates in CloudVolume order [Z, Y, X]
     z = points_nm[:, 0]
     y = points_nm[:, 1]
     x = points_nm[:, 2]
-    
-    # Define grid resolution for interpolation
-    grid_resolution = 50
-    
-    # Create figure with 3 subplots
+
     fig, axes = plt.subplots(1, 3, figsize=(18, 5))
-    
-    # XY plane (Z is constant for each point, so we use X-Y with volume as Z)
-    xi_xy = np.linspace(x.min(), x.max(), grid_resolution)
-    yi_xy = np.linspace(y.min(), y.max(), grid_resolution)
-    xi_grid_xy, yi_grid_xy = np.meshgrid(xi_xy, yi_xy)
-    zi_grid_xy = griddata((x, y), soma_volumes, (xi_grid_xy, yi_grid_xy), method='cubic')
-    
-    contour_xy = axes[0].contourf(xi_grid_xy, yi_grid_xy, zi_grid_xy, levels=15, cmap='hot')
+
+    X_xy, Y_xy, Z_xy = compute_smoothed_plane(x, y, soma_volumes, grid_resolution, smoothing_sigma)
+    contour_xy = axes[0].contourf(X_xy, Y_xy, Z_xy, levels=15, cmap='hot')
     axes[0].set_xlabel('X (nm)')
     axes[0].set_ylabel('Y (nm)')
     axes[0].set_title(f'{brain_region_name} {hemisphere} - XY Plane')
     cbar_xy = plt.colorbar(contour_xy, ax=axes[0])
     cbar_xy.set_label('Soma Volume (µm³)')
-    
-    # XZ plane (Y is constant for each point, so we use X-Z with volume as Z)
-    xi_xz = np.linspace(x.min(), x.max(), grid_resolution)
-    zi_xz = np.linspace(z.min(), z.max(), grid_resolution)
-    xi_grid_xz, zi_grid_xz = np.meshgrid(xi_xz, zi_xz)
-    vi_grid_xz = griddata((x, z), soma_volumes, (xi_grid_xz, zi_grid_xz), method='cubic')
-    
-    contour_xz = axes[1].contourf(xi_grid_xz, zi_grid_xz, vi_grid_xz, levels=15, cmap='hot')
+
+    X_xz, Z_xz, V_xz = compute_smoothed_plane(x, z, soma_volumes, grid_resolution, smoothing_sigma)
+    contour_xz = axes[1].contourf(X_xz, Z_xz, V_xz, levels=15, cmap='hot')
     axes[1].set_xlabel('X (nm)')
     axes[1].set_ylabel('Z (nm)')
     axes[1].set_title(f'{brain_region_name} {hemisphere} - XZ Plane')
     cbar_xz = plt.colorbar(contour_xz, ax=axes[1])
     cbar_xz.set_label('Soma Volume (µm³)')
-    
-    # YZ plane (X is constant for each point, so we use Y-Z with volume as Z)
-    yi_yz = np.linspace(y.min(), y.max(), grid_resolution)
-    zi_yz = np.linspace(z.min(), z.max(), grid_resolution)
-    yi_grid_yz, zi_grid_yz = np.meshgrid(yi_yz, zi_yz)
-    vi_grid_yz = griddata((y, z), soma_volumes, (yi_grid_yz, zi_grid_yz), method='cubic')
-    
-    contour_yz = axes[2].contourf(yi_grid_yz, zi_grid_yz, vi_grid_yz, levels=15, cmap='hot')
+
+    Y_yz, Z_yz, V_yz = compute_smoothed_plane(y, z, soma_volumes, grid_resolution, smoothing_sigma)
+    contour_yz = axes[2].contourf(Y_yz, Z_yz, V_yz, levels=15, cmap='hot')
     axes[2].set_xlabel('Y (nm)')
     axes[2].set_ylabel('Z (nm)')
     axes[2].set_title(f'{brain_region_name} {hemisphere} - YZ Plane')
     cbar_yz = plt.colorbar(contour_yz, ax=axes[2])
     cbar_yz.set_label('Soma Volume (µm³)')
-    
+
     plt.tight_layout()
     output_file = f"{output_dir}/{brain_region_name}_{hemisphere}_soma_size_distribution_contours.png"
     plt.savefig(output_file, dpi=150)
@@ -254,7 +248,17 @@ def create_contour_plots_physical_space(data_per_brain_region, brain_region_name
     plt.close()
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(description='Generate smoothed contour plots for soma size by brain region.')
+    parser.add_argument('--grid-resolution', type=int, default=80,
+                        help='Number of bins along each axis for the 2D smoothing grid (default: 80)')
+    parser.add_argument('--smoothing-sigma', type=float, default=2.0,
+                        help='Gaussian smoothing sigma applied to the binned maps (default: 2.0)')
+    return parser.parse_args()
+
+
 def main():
+    args = parse_args()
     brain_regions_path = "/cajal/scratch/projects/xray/bm05/ng/zf13_hr2_brain_regions_v260409"
     brain_region_labels_path = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/brain_regions/brain_region_labels_v260409.json"
     soma_npy_path = "/cajal/scratch/projects/xray/bm05/ng/instances/new_04_2026/260306_Soma_distance_transform_multires_multipath_linearLR_soma_masked_260421/all_soma_data/all_soma_data_260427.npy"
@@ -272,8 +276,15 @@ def main():
                 # Rotate points in physical space (nm)
                 rotated_points_nm = rotate_points_physical_space(center_points_nm, direction="fixed2moving")
                 # Create contour plots using rotated physical coordinates
-                create_contour_plots_physical_space(data_per_brain_region, brain_region_name, hemisphere, 
-                                                     rotated_points_nm, output_dir)
+                create_contour_plots_physical_space(
+                    data_per_brain_region,
+                    brain_region_name,
+                    hemisphere,
+                    rotated_points_nm,
+                    output_dir,
+                    grid_resolution=args.grid_resolution,
+                    smoothing_sigma=args.smoothing_sigma,
+                )
 
 
 if __name__ == "__main__":
