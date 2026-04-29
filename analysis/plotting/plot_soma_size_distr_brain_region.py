@@ -251,7 +251,7 @@ def main():
             print(f"Processing brain region: {brain_region_name}, hemisphere: {hemisphere}")
             center_points = get_center_points_for_somata_brain_region(data_per_brain_region, brain_region_name, hemisphere)
             if center_points.size > 0:
-                rotated_points = rotate_points(center_points, direction="fixed2moving")
+                rotated_points = rotate_points(center_points, direction="fixed2moving").astype(int)
                 translated_points = translate_points(rotated_points)
                 size_xy_avg, size_xz_avg, size_yz_avg = project_points_size_2D(data_per_brain_region, brain_region_name, hemisphere, translated_points)
                 plot_soma_size_distribution_by_brain_region_heatmap(size_xy_avg, size_xz_avg, size_yz_avg, brain_region_name, hemisphere, output_dir)
