@@ -186,6 +186,7 @@ def compute_smoothed_plane(coord_a, coord_b, values, grid_resolution=80, smoothi
 
     sum_grid, _, _ = np.histogram2d(coord_a, coord_b, bins=[a_edges, b_edges], weights=values)
     count_grid, _, _ = np.histogram2d(coord_a, coord_b, bins=[a_edges, b_edges])
+    raw_mask = count_grid > 0
 
     smoothed_sum = gaussian_filter(sum_grid, sigma=smoothing_sigma, mode='constant')
     smoothed_count = gaussian_filter(count_grid, sigma=smoothing_sigma, mode='constant')
@@ -199,7 +200,7 @@ def compute_smoothed_plane(coord_a, coord_b, values, grid_resolution=80, smoothi
     a_centers = (a_edges[:-1] + a_edges[1:]) / 2
     b_centers = (b_edges[:-1] + b_edges[1:]) / 2
     A, B = np.meshgrid(a_centers, b_centers, indexing='xy')
-    return A, B, smoothed_avg.T
+    return A, B, smoothed_avg.T, raw_mask.T
 
 
 def create_contour_plots_physical_space(data_per_brain_region, brain_region_name, hemisphere, 
@@ -217,27 +218,33 @@ def create_contour_plots_physical_space(data_per_brain_region, brain_region_name
 
     fig, axes = plt.subplots(1, 3, figsize=(18, 5))
 
-    X_xy, Y_xy, Z_xy = compute_smoothed_plane(x, y, soma_volumes, grid_resolution, smoothing_sigma)
+    X_xy, Y_xy, Z_xy, mask_xy = compute_smoothed_plane(x, y, soma_volumes, grid_resolution, smoothing_sigma)
+    Z_xy = np.where(mask_xy, Z_xy, np.nan)
     contour_xy = axes[0].contourf(X_xy, Y_xy, Z_xy, levels=15, cmap='hot')
     axes[0].set_xlabel('X (nm)')
     axes[0].set_ylabel('Y (nm)')
     axes[0].set_title(f'{brain_region_name} {hemisphere} - XY Plane')
+    axes[0].set_aspect('equal')
     cbar_xy = plt.colorbar(contour_xy, ax=axes[0])
     cbar_xy.set_label('Soma Volume (µm³)')
 
-    X_xz, Z_xz, V_xz = compute_smoothed_plane(x, z, soma_volumes, grid_resolution, smoothing_sigma)
+    X_xz, Z_xz, V_xz, mask_xz = compute_smoothed_plane(x, z, soma_volumes, grid_resolution, smoothing_sigma)
+    V_xz = np.where(mask_xz, V_xz, np.nan)
     contour_xz = axes[1].contourf(X_xz, Z_xz, V_xz, levels=15, cmap='hot')
     axes[1].set_xlabel('X (nm)')
     axes[1].set_ylabel('Z (nm)')
     axes[1].set_title(f'{brain_region_name} {hemisphere} - XZ Plane')
+    axes[1].set_aspect('equal')
     cbar_xz = plt.colorbar(contour_xz, ax=axes[1])
     cbar_xz.set_label('Soma Volume (µm³)')
 
-    Y_yz, Z_yz, V_yz = compute_smoothed_plane(y, z, soma_volumes, grid_resolution, smoothing_sigma)
+    Y_yz, Z_yz, V_yz, mask_yz = compute_smoothed_plane(y, z, soma_volumes, grid_resolution, smoothing_sigma)
+    V_yz = np.where(mask_yz, V_yz, np.nan)
     contour_yz = axes[2].contourf(Y_yz, Z_yz, V_yz, levels=15, cmap='hot')
     axes[2].set_xlabel('Y (nm)')
     axes[2].set_ylabel('Z (nm)')
     axes[2].set_title(f'{brain_region_name} {hemisphere} - YZ Plane')
+    axes[2].set_aspect('equal')
     cbar_yz = plt.colorbar(contour_yz, ax=axes[2])
     cbar_yz.set_label('Soma Volume (µm³)')
 
