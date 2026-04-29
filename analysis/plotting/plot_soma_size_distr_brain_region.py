@@ -15,6 +15,7 @@ This script:
 By default, assumes the elastix transform maps MOVING -> FIXED.
 """
 
+import os
 import re
 import sys
 import argparse
@@ -242,6 +243,8 @@ def main():
     soma_npy_path = "/cajal/scratch/projects/xray/bm05/ng/instances/new_04_2026/260306_Soma_distance_transform_multires_multipath_linearLR_soma_masked_260421/all_soma_data/all_soma_data_260427.npy"
     output_dir = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/plotting/soma_distr_by_brain_region"
 
+    os.makedirs(output_dir, exist_ok=True)
+    
     data_per_brain_region = get_data_for_brain_region(brain_regions_path, brain_region_labels_path, soma_npy_path)
     for brain_region_name, hemispheres in data_per_brain_region.items():
         for hemisphere in ['l', 'r']:
