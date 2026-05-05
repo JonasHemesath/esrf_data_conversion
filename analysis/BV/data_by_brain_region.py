@@ -38,7 +38,7 @@ def main():
     for brain_region_label in brain_region_labels:
         print(f"Processing brain region {brain_region_label}...")
         label = int(brain_region_label)
-        skeleton = bv.skeleton.get(label)[label]
+        skeleton = bv.skeleton.get(label)
         skeleton_graph = get_skeleton_graph(skeleton)
         branch_points = get_branch_points(skeleton_graph)
         radius_per_vertex = get_radius_per_vertex(skeleton)
