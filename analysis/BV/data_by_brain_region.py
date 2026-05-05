@@ -13,6 +13,8 @@ def get_skeleton_graph(skeleton):
     return G
 
 def get_branch_points(skeleton_graph):
+    for node, degree in skeleton_graph.degree():
+        print(f"Node {node} has degree {degree}")
     branch_points = [np.concatenate((node, [degree])) for node, degree in skeleton_graph.degree() if degree > 2]
     return branch_points
 
