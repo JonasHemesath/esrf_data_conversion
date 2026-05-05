@@ -35,6 +35,7 @@ def main():
     bv = CloudVolume(BV_path)
 
     for brain_region_label in brain_region_labels:
+        print(f"Processing brain region {brain_region_label}...")
         label = int(brain_region_label)
         skeleton = bv.skeleton.get(label)[label]
         skeleton_graph = get_skeleton_graph(skeleton)
