@@ -86,6 +86,8 @@ def _compute_soma_row_for_label(label_index):
         min_radius = np.min(np.linalg.norm(mesh.vertices - centroid, axis=1)).astype(np.float64)
         max_radius = np.max(np.linalg.norm(mesh.vertices - centroid, axis=1)).astype(np.float64)
 
+        radius_ratio = max_radius / min_radius if min_radius > 0 else float('inf')
+
         brain_region_skeleton = _global_skeletons[int(brain_region)]
         # Calculate distance from soma centroid to nearest point on the skeleton
         if brain_region_skeleton is not None and len(brain_region_skeleton.vertices) > 0:
@@ -99,7 +101,7 @@ def _compute_soma_row_for_label(label_index):
         else:
             nearest_radius = float('nan')
 
-        return (int(index),int(label), int(brain_region), surface_area, volume, convex_hull_volume, min_radius, max_radius, int(centroid[0]), int(centroid[1]), int(centroid[2]), nearest_distance, nearest_radius)
+        return (int(index),int(label), int(brain_region), surface_area, volume, convex_hull_volume, min_radius, max_radius, int(centroid[0]), int(centroid[1]), int(centroid[2]), nearest_distance, nearest_radius, radius_ratio)
 
     except Exception:
         # Avoid crashing the entire pool on a single bad label.
@@ -196,6 +198,8 @@ class SomaDataGenerator:
             min_radius = np.min(np.linalg.norm(mesh.vertices - centroid, axis=1)).astype(np.float64)
             max_radius = np.max(np.linalg.norm(mesh.vertices - centroid, axis=1)).astype(np.float64)
 
+            radius_ratio = max_radius / min_radius if min_radius > 0 else float('inf')
+
             brain_region_skeleton = self.bv.skeleton.get(int(brain_region))
             if brain_region_skeleton is not None and len(brain_region_skeleton.vertices) > 0:
                 distances = np.linalg.norm(brain_region_skeleton.vertices - centroid, axis=1)
@@ -205,13 +209,13 @@ class SomaDataGenerator:
                 nearest_distance = float('nan')
                 nearest_radius = float('nan')
 
-            return (int(index), int(label), int(brain_region), surface_area, volume, convex_hull_volume, min_radius, max_radius, int(centroid[0]), int(centroid[1]), int(centroid[2]), nearest_distance, nearest_radius)
+            return (int(index), int(label), int(brain_region), surface_area, volume, convex_hull_volume, min_radius, max_radius, int(centroid[0]), int(centroid[1]), int(centroid[2]), nearest_distance, nearest_radius, radius_ratio)
         except Exception:
             return None
 
     def iter_rows_parallel(self, num_workers=None, chunksize=10, show_progress=True):
         """
-        Yields (index, label, brain_region, surface_area, volume, convex_hull_volume, min_radius, max_radius, nearest_distance, nearest_radius) in parallel.
+        Yields (index, label, brain_region, surface_area, volume, convex_hull_volume, min_radius, max_radius, nearest_distance, nearest_radius, radius_ratio) in parallel.
         """
         import multiprocessing
 
@@ -233,7 +237,7 @@ class SomaDataGenerator:
 
     def iter_rows_serial(self, show_progress=True):
         """
-        Yields (index, label, brain_region, surface_area, volume, convex_hull_volume, min_radius, max_radius, nearest_distance, nearest_radius) serially.
+        Yields (index, label, brain_region, surface_area, volume, convex_hull_volume, min_radius, max_radius, nearest_distance, nearest_radius, radius_ratio) serially.
         """
         iterator = enumerate(self.soma_labels)
         if show_progress:
@@ -250,8 +254,8 @@ class SomaDataGenerator:
           - CSV (line by line)
           - and optionally a .npy memory-mapped array on disk (updated as results arrive)
 
-        The .npy array has shape (num_label+1, 13) and columns:
-          [label, brain_region, surface_area, volume, convex_hull_volume, min_radius, max_radius, centroid_x, centroid_y, centroid_z, nearest_distance, nearest_radius]
+        The .npy array has shape (num_label+1, 14) and columns:
+          [label, brain_region, surface_area, volume, convex_hull_volume, min_radius, max_radius, centroid_x, centroid_y, centroid_z, nearest_distance, nearest_radius, radius_ratio]
 
         Rows for labels that fail/miss will remain all zeros.
         """
@@ -262,7 +266,7 @@ class SomaDataGenerator:
                 output_file_np,
                 mode="w+",
                 dtype=np.float64,
-                shape=(self.num_label + 1, 13),
+                shape=(self.num_label + 1, 14),
             )
             mm[:] = 0.0
 
@@ -281,13 +285,13 @@ class SomaDataGenerator:
 
         with open(output_file_csv, "w") as f:
             # No header to match your previous output format
-            for (index, label, brain_region, surface_area, volume, convex_hull_volume, min_radius, max_radius, centroid_x, centroid_y, centroid_z, nearest_distance, nearest_radius) in row_iter:
+            for (index, label, brain_region, surface_area, volume, convex_hull_volume, min_radius, max_radius, centroid_x, centroid_y, centroid_z, nearest_distance, nearest_radius, radius_ratio) in row_iter:
                 # Write to memmap
                 if mm is not None:
-                    mm[index, :] = (index, label, brain_region, surface_area, volume, convex_hull_volume, min_radius, max_radius, centroid_x, centroid_y, centroid_z, nearest_distance, nearest_radius)
+                    mm[index, :] = (index, label, brain_region, surface_area, volume, convex_hull_volume, min_radius, max_radius, centroid_x, centroid_y, centroid_z, nearest_distance, nearest_radius, radius_ratio)
 
                 # Write to CSV
-                f.write(f"{index},{label},{brain_region},{surface_area},{volume},{convex_hull_volume},{min_radius},{max_radius},{centroid_x},{centroid_y},{centroid_z},{nearest_distance},{nearest_radius}\n")
+                f.write(f"{index},{label},{brain_region},{surface_area},{volume},{convex_hull_volume},{min_radius},{max_radius},{centroid_x},{centroid_y},{centroid_z},{nearest_distance},{nearest_radius},{radius_ratio}\n")
                 written += 1
 
                 if mm is not None and (written % flush_every == 0):
