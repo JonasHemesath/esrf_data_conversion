@@ -13,13 +13,14 @@ def get_skeleton_graph(skeleton):
     return G
 
 def get_branch_points(skeleton_graph):
-    for node, degree in skeleton_graph.degree():
-        print(f"Node {node} has degree {degree}")
-    branch_points = [np.concatenate((node, [degree])) for node, degree in skeleton_graph.degree() if degree > 2]
+    #for node, degree in skeleton_graph.degree():
+    #    print(f"Node {node} has degree {degree}")
+    branch_points = np.array([np.array([node, degree, skeleton_graph.nodes[node]['pos'][0], skeleton_graph.nodes[node]['pos'][1], skeleton_graph.nodes[node]['pos'][2]]) for node, degree in skeleton_graph.degree() if degree > 2])
     return branch_points
 
 def get_radius_per_vertex(skeleton):
-    return skeleton.radius
+    nodes_with_radius = [np.array([node[0], node[1], node[2], skeleton.radius[i]]) for i, node in enumerate(skeleton.vertices) if skeleton.radius is not None and len(skeleton.radius) > 0]
+    return np.array(nodes_with_radius)
 
 
 def main():
