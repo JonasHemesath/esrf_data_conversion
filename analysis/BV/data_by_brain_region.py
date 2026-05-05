@@ -31,6 +31,7 @@ def main():
 
     with open(brain_region_labels_path, "r") as f:
         brain_region_labels = json.load(f)
+    print(f"Loaded {len(brain_region_labels)} brain region labels")
     
     bv = CloudVolume(BV_path)
 
