@@ -49,3 +49,5 @@ def main():
         np.save(radius_output_path, radius_per_vertex)
 
 
+if __name__ == "__main__":
+    main()
