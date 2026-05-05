@@ -4,7 +4,7 @@ import numpy as np
 import networkx as nx
 import json
 
-def get_skeleton_graph(self, skeleton):
+def get_skeleton_graph(skeleton):
     G = nx.Graph()
     for i, vertex in enumerate(skeleton.vertices):
         G.add_node(i, pos=vertex)
@@ -12,7 +12,7 @@ def get_skeleton_graph(self, skeleton):
         G.add_edge(edge[0], edge[1])
     return G
 
-def get_branch_points(self, skeleton_graph):
+def get_branch_points(skeleton_graph):
     branch_points = [np.concatenate((node, [degree])) for node, degree in skeleton_graph.degree() if degree > 2]
     return branch_points
 
