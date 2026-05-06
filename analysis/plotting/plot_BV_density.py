@@ -94,10 +94,12 @@ def main():
     BV_path = "/cajal/scratch/projects/xray/bm05/ng/BV_testing/260304_Myelin_BV_multires_multipath_linearLR_BV_masked_brain_regions"
     brain_regions_path = "/cajal/scratch/projects/xray/bm05/ng/zf13_hr2_brain_regions_v260409"
     brain_region_labels_path = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/brain_regions/brain_region_labels_v260409.json"
-    output_path = "/cajal/scratch/projects/xray/bm05/ng/BV_testing/260304_Myelin_BV_multires_multipath_linearLR_BV_masked_brain_regions/analysis_results/"
+    data_output_path = "/cajal/scratch/projects/xray/bm05/ng/BV_testing/260304_Myelin_BV_multires_multipath_linearLR_BV_masked_brain_regions/analysis_results/"
+    plot_output_path = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/plotting/BV_density_per_brain_region/"
     brain_region_mip = 5
 
-    os.makedirs(output_path, exist_ok=True)
+    os.makedirs(data_output_path, exist_ok=True)
+    os.makedirs(plot_output_path, exist_ok=True)
 
     bv = CloudVolume(BV_path)
     brain_regions = CloudVolume(brain_regions_path)
@@ -119,10 +121,10 @@ def main():
         bv_density = np.sum(masked_bv) / np.sum(brain_region_mask)
         bv_density_brain_region_dict[brain_region_label] = bv_density
 
-    with open(os.path.join(output_path, "BV_density_per_brain_region.json"), "w") as f:
+    with open(os.path.join(data_output_path, "BV_density_per_brain_region.json"), "w") as f:
         json.dump(bv_density_brain_region_dict, f)
 
-    plot_volume_density_barplot(bv_density_brain_region_dict, brain_region_labels, output_path)
+    plot_volume_density_barplot(bv_density_brain_region_dict, brain_region_labels, plot_output_path)
 
 if __name__ == "__main__":
     main()
