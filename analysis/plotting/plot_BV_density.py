@@ -123,7 +123,7 @@ def main():
         masked_bv = bv_crop & brain_region_mask
 
         bv_density = np.sum(masked_bv) / np.sum(brain_region_mask)
-        bv_density_brain_region_dict[brain_region_label] = bv_density
+        bv_density_brain_region_dict[int(brain_region_label)] = float(bv_density)
         print(f"Computed BV density for {brain_region_label}: {bv_density}")
 
     with open(os.path.join(data_output_path, "BV_density_per_brain_region.json"), "w") as f:
