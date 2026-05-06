@@ -112,19 +112,25 @@ def main():
     for brain_region_label in brain_region_labels.keys():
         print(f"Processing brain region {brain_region_label}...")
         min_bound, max_bound = get_brain_region_bbox_low_resolution(brain_regions, int(brain_region_label))
+        print("Got low resolution bbox:", min_bound, max_bound)
         min_bound_full_res, max_bound_full_res = get_brain_region_bbox_full_resolution(min_bound, max_bound, brain_region_mip)
+        print("Got full resolution bbox:", min_bound_full_res, max_bound_full_res)
         
         brain_region_mask = get_zoomed_brain_region_mask(brain_regions, int(brain_region_label), min_bound, max_bound, min_bound_full_res, max_bound_full_res)
+        print("Got zoomed brain region mask with shape:", brain_region_mask.shape)
         bv_crop = np.squeeze(bv[min_bound_full_res[0]:max_bound_full_res[0]+1, min_bound_full_res[1]:max_bound_full_res[1]+1, min_bound_full_res[2]:max_bound_full_res[2]+1]) > 0
+        print("Got BV crop with shape:", bv_crop.shape)
         masked_bv = bv_crop & brain_region_mask
 
         bv_density = np.sum(masked_bv) / np.sum(brain_region_mask)
         bv_density_brain_region_dict[brain_region_label] = bv_density
+        print(f"Computed BV density for {brain_region_label}: {bv_density}")
 
     with open(os.path.join(data_output_path, "BV_density_per_brain_region.json"), "w") as f:
         json.dump(bv_density_brain_region_dict, f)
 
     plot_volume_density_barplot(bv_density_brain_region_dict, brain_region_labels, plot_output_path)
+    print("All done!")
 
 if __name__ == "__main__":
     main()
