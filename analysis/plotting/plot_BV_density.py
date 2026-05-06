@@ -19,7 +19,7 @@ def get_brain_region_bbox_full_resolution(low_min, low_max, mip):
     return min_bound_full_res, max_bound_full_res
 
 def get_zoomed_brain_region_mask(brain_regions, brain_region_label, low_min, low_max, high_min, high_max):
-    brain_region_mask_low_res = brain_regions[low_min[0]:low_max[0]+1, low_min[1]:low_max[1]+1, low_min[2]:low_max[2]+1] == brain_region_label
+    brain_region_mask_low_res = np.squeeze(brain_regions[low_min[0]:low_max[0]+1, low_min[1]:low_max[1]+1, low_min[2]:low_max[2]+1]) == brain_region_label
     zoom_factors = [(high_max[i] - high_min[i] + 1) / (low_max[i] - low_min[i] + 1) for i in range(3)]
     brain_region_mask_high_res = zoom(brain_region_mask_low_res.astype(float), zoom_factors).astype(bool)
     return brain_region_mask_high_res
@@ -115,7 +115,7 @@ def main():
         min_bound_full_res, max_bound_full_res = get_brain_region_bbox_full_resolution(min_bound, max_bound, brain_region_mip)
         
         brain_region_mask = get_zoomed_brain_region_mask(brain_regions, int(brain_region_label), min_bound, max_bound, min_bound_full_res, max_bound_full_res)
-        bv_crop = bv[min_bound_full_res[0]:max_bound_full_res[0]+1, min_bound_full_res[1]:max_bound_full_res[1]+1, min_bound_full_res[2]:max_bound_full_res[2]+1] > 0
+        bv_crop = np.squeeze(bv[min_bound_full_res[0]:max_bound_full_res[0]+1, min_bound_full_res[1]:max_bound_full_res[1]+1, min_bound_full_res[2]:max_bound_full_res[2]+1]) > 0
         masked_bv = bv_crop & brain_region_mask
 
         bv_density = np.sum(masked_bv) / np.sum(brain_region_mask)
