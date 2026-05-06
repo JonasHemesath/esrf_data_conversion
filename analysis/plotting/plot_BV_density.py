@@ -95,7 +95,7 @@ def main():
     brain_regions_path = "/cajal/scratch/projects/xray/bm05/ng/zf13_hr2_brain_regions_v260409"
     brain_region_labels_path = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/brain_regions/brain_region_labels_v260409.json"
     data_output_path = "/cajal/scratch/projects/xray/bm05/ng/BV_testing/260304_Myelin_BV_multires_multipath_linearLR_BV_masked_brain_regions/analysis_results/"
-    plot_output_path = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/plotting/BV_density_per_brain_region/"
+    plot_output_path = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/plotting/plots/BV_density_per_brain_region/"
     brain_region_mip = 5
 
     os.makedirs(data_output_path, exist_ok=True)
