@@ -21,7 +21,7 @@ def get_brain_region_bbox_full_resolution(low_min, low_max, mip):
 def get_zoomed_brain_region_mask(brain_regions, brain_region_label, low_min, low_max, high_min, high_max):
     brain_region_mask_low_res = brain_regions[low_min[0]:low_max[0]+1, low_min[1]:low_max[1]+1, low_min[2]:low_max[2]+1] == brain_region_label
     zoom_factors = [(high_max[i] - high_min[i] + 1) / (low_max[i] - low_min[i] + 1) for i in range(3)]
-    brain_region_mask_high_res = zoom(brain_region_mask_low_res.astype(float), zoom_factors, order=0).astype(bool)
+    brain_region_mask_high_res = zoom(brain_region_mask_low_res.astype(float), zoom_factors).astype(bool)
     return brain_region_mask_high_res
 
 
