@@ -2,7 +2,7 @@ import os
 import argparse
 import subprocess
 import numpy as np
-
+import time
 
 def main():
     parser = argparse.ArgumentParser(description="Add closest somata information to the existing soma data in parallel")
@@ -24,6 +24,7 @@ def main():
                                                                 '--process_id', str(i),
                                                                 '--num_processes', str(args.num_processes)],
                                                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        time.sleep(10)  # Sleep for a short time to avoid overwhelming the scheduler with too many simultaneous job submissions
         processes.append(p)
 
     # Wait for all processes to finish
