@@ -28,3 +28,7 @@ def main():
 
     # Save the updated soma data
     np.save(args.output_file, updated_soma_data)
+
+
+if __name__ == "__main__":
+    main()
