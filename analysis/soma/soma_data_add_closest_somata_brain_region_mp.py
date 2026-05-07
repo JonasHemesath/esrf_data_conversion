@@ -17,7 +17,7 @@ def main():
     del data  # Free up memory
     # Run the add_closest_somata_info function in parallel across multiple processes
     processes = []
-    for i in regions:
+    for i, region in enumerate(regions):
         print(f"Starting process {i+1}/{len(regions)}...")
         output_file = f"{args.output_dir}/temp/soma_data_with_closest_process_{i}.npy"
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
@@ -25,7 +25,7 @@ def main():
         p = subprocess.Popen(['srun', '--time=7-0', '--gres=gpu:0', '--mem=50000', '--tasks', '1', '--cpus-per-task', '2', '--nice', 'python', '/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/soma/soma_data_add_closest_somata_brain_region.py',
                                                                 '--input_file', args.input_file,
                                                                 '--output_file', output_file,
-                                                                '--region', str(i)],
+                                                                '--region', str(int(region))],
                                                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         time.sleep(10)  # Sleep for a short time to avoid overwhelming the scheduler with too many simultaneous job submissions
         processes.append(p)
@@ -44,7 +44,7 @@ def main():
 
     #Merge the results from all processes into a single .npy file
     all_data = []
-    for i in regions:
+    for i, region in enumerate(regions):
         output_file = f"{args.output_dir}/temp/soma_data_with_closest_process_{i}.npy"
         if os.path.exists(output_file):
             data = np.load(output_file)
