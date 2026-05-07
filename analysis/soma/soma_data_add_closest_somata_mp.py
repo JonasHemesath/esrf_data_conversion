@@ -14,10 +14,11 @@ def main():
     # Run the add_closest_somata_info function in parallel across multiple processes
     processes = []
     for i in range(args.num_processes):
+        print(f"Starting process {i+1}/{args.num_processes}...")
         output_file = f"{args.output_dir}/temp/soma_data_with_closest_process_{i}.npy"
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
-        p = subprocess.Popen(['srun', '--time=7-0', '--gres=gpu:0', '--mem=16000', '--tasks', '1', '--cpus-per-task', '2', '--nice', 'python', '/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/soma/soma_data_add_closest_somata.py',
+        p = subprocess.Popen(['srun', '--time=7-0', '--gres=gpu:0', '--mem=50000', '--tasks', '1', '--cpus-per-task', '2', '--nice', 'python', '/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/soma/soma_data_add_closest_somata.py',
                                                                 '--input_file', args.input_file,
                                                                 '--output_file', output_file,
                                                                 '--process_id', str(i),
