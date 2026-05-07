@@ -10,7 +10,7 @@ def add_closest_somata_info(soma_data):
         centroid = soma_data[i, 8:11]  # Assuming centroid_x, centroid_y, centroid_z are at these indices
         distances = np.linalg.norm(soma_data[:, 8:11] - centroid, axis=1)
         closest_indices = np.argsort(distances)[1:4]  # Get indices of the three closest somata (excluding itself)
-        closest_volumes = soma_data[closest_indices, 5]  # Assuming volume is at index 5
+        closest_volumes = soma_data[closest_indices, 4]  # Assuming volume is at index 4
         soma_data_with_closest[i, soma_data.shape[1]:soma_data.shape[1]+3] = closest_volumes
     return soma_data_with_closest
 
