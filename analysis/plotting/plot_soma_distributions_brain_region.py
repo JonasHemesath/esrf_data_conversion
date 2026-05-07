@@ -62,6 +62,12 @@ def get_data_for_brain_region(brain_regions_path, brain_region_labels_path, soma
             "soma_convex_hull_volume": soma_data_in_region[:, 5] / 1e9,  # Convert nm³ to µm³
             "soma_min_radius": soma_data_in_region[:, 6] / 1e3,  # Convert nm to µm
             "soma_max_radius": soma_data_in_region[:, 7] / 1e3,  # Convert nm to µm
+            "soma_centroid_x": soma_data_in_region[:, 8] / 1e3,  # Convert nm to µm
+            "soma_centroid_y": soma_data_in_region[:, 9] / 1e3,  # Convert nm to µm
+            "soma_centroid_z": soma_data_in_region[:, 10] / 1e3,  # Convert nm to µm
+            "soma_nearest_distance_BV": soma_data_in_region[:, 11] / 1e3,  # Convert nm to µm
+            "soma_nearest_radius_BV": soma_data_in_region[:, 12] / 1e3,  # Convert nm to µm
+            "soma_radius_ratio_min_max": soma_data_in_region[:, 13],  # Unitless
         }
     return data_per_brain_region
 
