@@ -4,3 +4,4 @@
 !denoising/zf13_hr.txt
 segmentation/banis_example_inference.py
 *.html
+scratch*
