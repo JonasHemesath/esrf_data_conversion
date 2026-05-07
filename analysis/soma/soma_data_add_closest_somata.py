@@ -18,13 +18,18 @@ def main():
     parser = argparse.ArgumentParser(description="Add closest somata information to the existing soma data")
     parser.add_argument("--input_file", type=str, help="Path to the input .npy file containing soma data")
     parser.add_argument("--output_file", type=str, help="Path to the output .npy file to save the updated soma data")
+    parser.add_argument("--process_id", type=int, help="Process ID for parallel processing")
+    parser.add_argument("--num_processes", type=int, help="Total number of processes for parallel processing")
     args = parser.parse_args()
 
     # Load existing soma data
     soma_data = np.load(args.input_file)
+    lower_bound = args.process_id * (soma_data.shape[0] // args.num_processes)
+    upper_bound = (args.process_id + 1) * (soma_data.shape[0] // args.num_processes) if args.process_id < args.num_processes - 1 else soma_data.shape[0]
+    soma_data_subset = soma_data[lower_bound:upper_bound]
 
     # Add closest somata information
-    updated_soma_data = add_closest_somata_info(soma_data)
+    updated_soma_data = add_closest_somata_info(soma_data_subset)
 
     # Save the updated soma data
     np.save(args.output_file, updated_soma_data)
