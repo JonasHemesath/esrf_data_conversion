@@ -68,6 +68,9 @@ def get_data_for_brain_region(brain_regions_path, brain_region_labels_path, soma
             "soma_nearest_distance_BV": soma_data_in_region[:, 11] / 1e3,  # Convert nm to µm
             "soma_nearest_radius_BV": soma_data_in_region[:, 12] / 1e3,  # Convert nm to µm
             "soma_radius_ratio_min_max": soma_data_in_region[:, 13],  # Unitless
+            "nearest_somata_volume_1": soma_data_in_region[:, 14] / 1e9,  # Convert nm³ to µm³
+            "nearest_somata_volume_2": soma_data_in_region[:, 15] / 1e9,  # Convert nm³ to µm³
+            "nearest_somata_volume_3": soma_data_in_region[:, 16] / 1e9,  # Convert nm³ to µm³
         }
     return data_per_brain_region
 
@@ -79,6 +82,8 @@ def plot_histograms_for_region(data, brain_region_name, hemisphere, output_dir, 
         ('soma_surface_area', 'Soma Surface Area (µm²)', 50),
         ('soma_min_radius', 'Soma Min Radius (µm)', 30),
         ('soma_max_radius', 'Soma Max Radius (µm)', 30),
+        ('soma_nearest_distance_BV', 'Soma Nearest Distance to BV (µm)', 30),
+        ('soma_nearest_radius_BV', 'Soma Nearest Radius to BV (µm)', 30),
     ]
     
     # Add radius ratio
@@ -87,7 +92,7 @@ def plot_histograms_for_region(data, brain_region_name, hemisphere, output_dir, 
         metrics.append(('radius_ratio', 'Radius Ratio (max/min)', 30))
         data['radius_ratio'] = radius_ratio
     
-    fig, axes = plt.subplots(1, 5, figsize=(25, 5))
+    fig, axes = plt.subplots(2, 4, figsize=(28, 10))
     axes = axes.flatten()
     
     color = left_color if hemisphere == 'l' else right_color
@@ -113,7 +118,10 @@ def plot_umap_for_region(data, brain_region_name, hemisphere, output_dir, left_c
     """Plot UMAP for soma metrics in a brain region and hemisphere"""
     
     # Prepare data matrix
-    metrics = ['soma_volume', 'soma_surface_area', 'soma_min_radius', 'soma_max_radius']
+    metrics = ['soma_volume', 'soma_surface_area', 'soma_min_radius', 'soma_max_radius',
+               'soma_centroid_x', 'soma_centroid_y', 'soma_centroid_z',
+               'soma_nearest_distance_BV', 'soma_nearest_radius_BV', 'soma_radius_ratio_min_max',
+               'nearest_somata_volume_1', 'nearest_somata_volume_2', 'nearest_somata_volume_3']
     data_matrix = []
     valid_indices = []
     
@@ -122,7 +130,7 @@ def plot_umap_for_region(data, brain_region_name, hemisphere, output_dir, left_c
         valid = True
         for metric in metrics:
             val = data[metric][i]
-            if np.isfinite(val) and val > 0:
+            if np.isfinite(val):
                 row.append(val)
             else:
                 valid = False
@@ -166,7 +174,10 @@ def plot_tsne_for_region(data, brain_region_name, hemisphere, output_dir, left_c
     """Plot t-SNE for soma metrics in a brain region and hemisphere"""
     
     # Prepare data matrix
-    metrics = ['soma_volume', 'soma_surface_area', 'soma_min_radius', 'soma_max_radius']
+    metrics = ['soma_volume', 'soma_surface_area', 'soma_min_radius', 'soma_max_radius',
+               'soma_centroid_x', 'soma_centroid_y', 'soma_centroid_z',
+               'soma_nearest_distance_BV', 'soma_nearest_radius_BV', 'soma_radius_ratio_min_max',
+               'nearest_somata_volume_1', 'nearest_somata_volume_2', 'nearest_somata_volume_3']
     data_matrix = []
     valid_indices = []
     
@@ -175,7 +186,7 @@ def plot_tsne_for_region(data, brain_region_name, hemisphere, output_dir, left_c
         valid = True
         for metric in metrics:
             val = data[metric][i]
-            if np.isfinite(val) and val > 0:
+            if np.isfinite(val):
                 row.append(val)
             else:
                 valid = False
@@ -219,7 +230,10 @@ def plot_pca_for_region(data, brain_region_name, hemisphere, output_dir, left_co
     """Plot PCA for soma metrics in a brain region and hemisphere"""
     
     # Prepare data matrix
-    metrics = ['soma_volume', 'soma_surface_area', 'soma_min_radius', 'soma_max_radius']
+    metrics = ['soma_volume', 'soma_surface_area', 'soma_min_radius', 'soma_max_radius',
+               'soma_centroid_x', 'soma_centroid_y', 'soma_centroid_z',
+               'soma_nearest_distance_BV', 'soma_nearest_radius_BV', 'soma_radius_ratio_min_max',
+               'nearest_somata_volume_1', 'nearest_somata_volume_2', 'nearest_somata_volume_3']
     data_matrix = []
     valid_indices = []
     
@@ -228,7 +242,7 @@ def plot_pca_for_region(data, brain_region_name, hemisphere, output_dir, left_co
         valid = True
         for metric in metrics:
             val = data[metric][i]
-            if np.isfinite(val) and val > 0:
+            if np.isfinite(val):
                 row.append(val)
             else:
                 valid = False
@@ -273,15 +287,20 @@ def plot_pca_for_region(data, brain_region_name, hemisphere, output_dir, left_co
 
 def main():
     parser = argparse.ArgumentParser(description='Plot soma distributions and UMAP per brain region')
+    parser.add_argument('--dark_mode', action='store_true', help='Enable dark mode with black background and white labels')
     parser.add_argument('--left_color', type=color_type, default='0.7529,0.6471,0.3882', help='Color for left hemisphere. Can be named color, hex, or RGB tuple like "0.5,0.5,0.5"')
     parser.add_argument('--right_color', type=color_type, default='0.3451,0.3137,0.6824', help='Color for right hemisphere. Can be named color, hex, or RGB tuple like "0.5,0.5,0.5"')
     parser.add_argument('--tick_fontsize', type=int, default=16, help='Font size for tick labels (default: 16)')
     parser.add_argument('--title_fontsize', type=int, default=18, help='Font size for axis titles and plot title (default: 18)')
     args = parser.parse_args()
+    dark_mode = args.dark_mode
     left_color = args.left_color
     right_color = args.right_color
     tick_fontsize = args.tick_fontsize
     title_fontsize = args.title_fontsize
+    
+    if dark_mode:
+        plt.style.use('dark_background')
     
     brain_regions_path = "/cajal/scratch/projects/xray/bm05/ng/zf13_hr2_brain_regions_v260409"
     brain_region_labels_path = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/brain_regions/brain_region_labels_v260409.json"

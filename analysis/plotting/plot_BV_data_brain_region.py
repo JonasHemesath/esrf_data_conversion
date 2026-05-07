@@ -207,16 +207,21 @@ def plot_branch_density_per_brain_region(data_per_brain_region, output_dir, left
 def main():
     parser = argparse.ArgumentParser(description='Plot blood vessel data per brain region')
     parser.add_argument('--show_outliers', action='store_true', help='Whether to show outliers in the boxplots')
+    parser.add_argument('--dark_mode', action='store_true', help='Enable dark mode with black background and white labels')
     parser.add_argument('--left_color', type=color_type, default='0.7529,0.6471,0.3882', help='Color for left hemisphere (default: skyblue). Can be named color, hex, or RGB tuple like "0.5,0.5,0.5"')
     parser.add_argument('--right_color', type=color_type, default='0.3451,0.3137,0.6824', help='Color for right hemisphere (default: salmon). Can be named color, hex, or RGB tuple like "0.5,0.5,0.5"')
     parser.add_argument('--tick_fontsize', type=int, default=16, help='Font size for tick labels (default: 16)')
     parser.add_argument('--title_fontsize', type=int, default=18, help='Font size for axis titles and plot title (default: 18)')
     args = parser.parse_args()
     show_outliers = args.show_outliers
+    dark_mode = args.dark_mode
     left_color = args.left_color
     right_color = args.right_color
     tick_fontsize = args.tick_fontsize
     title_fontsize = args.title_fontsize
+    
+    if dark_mode:
+        plt.style.use('dark_background')
     
     brain_regions_path = "/cajal/scratch/projects/xray/bm05/ng/zf13_hr2_brain_regions_v260409"
     brain_region_labels_path = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/brain_regions/brain_region_labels_v260409.json"

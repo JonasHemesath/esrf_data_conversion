@@ -232,19 +232,63 @@ def plot_soma_min_radius_per_brain_region(data_per_brain_region, output_dir, sho
                  'Soma Min Radius (µm)', 'Soma Min Radius Distribution per Brain Region and Hemisphere',
                  os.path.join(output_dir, 'soma_min_radius_per_brain_region_boxplot.png'), show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
 
+def plot_soma_nearest_distance_BV_per_brain_region(data_per_brain_region, output_dir, show_outliers=True, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
+    brain_region_names = []
+    distances_l = []
+    distances_r = []
+    for brain_region_name, hemispheres in data_per_brain_region.items():
+        brain_region_names.append(brain_region_name)
+        distances_l.append(hemispheres['l']['soma_nearest_distance_BV'])
+        distances_r.append(hemispheres['r']['soma_nearest_distance_BV'])
+    
+    plot_boxplot(distances_l, distances_r, brain_region_names, 
+                 'Soma Nearest Distance to BV (µm)', 'Soma Nearest Distance to Blood Vessel Distribution per Brain Region and Hemisphere',
+                 os.path.join(output_dir, 'soma_nearest_distance_BV_per_brain_region_boxplot.png'), show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
+
+def plot_soma_nearest_radius_BV_per_brain_region(data_per_brain_region, output_dir, show_outliers=True, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
+    brain_region_names = []
+    radii_l = []
+    radii_r = []
+    for brain_region_name, hemispheres in data_per_brain_region.items():
+        brain_region_names.append(brain_region_name)
+        radii_l.append(hemispheres['l']['soma_nearest_radius_BV'])
+        radii_r.append(hemispheres['r']['soma_nearest_radius_BV'])
+    
+    plot_boxplot(radii_l, radii_r, brain_region_names, 
+                 'Soma Nearest Radius to BV (µm)', 'Soma Nearest Radius to Blood Vessel Distribution per Brain Region and Hemisphere',
+                 os.path.join(output_dir, 'soma_nearest_radius_BV_per_brain_region_boxplot.png'), show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
+
+def plot_soma_radius_ratio_min_max_per_brain_region(data_per_brain_region, output_dir, show_outliers=True, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
+    brain_region_names = []
+    ratios_l = []
+    ratios_r = []
+    for brain_region_name, hemispheres in data_per_brain_region.items():
+        brain_region_names.append(brain_region_name)
+        ratios_l.append(hemispheres['l']['soma_radius_ratio_min_max'])
+        ratios_r.append(hemispheres['r']['soma_radius_ratio_min_max'])
+    
+    plot_boxplot(ratios_l, ratios_r, brain_region_names, 
+                 'Soma Radius Ratio (max/min)', 'Soma Radius Ratio Distribution per Brain Region and Hemisphere',
+                 os.path.join(output_dir, 'soma_radius_ratio_min_max_per_brain_region_boxplot.png'), show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
+
 def main():
     parser = argparse.ArgumentParser(description='Plot soma data per brain region')
     parser.add_argument('--show_outliers', action='store_true', help='Whether to show outliers in the boxplots')
+    parser.add_argument('--dark_mode', action='store_true', help='Enable dark mode with black background and white labels')
     parser.add_argument('--left_color', type=color_type, default='0.7529,0.6471,0.3882', help='Color for left hemisphere (default: skyblue). Can be named color, hex, or RGB tuple like "0.5,0.5,0.5"')
     parser.add_argument('--right_color', type=color_type, default='0.3451,0.3137,0.6824', help='Color for right hemisphere (default: salmon). Can be named color, hex, or RGB tuple like "0.5,0.5,0.5"')
     parser.add_argument('--tick_fontsize', type=int, default=16, help='Font size for tick labels (default: 10)')
     parser.add_argument('--title_fontsize', type=int, default=18, help='Font size for axis titles and plot title (default: 12)')
     args = parser.parse_args()
     show_outliers = args.show_outliers
+    dark_mode = args.dark_mode
     left_color = args.left_color
     right_color = args.right_color
     tick_fontsize = args.tick_fontsize
     title_fontsize = args.title_fontsize
+    
+    if dark_mode:
+        plt.style.use('dark_background')
     brain_regions_path = "/cajal/scratch/projects/xray/bm05/ng/zf13_hr2_brain_regions_v260409"
     brain_region_labels_path = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/brain_regions/brain_region_labels_v260409.json"
     soma_npy_path = "/cajal/scratch/projects/xray/bm05/ng/instances/new_04_2026/260306_Soma_distance_transform_multires_multipath_linearLR_soma_masked_260421/all_soma_data/all_soma_data.npy"
@@ -261,6 +305,9 @@ def main():
     plot_soma_convex_hull_volume_per_brain_region(data_per_brain_region, output_dir, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
     plot_soma_max_radius_per_brain_region(data_per_brain_region, output_dir, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
     plot_soma_min_radius_per_brain_region(data_per_brain_region, output_dir, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
+    plot_soma_nearest_distance_BV_per_brain_region(data_per_brain_region, output_dir, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
+    plot_soma_nearest_radius_BV_per_brain_region(data_per_brain_region, output_dir, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
+    plot_soma_radius_ratio_min_max_per_brain_region(data_per_brain_region, output_dir, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,6 @@
 import os
 import json
+import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 from cloudvolume import CloudVolume
@@ -126,6 +127,14 @@ def plot_volume_density_barplot(bv_density_brain_region_dict, brain_region_label
 
 
 def main():
+    parser = argparse.ArgumentParser(description='Plot blood vessel density per brain region')
+    parser.add_argument('--dark_mode', action='store_true', help='Enable dark mode with black background and white labels')
+    args = parser.parse_args()
+    dark_mode = args.dark_mode
+    
+    if dark_mode:
+        plt.style.use('dark_background')
+    
     BV_path = "/cajal/scratch/projects/xray/bm05/ng/BV_testing/260304_Myelin_BV_multires_multipath_linearLR_BV_masked_brain_regions"
     brain_regions_path = "/cajal/scratch/projects/xray/bm05/ng/zf13_hr2_brain_regions_v260409"
     brain_region_labels_path = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/brain_regions/brain_region_labels_v260409.json"
