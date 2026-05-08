@@ -52,7 +52,15 @@ def build_human_readable_region_labels(brain_region_labels, bv_density_dict, lef
     return display_labels, densities, colors
 
 
-def plot_volume_density_barplot(bv_density_brain_region_dict, brain_region_labels, output_dir, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
+def make_output_path(output_dir, filename, dark_mode=False):
+    path = os.path.join(output_dir, filename)
+    if dark_mode:
+        base, ext = os.path.splitext(path)
+        return f"{base}_dark{ext}"
+    return path
+
+
+def plot_volume_density_barplot(bv_density_brain_region_dict, brain_region_labels, output_dir, dark_mode=False, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
     brain_region_names = []
     densities_l = []
     densities_r = []
@@ -82,7 +90,7 @@ def plot_volume_density_barplot(bv_density_brain_region_dict, brain_region_label
     ax.legend()
     
     plt.tight_layout()
-    plt.savefig(os.path.join(output_dir, 'BV_volume_density_per_brain_region.png'))
+    plt.savefig(make_output_path(output_dir, 'BV_volume_density_per_brain_region.png', dark_mode))
     plt.clf()
     plt.close()
 
@@ -178,7 +186,7 @@ def main():
         with open(os.path.join(data_output_path, "BV_density_per_brain_region.json"), "w") as f:
             json.dump(bv_density_brain_region_dict, f)
 
-    plot_volume_density_barplot(bv_density_brain_region_dict, brain_region_labels, plot_output_path, (0.7529, 0.6471, 0.3882), (0.3451, 0.3137, 0.6824), tick_fontsize=10, title_fontsize=12)
+    plot_volume_density_barplot(bv_density_brain_region_dict, brain_region_labels, plot_output_path, dark_mode=dark_mode, left_color=(0.7529, 0.6471, 0.3882), right_color=(0.3451, 0.3137, 0.6824), tick_fontsize=10, title_fontsize=12)
     print("All done!")
 
 if __name__ == "__main__":

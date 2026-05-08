@@ -68,7 +68,7 @@ def get_data_for_brain_region(brain_regions_path, brain_region_labels_path, soma
 
 
 
-def plot_soma_density_per_brain_region(data_per_brain_region, density_burek_path, output_dir, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
+def plot_soma_density_per_brain_region(data_per_brain_region, density_burek_path, output_dir, dark_mode=False, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
     brain_region_names = []
     soma_densities_l = []
     soma_densities_r = []
@@ -106,7 +106,8 @@ def plot_soma_density_per_brain_region(data_per_brain_region, density_burek_path
     ax.legend()
     
     plt.tight_layout()
-    plt.savefig(os.path.join(output_dir, 'soma_density_per_brain_region_burek_comp.png'))
+    filename = 'soma_density_per_brain_region_burek_comp_dark.png' if dark_mode else 'soma_density_per_brain_region_burek_comp.png'
+    plt.savefig(os.path.join(output_dir, filename))
     plt.clf()
     plt.close()
 
@@ -133,7 +134,7 @@ def main():
     brain_regions_path = "/cajal/scratch/projects/xray/bm05/ng/zf13_hr2_brain_regions_v260409"
     brain_region_labels_path = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/brain_regions/brain_region_labels_v260409.json"
     density_burek_path = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/brain_regions/soma_density_burek_et_al.json"
-    soma_npy_path = "/cajal/scratch/projects/xray/bm05/ng/instances/new_04_2026/260306_Soma_distance_transform_multires_multipath_linearLR_soma_masked_260421/all_soma_data/all_soma_data.npy"
+    soma_npy_path = "/cajal/scratch/projects/xray/bm05/ng/instances/new_04_2026/260306_Soma_distance_transform_multires_multipath_linearLR_soma_masked_260421/all_soma_data/all_soma_data_260505_with_closest_for_regions.npy"
     output_dir = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/plotting/plots/soma_data_per_brain_region"
     os.makedirs(output_dir, exist_ok=True)
 
@@ -141,7 +142,7 @@ def main():
 
     # Do something with the retrieved data, e.g., plot it or save it to a file
     
-    plot_soma_density_per_brain_region(data_per_brain_region, density_burek_path, output_dir, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
+    plot_soma_density_per_brain_region(data_per_brain_region, density_burek_path, output_dir, dark_mode=dark_mode, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
 
     
 

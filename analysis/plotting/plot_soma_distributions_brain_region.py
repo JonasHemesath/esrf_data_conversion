@@ -74,7 +74,14 @@ def get_data_for_brain_region(brain_regions_path, brain_region_labels_path, soma
         }
     return data_per_brain_region
 
-def plot_histograms_for_region(data, brain_region_name, hemisphere, output_dir, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
+def make_output_path(output_dir, filename, dark_mode=False):
+    path = os.path.join(output_dir, filename)
+    if dark_mode:
+        base, ext = os.path.splitext(path)
+        return f"{base}_dark{ext}"
+    return path
+
+def plot_histograms_for_region(data, brain_region_name, hemisphere, output_dir, dark_mode=False, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
     """Plot histograms for all metrics in a brain region and hemisphere"""
     
     metrics = [
@@ -110,11 +117,11 @@ def plot_histograms_for_region(data, brain_region_name, hemisphere, output_dir, 
             ax.text(0.5, 0.5, 'No data', transform=ax.transAxes, ha='center', va='center', fontsize=title_fontsize)
     
     plt.tight_layout()
-    output_path = os.path.join(output_dir, f'histograms_{brain_region_name}_{hemisphere}.png')
+    output_path = make_output_path(output_dir, f'histograms_{brain_region_name}_{hemisphere}.png', dark_mode)
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
     plt.close()
 
-def plot_umap_for_region(data, brain_region_name, hemisphere, output_dir, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
+def plot_umap_for_region(data, brain_region_name, hemisphere, output_dir, dark_mode=False, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
     """Plot UMAP for soma metrics in a brain region and hemisphere"""
     
     # Prepare data matrix
@@ -166,11 +173,11 @@ def plot_umap_for_region(data, brain_region_name, hemisphere, output_dir, left_c
     cbar.ax.tick_params(labelsize=tick_fontsize)
     
     plt.tight_layout()
-    output_path = os.path.join(output_dir, f'umap_{brain_region_name}_{hemisphere}.png')
+    output_path = make_output_path(output_dir, f'umap_{brain_region_name}_{hemisphere}.png', dark_mode)
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
     plt.close()
 
-def plot_tsne_for_region(data, brain_region_name, hemisphere, output_dir, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
+def plot_tsne_for_region(data, brain_region_name, hemisphere, output_dir, dark_mode=False, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
     """Plot t-SNE for soma metrics in a brain region and hemisphere"""
     
     # Prepare data matrix
@@ -222,11 +229,11 @@ def plot_tsne_for_region(data, brain_region_name, hemisphere, output_dir, left_c
     cbar.ax.tick_params(labelsize=tick_fontsize)
     
     plt.tight_layout()
-    output_path = os.path.join(output_dir, f'tsne_{brain_region_name}_{hemisphere}.png')
+    output_path = make_output_path(output_dir, f'tsne_{brain_region_name}_{hemisphere}.png', dark_mode)
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
     plt.close()
 
-def plot_pca_for_region(data, brain_region_name, hemisphere, output_dir, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
+def plot_pca_for_region(data, brain_region_name, hemisphere, output_dir, dark_mode=False, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
     """Plot PCA for soma metrics in a brain region and hemisphere"""
     
     # Prepare data matrix
@@ -281,7 +288,7 @@ def plot_pca_for_region(data, brain_region_name, hemisphere, output_dir, left_co
     cbar.ax.tick_params(labelsize=tick_fontsize)
     
     plt.tight_layout()
-    output_path = os.path.join(output_dir, f'pca_{brain_region_name}_{hemisphere}.png')
+    output_path = make_output_path(output_dir, f'pca_{brain_region_name}_{hemisphere}.png', dark_mode)
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
     plt.close()
 
@@ -304,7 +311,7 @@ def main():
     
     brain_regions_path = "/cajal/scratch/projects/xray/bm05/ng/zf13_hr2_brain_regions_v260409"
     brain_region_labels_path = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/brain_regions/brain_region_labels_v260409.json"
-    soma_npy_path = "/cajal/scratch/projects/xray/bm05/ng/instances/new_04_2026/260306_Soma_distance_transform_multires_multipath_linearLR_soma_masked_260421/all_soma_data/all_soma_data.npy"
+    soma_npy_path = "/cajal/scratch/projects/xray/bm05/ng/instances/new_04_2026/260306_Soma_distance_transform_multires_multipath_linearLR_soma_masked_260421/all_soma_data/all_soma_data_260505_with_closest_for_regions.npy"
     output_dir = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/plotting/distributions"
     os.makedirs(output_dir, exist_ok=True)
 
@@ -316,7 +323,7 @@ def main():
             print(f"Processing {brain_region_name} {hemisphere}")
             
             # Histograms
-            plot_histograms_for_region(hemispheres[hemisphere], brain_region_name, hemisphere, output_dir, 
+            plot_histograms_for_region(hemispheres[hemisphere], brain_region_name, hemisphere, output_dir, dark_mode=dark_mode, 
                                      left_color=left_color, right_color=right_color, 
                                      tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
     for brain_region_name, hemispheres in data_per_brain_region.items():
@@ -324,17 +331,17 @@ def main():
             print(f"Processing UMAP/t-SNE/PCA for {brain_region_name} {hemisphere}")
             
             # UMAP
-            plot_umap_for_region(hemispheres[hemisphere], brain_region_name, hemisphere, output_dir,
+            plot_umap_for_region(hemispheres[hemisphere], brain_region_name, hemisphere, output_dir, dark_mode=dark_mode,
                                left_color=left_color, right_color=right_color,
                                tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
             
             # t-SNE
-            plot_tsne_for_region(hemispheres[hemisphere], brain_region_name, hemisphere, output_dir,
+            plot_tsne_for_region(hemispheres[hemisphere], brain_region_name, hemisphere, output_dir, dark_mode=dark_mode,
                                left_color=left_color, right_color=right_color,
                                tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
             
             # PCA
-            plot_pca_for_region(hemispheres[hemisphere], brain_region_name, hemisphere, output_dir,
+            plot_pca_for_region(hemispheres[hemisphere], brain_region_name, hemisphere, output_dir, dark_mode=dark_mode,
                               left_color=left_color, right_color=right_color,
                               tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
 

@@ -70,7 +70,15 @@ def get_data_for_brain_region(brain_regions_path, brain_region_labels_path, BV_d
         }
     return data_per_brain_region
 
-def plot_boxplot(data_l, data_r, brain_region_names, ylabel, title, output_path, show_outliers=True, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
+def make_output_path(output_dir, filename, dark_mode=False):
+    path = os.path.join(output_dir, filename)
+    if dark_mode:
+        base, ext = os.path.splitext(path)
+        return f"{base}_dark{ext}"
+    return path
+
+
+def plot_boxplot(data_l, data_r, brain_region_names, ylabel, title, output_path, dark_mode=False, show_outliers=True, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
     # Prepare data for boxplot: list of arrays for each group
     data = []
     labels = []
@@ -94,10 +102,11 @@ def plot_boxplot(data_l, data_r, brain_region_names, ylabel, title, output_path,
     for patch, color in zip(bp['boxes'], colors):
         patch.set_facecolor(color)
     
-    # Set median line color to black
+    # Set median line color for visibility in dark mode
+    median_color = 'white' if dark_mode else 'black'
     for median in bp['medians']:
-        median.set_color('black')
-    
+        median.set_color(median_color)
+
     ax.set_xlabel('Brain Region and Hemisphere', fontsize=title_fontsize)
     ax.set_ylabel(ylabel, fontsize=title_fontsize)
     ax.set_xticks(positions)
@@ -109,7 +118,7 @@ def plot_boxplot(data_l, data_r, brain_region_names, ylabel, title, output_path,
     plt.clf()
     plt.close()
 
-def plot_radii_boxplot(data_per_brain_region, output_dir, show_outliers=True, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
+def plot_radii_boxplot(data_per_brain_region, output_dir, dark_mode=False, show_outliers=True, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
     brain_region_names = []
     radii_l = []
     radii_r = []
@@ -120,9 +129,9 @@ def plot_radii_boxplot(data_per_brain_region, output_dir, show_outliers=True, le
     
     plot_boxplot(radii_l, radii_r, brain_region_names, 
                  'Blood Vessel Radius (µm)', 'Blood Vessel Radius Distribution per Brain Region and Hemisphere',
-                 os.path.join(output_dir, 'BV_radii_boxplot.png'), show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
+                 make_output_path(output_dir, 'BV_radii_boxplot.png', dark_mode), dark_mode=dark_mode, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
 
-def plot_branch_degrees_boxplot(data_per_brain_region, output_dir, show_outliers=True, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
+def plot_branch_degrees_boxplot(data_per_brain_region, output_dir, dark_mode=False, show_outliers=True, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
     brain_region_names = []
     degrees_l = []
     degrees_r = []
@@ -133,9 +142,9 @@ def plot_branch_degrees_boxplot(data_per_brain_region, output_dir, show_outliers
     
     plot_boxplot(degrees_l, degrees_r, brain_region_names, 
                  'Branch Point Degree', 'Branch Point Degree Distribution per Brain Region and Hemisphere',
-                 os.path.join(output_dir, 'BV_branch_degrees_boxplot.png'), show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
+                 make_output_path(output_dir, 'BV_branch_degrees_boxplot.png', dark_mode), dark_mode=dark_mode, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
 
-def plot_histograms_for_region(data, brain_region_name, hemisphere, output_dir, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
+def plot_histograms_for_region(data, brain_region_name, hemisphere, output_dir, dark_mode=False, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
     """Plot histograms for radii and branch degrees in a brain region and hemisphere"""
     
     fig, axes = plt.subplots(1, 2, figsize=(15, 5))
@@ -165,11 +174,11 @@ def plot_histograms_for_region(data, brain_region_name, hemisphere, output_dir, 
         ax.text(0.5, 0.5, 'No data', transform=ax.transAxes, ha='center', va='center', fontsize=title_fontsize)
     
     plt.tight_layout()
-    output_path = os.path.join(output_dir, f'BV_histograms_{brain_region_name}_{hemisphere}.png')
+    output_path = make_output_path(output_dir, f'BV_histograms_{brain_region_name}_{hemisphere}.png', dark_mode)
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
     plt.close()
 
-def plot_branch_density_per_brain_region(data_per_brain_region, output_dir, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
+def plot_branch_density_per_brain_region(data_per_brain_region, output_dir, dark_mode=False, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
     brain_region_names = []
     densities_l = []
     densities_r = []
@@ -200,7 +209,7 @@ def plot_branch_density_per_brain_region(data_per_brain_region, output_dir, left
     ax.legend()
     
     plt.tight_layout()
-    plt.savefig(os.path.join(output_dir, 'BV_branch_density_per_brain_region.png'))
+    plt.savefig(make_output_path(output_dir, 'BV_branch_density_per_brain_region.png', dark_mode))
     plt.clf()
     plt.close()
 
@@ -232,18 +241,18 @@ def main():
     data_per_brain_region = get_data_for_brain_region(brain_regions_path, brain_region_labels_path, BV_data_dir)
 
     # Plot boxplots
-    plot_radii_boxplot(data_per_brain_region, output_dir, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
-    plot_branch_degrees_boxplot(data_per_brain_region, output_dir, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
+    plot_radii_boxplot(data_per_brain_region, output_dir, dark_mode=dark_mode, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
+    plot_branch_degrees_boxplot(data_per_brain_region, output_dir, dark_mode=dark_mode, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
     
     # Plot histograms for each region and hemisphere
     for brain_region_name, hemispheres in data_per_brain_region.items():
         for hemisphere in ['l', 'r']:
-            plot_histograms_for_region(hemispheres[hemisphere], brain_region_name, hemisphere, output_dir, 
+            plot_histograms_for_region(hemispheres[hemisphere], brain_region_name, hemisphere, output_dir, dark_mode=dark_mode,
                                      left_color=left_color, right_color=right_color, 
                                      tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
     
     # Plot branch density
-    plot_branch_density_per_brain_region(data_per_brain_region, output_dir, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
+    plot_branch_density_per_brain_region(data_per_brain_region, output_dir, dark_mode=dark_mode, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
 
 
 if __name__ == "__main__":
