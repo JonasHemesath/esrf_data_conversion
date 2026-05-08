@@ -121,6 +121,32 @@ def plot_histograms_for_region(data, brain_region_name, hemisphere, output_dir, 
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
     plt.close()
 
+
+def get_color_values(data, valid_indices, color_metric):
+    if color_metric == 'mean_nearest_somata_volume':
+        volumes = np.vstack([
+            np.array(data['nearest_somata_volume_1'])[valid_indices],
+            np.array(data['nearest_somata_volume_2'])[valid_indices],
+            np.array(data['nearest_somata_volume_3'])[valid_indices],
+        ]).T
+        return np.nanmean(volumes, axis=1)
+    return np.array(data[color_metric])[valid_indices]
+
+
+def plot_embedding_colored(embedding, color_values, color_label, output_path, tick_fontsize=10, title_fontsize=12):
+    fig, ax = plt.subplots(figsize=(10, 8))
+    scatter = ax.scatter(embedding[:, 0], embedding[:, 1], alpha=0.6, s=20, c=color_values, cmap='viridis')
+    ax.set_xlabel('Component 1', fontsize=title_fontsize)
+    ax.set_ylabel('Component 2', fontsize=title_fontsize)
+    ax.tick_params(axis='both', labelsize=tick_fontsize)
+    cbar = plt.colorbar(scatter, ax=ax)
+    cbar.set_label(color_label, fontsize=title_fontsize)
+    cbar.ax.tick_params(labelsize=tick_fontsize)
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=300, bbox_inches='tight')
+    plt.close()
+
+
 def plot_umap_for_region(data, brain_region_name, hemisphere, output_dir, dark_mode=False, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
     """Plot UMAP for soma metrics in a brain region and hemisphere"""
     
@@ -160,22 +186,19 @@ def plot_umap_for_region(data, brain_region_name, hemisphere, output_dir, dark_m
     reducer = umap.UMAP(n_neighbors=10, min_dist=0.1, random_state=42)
     embedding = reducer.fit_transform(data_scaled)
     
-    # Plot
-    fig, ax = plt.subplots(figsize=(10, 8))
-    scatter = ax.scatter(embedding[:, 0], embedding[:, 1], alpha=0.6, s=20, c=data_matrix[:, 0], cmap='viridis')  # Color by volume
-    ax.set_xlabel('UMAP 1', fontsize=title_fontsize)
-    ax.set_ylabel('UMAP 2', fontsize=title_fontsize)
-    ax.tick_params(axis='both', labelsize=tick_fontsize)
-    
-    # Colorbar
-    cbar = plt.colorbar(scatter, ax=ax)
-    cbar.set_label('Soma Volume (µm³)', fontsize=title_fontsize)
-    cbar.ax.tick_params(labelsize=tick_fontsize)
-    
-    plt.tight_layout()
-    output_path = make_output_path(output_dir, f'umap_{brain_region_name}_{hemisphere}.png', dark_mode)
-    plt.savefig(output_path, dpi=300, bbox_inches='tight')
-    plt.close()
+    # Plot embeddings colored by multiple metrics
+    color_metrics = [
+        ('soma_volume', 'Soma Volume (µm³)', 'soma_volume'),
+        ('soma_nearest_distance_BV', 'Soma Nearest Distance to BV (µm)', 'soma_nearest_distance_BV'),
+        ('soma_nearest_radius_BV', 'Soma Nearest Radius to BV (µm)', 'soma_nearest_radius_BV'),
+        ('soma_radius_ratio_min_max', 'Soma Radius Ratio (max/min)', 'soma_radius_ratio_min_max'),
+        ('mean_nearest_somata_volume', 'Mean Nearest Somata Volume (µm³)', 'mean_nearest_somata_volume'),
+    ]
+    safe_name = brain_region_name.replace(' ', '_')
+    for suffix, color_label, metric_key in color_metrics:
+        color_values = get_color_values(data, valid_indices, metric_key)
+        output_path = make_output_path(output_dir, f'umap_{safe_name}_{hemisphere}_color_by_{suffix}.png', dark_mode)
+        plot_embedding_colored(embedding, color_values, color_label, output_path, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
 
 def plot_tsne_for_region(data, brain_region_name, hemisphere, output_dir, dark_mode=False, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
     """Plot t-SNE for soma metrics in a brain region and hemisphere"""
@@ -216,22 +239,19 @@ def plot_tsne_for_region(data, brain_region_name, hemisphere, output_dir, dark_m
     tsne = TSNE(n_components=2, random_state=42, perplexity=min(30, len(data_matrix)-1))
     embedding = tsne.fit_transform(data_scaled)
     
-    # Plot
-    fig, ax = plt.subplots(figsize=(10, 8))
-    scatter = ax.scatter(embedding[:, 0], embedding[:, 1], alpha=0.6, s=20, c=data_matrix[:, 0], cmap='viridis')  # Color by volume
-    ax.set_xlabel('t-SNE 1', fontsize=title_fontsize)
-    ax.set_ylabel('t-SNE 2', fontsize=title_fontsize)
-    ax.tick_params(axis='both', labelsize=tick_fontsize)
-    
-    # Colorbar
-    cbar = plt.colorbar(scatter, ax=ax)
-    cbar.set_label('Soma Volume (µm³)', fontsize=title_fontsize)
-    cbar.ax.tick_params(labelsize=tick_fontsize)
-    
-    plt.tight_layout()
-    output_path = make_output_path(output_dir, f'tsne_{brain_region_name}_{hemisphere}.png', dark_mode)
-    plt.savefig(output_path, dpi=300, bbox_inches='tight')
-    plt.close()
+    # Plot embeddings colored by multiple metrics
+    color_metrics = [
+        ('soma_volume', 'Soma Volume (µm³)', 'soma_volume'),
+        ('soma_nearest_distance_BV', 'Soma Nearest Distance to BV (µm)', 'soma_nearest_distance_BV'),
+        ('soma_nearest_radius_BV', 'Soma Nearest Radius to BV (µm)', 'soma_nearest_radius_BV'),
+        ('soma_radius_ratio_min_max', 'Soma Radius Ratio (max/min)', 'soma_radius_ratio_min_max'),
+        ('mean_nearest_somata_volume', 'Mean Nearest Somata Volume (µm³)', 'mean_nearest_somata_volume'),
+    ]
+    safe_name = brain_region_name.replace(' ', '_')
+    for suffix, color_label, metric_key in color_metrics:
+        color_values = get_color_values(data, valid_indices, metric_key)
+        output_path = make_output_path(output_dir, f'tsne_{safe_name}_{hemisphere}_color_by_{suffix}.png', dark_mode)
+        plot_embedding_colored(embedding, color_values, color_label, output_path, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
 
 def plot_pca_for_region(data, brain_region_name, hemisphere, output_dir, dark_mode=False, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
     """Plot PCA for soma metrics in a brain region and hemisphere"""
@@ -275,22 +295,19 @@ def plot_pca_for_region(data, brain_region_name, hemisphere, output_dir, dark_mo
     # Explained variance
     explained_var = pca.explained_variance_ratio_
     
-    # Plot
-    fig, ax = plt.subplots(figsize=(10, 8))
-    scatter = ax.scatter(embedding[:, 0], embedding[:, 1], alpha=0.6, s=20, c=data_matrix[:, 0], cmap='viridis')  # Color by volume
-    ax.set_xlabel(f'PC1 ({explained_var[0]*100:.1f}%)', fontsize=title_fontsize)
-    ax.set_ylabel(f'PC2 ({explained_var[1]*100:.1f}%)', fontsize=title_fontsize)
-    ax.tick_params(axis='both', labelsize=tick_fontsize)
-    
-    # Colorbar
-    cbar = plt.colorbar(scatter, ax=ax)
-    cbar.set_label('Soma Volume (µm³)', fontsize=title_fontsize)
-    cbar.ax.tick_params(labelsize=tick_fontsize)
-    
-    plt.tight_layout()
-    output_path = make_output_path(output_dir, f'pca_{brain_region_name}_{hemisphere}.png', dark_mode)
-    plt.savefig(output_path, dpi=300, bbox_inches='tight')
-    plt.close()
+    # Plot embeddings colored by multiple metrics
+    color_metrics = [
+        ('soma_volume', 'Soma Volume (µm³)', 'soma_volume'),
+        ('soma_nearest_distance_BV', 'Soma Nearest Distance to BV (µm)', 'soma_nearest_distance_BV'),
+        ('soma_nearest_radius_BV', 'Soma Nearest Radius to BV (µm)', 'soma_nearest_radius_BV'),
+        ('soma_radius_ratio_min_max', 'Soma Radius Ratio (max/min)', 'soma_radius_ratio_min_max'),
+        ('mean_nearest_somata_volume', 'Mean Nearest Somata Volume (µm³)', 'mean_nearest_somata_volume'),
+    ]
+    safe_name = brain_region_name.replace(' ', '_')
+    for suffix, color_label, metric_key in color_metrics:
+        color_values = get_color_values(data, valid_indices, metric_key)
+        output_path = make_output_path(output_dir, f'pca_{safe_name}_{hemisphere}_color_by_{suffix}.png', dark_mode)
+        plot_embedding_colored(embedding, color_values, color_label, output_path, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
 
 def main():
     parser = argparse.ArgumentParser(description='Plot soma distributions and UMAP per brain region')
