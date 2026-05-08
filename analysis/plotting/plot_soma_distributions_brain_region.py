@@ -157,7 +157,7 @@ def plot_umap_for_region(data, brain_region_name, hemisphere, output_dir, dark_m
     data_scaled = scaler.fit_transform(data_matrix)
     
     # UMAP
-    reducer = umap.UMAP(n_neighbors=15, min_dist=0.1, random_state=42)
+    reducer = umap.UMAP(n_neighbors=10, min_dist=0.1, random_state=42)
     embedding = reducer.fit_transform(data_scaled)
     
     # Plot
