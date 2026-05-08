@@ -190,7 +190,10 @@ def plot_umap_for_region(data, brain_region_name, hemisphere, output_dir, dark_m
     color_metrics = [
         ('soma_volume', 'Soma Volume (µm³)', 'soma_volume'),
         ('soma_nearest_distance_BV', 'Soma Nearest Distance to BV (µm)', 'soma_nearest_distance_BV'),
-        ('soma_nearest_radius_BV', 'Soma Nearest Radius to BV (µm)', 'soma_nearest_radius_BV'),
+        ('soma_nearest_radius_BV', 'Nearest Blood Vessel Radius (µm)', 'soma_nearest_radius_BV'),
+        ('soma_centroid_x', 'Soma Centroid X (µm)', 'soma_centroid_x'),
+        ('soma_centroid_y', 'Soma Centroid Y (µm)', 'soma_centroid_y'),
+        ('soma_centroid_z', 'Soma Centroid Z (µm)', 'soma_centroid_z'),
         ('soma_radius_ratio_min_max', 'Soma Radius Ratio (max/min)', 'soma_radius_ratio_min_max'),
         ('mean_nearest_somata_volume', 'Mean Nearest Somata Volume (µm³)', 'mean_nearest_somata_volume'),
     ]
@@ -243,7 +246,10 @@ def plot_tsne_for_region(data, brain_region_name, hemisphere, output_dir, dark_m
     color_metrics = [
         ('soma_volume', 'Soma Volume (µm³)', 'soma_volume'),
         ('soma_nearest_distance_BV', 'Soma Nearest Distance to BV (µm)', 'soma_nearest_distance_BV'),
-        ('soma_nearest_radius_BV', 'Soma Nearest Radius to BV (µm)', 'soma_nearest_radius_BV'),
+        ('soma_nearest_radius_BV', 'Nearest Blood Vessel Radius (µm)', 'soma_nearest_radius_BV'),
+        ('soma_centroid_x', 'Soma Centroid X (µm)', 'soma_centroid_x'),
+        ('soma_centroid_y', 'Soma Centroid Y (µm)', 'soma_centroid_y'),
+        ('soma_centroid_z', 'Soma Centroid Z (µm)', 'soma_centroid_z'),
         ('soma_radius_ratio_min_max', 'Soma Radius Ratio (max/min)', 'soma_radius_ratio_min_max'),
         ('mean_nearest_somata_volume', 'Mean Nearest Somata Volume (µm³)', 'mean_nearest_somata_volume'),
     ]
@@ -299,7 +305,10 @@ def plot_pca_for_region(data, brain_region_name, hemisphere, output_dir, dark_mo
     color_metrics = [
         ('soma_volume', 'Soma Volume (µm³)', 'soma_volume'),
         ('soma_nearest_distance_BV', 'Soma Nearest Distance to BV (µm)', 'soma_nearest_distance_BV'),
-        ('soma_nearest_radius_BV', 'Soma Nearest Radius to BV (µm)', 'soma_nearest_radius_BV'),
+        ('soma_nearest_radius_BV', 'Nearest Blood Vessel Radius (µm)', 'soma_nearest_radius_BV'),
+        ('soma_centroid_x', 'Soma Centroid X (µm)', 'soma_centroid_x'),
+        ('soma_centroid_y', 'Soma Centroid Y (µm)', 'soma_centroid_y'),
+        ('soma_centroid_z', 'Soma Centroid Z (µm)', 'soma_centroid_z'),
         ('soma_radius_ratio_min_max', 'Soma Radius Ratio (max/min)', 'soma_radius_ratio_min_max'),
         ('mean_nearest_somata_volume', 'Mean Nearest Somata Volume (µm³)', 'mean_nearest_somata_volume'),
     ]

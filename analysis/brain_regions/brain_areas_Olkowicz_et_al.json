@@ -1,0 +1,37 @@
+{
+    "pallium": {
+        "cells": 78542878,
+        "neurons": 55226759,
+        "non_neurons": 23316119
+    },
+    "subpallium": {
+        "cells": 15013789,
+        "neurons": 9436262,
+        "non_neurons": 5577527
+    },
+    "diencephalon": {
+        "cells": 7842778,
+        "neurons": 2395689,
+        "non_neurons": 5447089
+    },
+    "tectum": {
+        "cells": 17746667,
+        "neurons": 10618316,
+        "non_neurons": 7128351
+    },
+    "cerebellum": {
+        "cells": 67401667,
+        "neurons": 56609691,
+        "non_neurons": 10791976
+    },
+    "brainstem": {
+        "cells": 9182778,
+        "neurons": 1689383,
+        "non_neurons": 7493395
+    },
+    "unknown": {
+        "cells": 49786011,
+        "neurons": 24139650,
+        "non_neurons": 25646361
+    }
+}
