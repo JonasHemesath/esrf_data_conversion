@@ -157,6 +157,8 @@ def main():
         with open(os.path.join(data_output_path, "BV_density_per_brain_region.json"), "r") as f:
             bv_density_brain_region_dict = json.load(f)
         print("Loaded existing BV density data for brain regions.")
+        with open(brain_region_labels_path, "r") as f:
+            brain_region_labels = json.load(f)
     else:
         bv = CloudVolume(BV_path)
         brain_regions = CloudVolume(brain_regions_path)
