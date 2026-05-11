@@ -111,7 +111,48 @@ def plot_soma_density_per_brain_region(data_per_brain_region, density_burek_path
     plt.clf()
     plt.close()
 
+def plot_soma_density_per_brain_region_non_neurons_adjusted(data_per_brain_region, density_burek_path, output_dir, dark_mode=False, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
+    brain_region_names = []
+    soma_densities_l = []
+    soma_densities_r = []
+    density_burek = []
+    with open(density_burek_path, 'r') as f:
+        density_burek_dict = json.load(f)
+    for brain_region_name, hemispheres in data_per_brain_region.items():
+        if brain_region_name not in density_burek_dict.keys():
+            continue
+        density_burek.append(density_burek_dict[brain_region_name]['mean'] * 1e6)  # Convert from count/1000µm³ to count/mm³
+        brain_region_names.append(brain_region_name)
+        region_volume_l = hemispheres['l']['brain_region_volume']  # in µm³
+        region_volume_r = hemispheres['r']['brain_region_volume']  # in µm³
+        # Convert from count/µm³ to count/mm³ by multiplying by 1e9 (1 mm³ = 1e9 µm³)
+        soma_density_l = (hemispheres['l']['soma_count'] / region_volume_l * 1e9) if region_volume_l > 0 else 0
+        soma_density_r = (hemispheres['r']['soma_count'] / region_volume_r * 1e9) if region_volume_r > 0 else 0
+        soma_densities_l.append(soma_density_l)
+        soma_densities_r.append(soma_density_r)
 
+    for i in range(len(brain_region_names)):
+        print(f"{brain_region_names[i]} - Left Density: {soma_densities_l[i]:.2f} count/mm³, Right Density: {soma_densities_r[i]:.2f} count/mm³")
+    
+    x = np.arange(len(brain_region_names))
+    width = 0.25
+    fig, ax = plt.subplots(figsize=(12, 6))
+    rects1 = ax.bar(x - width, soma_densities_l, width, label='Left Hemisphere', color=left_color)
+    rects2 = ax.bar(x, soma_densities_r, width, label='Right Hemisphere', color=right_color)
+    rects3 = ax.bar(x + width, density_burek, width, label='Burek et al.', color='lightgray', alpha=0.7)
+
+    ax.set_xlabel('Brain Region', fontsize=title_fontsize)
+    ax.set_ylabel('Soma Density (count per mm³)', fontsize=title_fontsize)
+    ax.set_xticks(x)
+    ax.set_xticklabels(brain_region_names, rotation=90, fontsize=tick_fontsize)
+    ax.tick_params(axis='y', labelsize=tick_fontsize)
+    ax.legend()
+    
+    plt.tight_layout()
+    filename = 'soma_density_per_brain_region_burek_comp_dark.png' if dark_mode else 'soma_density_per_brain_region_burek_comp.png'
+    plt.savefig(os.path.join(output_dir, filename))
+    plt.clf()
+    plt.close()
 
 def main():
     parser = argparse.ArgumentParser(description='Plot soma data per brain region')
