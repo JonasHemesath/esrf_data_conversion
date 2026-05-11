@@ -41,7 +41,7 @@ def get_data_for_brain_region(brain_areas_data_path, brain_region_labels_path, s
         brain_region_name = v[0]
         
         
-        soma_data_in_region = soma_data[soma_data[:,2] == brain_region_label]
+        soma_data_in_region = soma_data[soma_data[:,14] == brain_region_label]
         # Filter out somata with non-positive volume
         soma_data_in_region = soma_data_in_region[soma_data_in_region[:, 4] > 0]
         
