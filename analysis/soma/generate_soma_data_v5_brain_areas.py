@@ -147,6 +147,12 @@ class SomaDataGenerator:
 
         if soma_labels_file is not None:
             self.soma_labels = np.load(soma_labels_file)
+            print(f"DEBUG: Loaded soma_labels from {soma_labels_file}", flush=True)
+            print(f"DEBUG: soma_labels shape: {self.soma_labels.shape}", flush=True)
+            print(f"DEBUG: soma_labels dtype: {self.soma_labels.dtype}", flush=True)
+            print(f"DEBUG: First 10 labels: {self.soma_labels[:10]}", flush=True)
+            print(f"DEBUG: Min label: {self.soma_labels.min()}, Max label: {self.soma_labels.max()}", flush=True)
+            sys.stdout.flush()
             self.num_label = self.soma_labels.shape[0]
         else:
             self.num_label = self.get_max_soma_label(soma_path)
