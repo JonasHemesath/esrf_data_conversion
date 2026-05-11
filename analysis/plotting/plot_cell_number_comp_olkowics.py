@@ -109,6 +109,7 @@ def plot_soma_counts_per_brain_region_stacked_ref(data_per_brain_region, output_
     ref_non_neuron_counts = []
     
     for brain_region_name, data in data_per_brain_region.items():
+        print(f"Brain Region: {brain_region_name}, Our Soma Count: {data['soma_count']}, Ref Neurons: {data['ref_neurons_count']}, Ref Non-Neurons: {data['ref_non_neurons_count']}")
         brain_region_names.append(brain_region_name)
         soma_counts.append(data['soma_count'])
         ref_neuron_counts.append(data['ref_neurons_count'])
