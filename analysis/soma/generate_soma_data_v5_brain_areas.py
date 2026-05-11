@@ -275,8 +275,13 @@ class SomaDataGenerator:
 
         Rows for labels that fail/miss will remain all zeros.
         """
+        print(f"=== DEBUG: save_soma_data called with debug_samples={debug_samples}", flush=True)
+        sys.stdout.flush()
+        
         mm = None
         if output_file_np is not None:
+            print(f"=== DEBUG: Creating memmap at {output_file_np}", flush=True)
+            sys.stdout.flush()
             # Creates a real .npy file that is memory-mapped for writing.
             mm = np.lib.format.open_memmap(
                 output_file_np,
@@ -285,53 +290,74 @@ class SomaDataGenerator:
                 shape=(self.num_label + 1, 15),
             )
             mm[:] = 0.0
+            print(f"=== DEBUG: Memmap created", flush=True)
+            sys.stdout.flush()
 
         debug_mode = debug_samples > 0
+        print(f"=== DEBUG: debug_mode={debug_mode}, parallel={self.parallel}", flush=True)
+        sys.stdout.flush()
         
         # Choose computation mode (streaming)
         if self.parallel:
+            print(f"=== DEBUG: Using parallel mode", flush=True)
+            sys.stdout.flush()
             row_iter = self.iter_rows_parallel(
                 num_workers=self.num_workers,
                 chunksize=self.chunksize,
                 show_progress=self.show_progress,
             )
         else:
+            print(f"=== DEBUG: Using serial mode", flush=True)
+            sys.stdout.flush()
             row_iter = self.iter_rows_serial(show_progress=self.show_progress, debug_mode=debug_mode)
 
         os.makedirs(os.path.dirname(output_file_csv) or ".", exist_ok=True)
         written = 0
         debug_count = 0
 
-        with open(output_file_csv, "w") as f:
-            # No header to match your previous output format
-            for (index, label, brain_region, surface_area, volume, convex_hull_volume, min_radius, max_radius, centroid_x, centroid_y, centroid_z, nearest_distance, nearest_radius, radius_ratio, brain_area) in row_iter:
-                # Debug: print first N samples to diagnose coordinate/axis issues
-                if debug_count < debug_samples:
-                    scale = (2 ** self.brain_regions_mip) * 728.0
-                    pos_mip_xyz = np.floor(np.array([centroid_x, centroid_y, centroid_z]) / scale).astype(np.int64)
-                    # Try different axis orders
-                    val_xyz = _to_scalar(self.brain_areas[int(pos_mip_xyz[0]), int(pos_mip_xyz[1]), int(pos_mip_xyz[2])])
-                    val_zyx = _to_scalar(self.brain_areas[int(pos_mip_xyz[2]), int(pos_mip_xyz[1]), int(pos_mip_xyz[0])])
-                    val_yxz = _to_scalar(self.brain_areas[int(pos_mip_xyz[1]), int(pos_mip_xyz[0]), int(pos_mip_xyz[2])])
+        print(f"=== DEBUG: Starting to iterate over rows", flush=True)
+        sys.stdout.flush()
+
+        try:
+            with open(output_file_csv, "w") as f:
+                # No header to match your previous output format
+                for (index, label, brain_region, surface_area, volume, convex_hull_volume, min_radius, max_radius, centroid_x, centroid_y, centroid_z, nearest_distance, nearest_radius, radius_ratio, brain_area) in row_iter:
+                    # Debug: print first N samples to diagnose coordinate/axis issues
+                    if debug_count < debug_samples:
+                        scale = (2 ** self.brain_regions_mip) * 728.0
+                        pos_mip_xyz = np.floor(np.array([centroid_x, centroid_y, centroid_z]) / scale).astype(np.int64)
+                        # Try different axis orders
+                        val_xyz = _to_scalar(self.brain_areas[int(pos_mip_xyz[0]), int(pos_mip_xyz[1]), int(pos_mip_xyz[2])])
+                        val_zyx = _to_scalar(self.brain_areas[int(pos_mip_xyz[2]), int(pos_mip_xyz[1]), int(pos_mip_xyz[0])])
+                        val_yxz = _to_scalar(self.brain_areas[int(pos_mip_xyz[1]), int(pos_mip_xyz[0]), int(pos_mip_xyz[2])])
+                        
+                        print(f"Label {label}: centroid=({centroid_x:.0f}, {centroid_y:.0f}, {centroid_z:.0f}), pos_mip={pos_mip_xyz}", flush=True)
+                        print(f"  brain_region={int(brain_region)}, brain_area (xyz)={int(val_xyz)}, (zyx)={int(val_zyx)}, (yxz)={int(val_yxz)}, expected={int(brain_area)}", flush=True)
+                        sys.stdout.flush()
+                        debug_count += 1
                     
-                    print(f"Label {label}: centroid=({centroid_x:.0f}, {centroid_y:.0f}, {centroid_z:.0f}), pos_mip={pos_mip_xyz}", flush=True)
-                    print(f"  brain_region={int(brain_region)}, brain_area (xyz)={int(val_xyz)}, (zyx)={int(val_zyx)}, (yxz)={int(val_yxz)}, expected={int(brain_area)}", flush=True)
-                    sys.stdout.flush()
-                    debug_count += 1
-                
-                # Write to memmap
-                if mm is not None:
-                    mm[index, :] = (index, label, brain_region, surface_area, volume, convex_hull_volume, min_radius, max_radius, centroid_x, centroid_y, centroid_z, nearest_distance, nearest_radius, radius_ratio, brain_area)
+                    # Write to memmap
+                    if mm is not None:
+                        mm[index, :] = (index, label, brain_region, surface_area, volume, convex_hull_volume, min_radius, max_radius, centroid_x, centroid_y, centroid_z, nearest_distance, nearest_radius, radius_ratio, brain_area)
 
-                # Write to CSV
-                f.write(f"{index},{label},{brain_region},{surface_area},{volume},{convex_hull_volume},{min_radius},{max_radius},{centroid_x},{centroid_y},{centroid_z},{nearest_distance},{nearest_radius},{radius_ratio},{brain_area}\n")
-                written += 1
+                    # Write to CSV
+                    f.write(f"{index},{label},{brain_region},{surface_area},{volume},{convex_hull_volume},{min_radius},{max_radius},{centroid_x},{centroid_y},{centroid_z},{nearest_distance},{nearest_radius},{radius_ratio},{brain_area}\n")
+                    written += 1
 
-                if mm is not None and (written % flush_every == 0):
-                    mm.flush()
+                    if mm is not None and (written % flush_every == 0):
+                        mm.flush()
+        except Exception as e:
+            print(f"=== ERROR: {type(e).__name__}: {e}", flush=True)
+            import traceback
+            traceback.print_exc()
+            sys.stdout.flush()
+            raise
 
         if mm is not None:
             mm.flush()
+        
+        print(f"=== DEBUG: Finished! Wrote {written} rows", flush=True)
+        sys.stdout.flush()
 
 
 if __name__ == "__main__":
