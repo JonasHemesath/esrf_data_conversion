@@ -112,6 +112,11 @@ def plot_soma_density_per_brain_region(data_per_brain_region, density_burek_path
     plt.close()
 
 def plot_soma_density_per_brain_region_non_neurons_adjusted(data_per_brain_region, density_burek_path, output_dir, dark_mode=False, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
+    ratios = {'HVC': {"neurons": 55226759,
+        "non_neurons": 23316119}, 'LMAN': {"neurons": 55226759,
+        "non_neurons": 23316119}, 'RA': {"neurons": 55226759,
+        "non_neurons": 23316119}, 'Area X': {"neurons": 9436262,
+        "non_neurons": 5577527}}
     brain_region_names = []
     soma_densities_l = []
     soma_densities_r = []
@@ -121,7 +126,7 @@ def plot_soma_density_per_brain_region_non_neurons_adjusted(data_per_brain_regio
     for brain_region_name, hemispheres in data_per_brain_region.items():
         if brain_region_name not in density_burek_dict.keys():
             continue
-        density_burek.append(density_burek_dict[brain_region_name]['mean'] * 1e6)  # Convert from count/1000µm³ to count/mm³
+        density_burek.append(density_burek_dict[brain_region_name]['mean'] * 1e6 * (1 + ratios[brain_region_name]['non_neurons'] / ratios[brain_region_name]['neurons']))  # Convert from count/1000µm³ to count/mm³
         brain_region_names.append(brain_region_name)
         region_volume_l = hemispheres['l']['brain_region_volume']  # in µm³
         region_volume_r = hemispheres['r']['brain_region_volume']  # in µm³
@@ -149,7 +154,7 @@ def plot_soma_density_per_brain_region_non_neurons_adjusted(data_per_brain_regio
     ax.legend()
     
     plt.tight_layout()
-    filename = 'soma_density_per_brain_region_burek_comp_dark.png' if dark_mode else 'soma_density_per_brain_region_burek_comp.png'
+    filename = 'soma_density_per_brain_region_burek_comp_adjusted_dark.png' if dark_mode else 'soma_density_per_brain_region_burek_comp_adjusted.png'
     plt.savefig(os.path.join(output_dir, filename))
     plt.clf()
     plt.close()
@@ -184,6 +189,7 @@ def main():
     # Do something with the retrieved data, e.g., plot it or save it to a file
     
     plot_soma_density_per_brain_region(data_per_brain_region, density_burek_path, output_dir, dark_mode=dark_mode, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
+    plot_soma_density_per_brain_region_non_neurons_adjusted(data_per_brain_region, density_burek_path, output_dir, dark_mode=dark_mode, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
 
     
 
