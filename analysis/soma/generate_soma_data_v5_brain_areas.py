@@ -263,7 +263,7 @@ class SomaDataGenerator:
                 continue
             yield row
 
-    def save_soma_data(self, output_file_csv, output_file_np=None, flush_every=200000):
+    def save_soma_data(self, output_file_csv, output_file_np=None, flush_every=200000, debug_samples=10):
         """
         Stream results directly to:
           - CSV (line by line)
@@ -297,10 +297,23 @@ class SomaDataGenerator:
 
         os.makedirs(os.path.dirname(output_file_csv) or ".", exist_ok=True)
         written = 0
+        debug_count = 0
 
         with open(output_file_csv, "w") as f:
             # No header to match your previous output format
             for (index, label, brain_region, surface_area, volume, convex_hull_volume, min_radius, max_radius, centroid_x, centroid_y, centroid_z, nearest_distance, nearest_radius, radius_ratio, brain_area) in row_iter:
+                # Debug: print first N samples to diagnose coordinate/axis issues
+                if debug_count < debug_samples:
+                    scale = (2 ** self.brain_regions_mip) * 728.0
+                    pos_mip_xyz = np.floor(np.array([centroid_x, centroid_y, centroid_z]) / scale).astype(np.int64)
+                    # Try different axis orders
+                    val_xyz = _to_scalar(self.brain_areas[int(pos_mip_xyz[0]), int(pos_mip_xyz[1]), int(pos_mip_xyz[2])])
+                    val_zyx = _to_scalar(self.brain_areas[int(pos_mip_xyz[2]), int(pos_mip_xyz[1]), int(pos_mip_xyz[0])])
+                    val_yxz = _to_scalar(self.brain_areas[int(pos_mip_xyz[1]), int(pos_mip_xyz[0]), int(pos_mip_xyz[2])])
+                    print(f"Label {label}: centroid=({centroid_x:.0f}, {centroid_y:.0f}, {centroid_z:.0f}), pos_mip={pos_mip_xyz}")
+                    print(f"  brain_region={int(brain_region)}, brain_area (xyz)={int(val_xyz)}, (zyx)={int(val_zyx)}, (yxz)={int(val_yxz)}, expected={int(brain_area)}")
+                    debug_count += 1
+                
                 # Write to memmap
                 if mm is not None:
                     mm[index, :] = (index, label, brain_region, surface_area, volume, convex_hull_volume, min_radius, max_radius, centroid_x, centroid_y, centroid_z, nearest_distance, nearest_radius, radius_ratio, brain_area)
@@ -344,6 +357,12 @@ if __name__ == "__main__":
         default=200000,
         help="Flush memmap to disk every N written rows (only if --output_file_np is used)",
     )
+    parser.add_argument(
+        "--debug_samples",
+        type=int,
+        default=10,
+        help="Number of sample soma to print debug info for (to diagnose coordinate mismatches)",
+    )
 
     args = parser.parse_args()
 
@@ -360,4 +379,4 @@ if __name__ == "__main__":
         show_progress=not args.no_progress,
         soma_labels_file=args.soma_labels_file,
     )
-    soma_data_generator.save_soma_data(args.output_file_csv, args.output_file_np, flush_every=args.flush_every)
+    soma_data_generator.save_soma_data(args.output_file_csv, args.output_file_np, flush_every=args.flush_every, debug_samples=args.debug_samples)
