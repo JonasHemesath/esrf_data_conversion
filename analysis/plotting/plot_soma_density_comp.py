@@ -96,7 +96,7 @@ def plot_soma_density_per_brain_region(data_per_brain_region, density_burek_path
     fig, ax = plt.subplots(figsize=(12, 6))
     rects1 = ax.bar(x - width, soma_densities_l, width, label='Left Hemisphere', color=left_color)
     rects2 = ax.bar(x, soma_densities_r, width, label='Right Hemisphere', color=right_color)
-    rects3 = ax.bar(x + width, density_burek, width, label='Burek et al. + Okolwicz et al.', color=comp_color, alpha=0.7)
+    rects3 = ax.bar(x + width, density_burek, width, label='Burek et al. + Okolwicz et al.', color=comp_color)
 
     ax.set_xlabel('Brain Region', fontsize=title_fontsize)
     ax.set_ylabel('Soma Density (count per mm³)', fontsize=title_fontsize)
@@ -136,7 +136,8 @@ def plot_soma_density_per_brain_region_non_neurons_adjusted(data_per_brain_regio
         soma_density_r = (hemispheres['r']['soma_count'] / region_volume_r * 1e9) if region_volume_r > 0 else 0
         soma_densities_l.append(soma_density_l)
         soma_densities_r.append(soma_density_r)
-
+    print(density_burek)
+    print(density_burek_non_neurons)
     for i in range(len(brain_region_names)):
         print(f"{brain_region_names[i]} - Left Density: {soma_densities_l[i]:.2f} count/mm³, Right Density: {soma_densities_r[i]:.2f} count/mm³")
     
