@@ -34,6 +34,7 @@ def get_data_for_brain_region(brain_areas_data_path, brain_region_labels_path, s
     print("Loaded brain region labels:", brain_region_labels)
     soma_data = np.load(soma_npy_path)
     print("Loaded soma data with shape:", soma_data.shape)
+    print(np.unique(soma_data[:,14]))  # Unique brain region labels in soma data
     data_per_brain_region = {}
     for k, v in brain_region_labels.items():
         print(f"Processing brain region label: {k}")
