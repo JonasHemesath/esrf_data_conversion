@@ -68,7 +68,7 @@ def get_data_for_brain_region(brain_regions_path, brain_region_labels_path, soma
 
 
 
-def plot_soma_density_per_brain_region(data_per_brain_region, density_burek_path, output_dir, dark_mode=False, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
+def plot_soma_density_per_brain_region(data_per_brain_region, density_burek_path, output_dir, dark_mode=False, left_color='skyblue', right_color='salmon', comp_color='lightgray', tick_fontsize=10, title_fontsize=12):
     brain_region_names = []
     soma_densities_l = []
     soma_densities_r = []
@@ -96,7 +96,7 @@ def plot_soma_density_per_brain_region(data_per_brain_region, density_burek_path
     fig, ax = plt.subplots(figsize=(12, 6))
     rects1 = ax.bar(x - width, soma_densities_l, width, label='Left Hemisphere', color=left_color)
     rects2 = ax.bar(x, soma_densities_r, width, label='Right Hemisphere', color=right_color)
-    rects3 = ax.bar(x + width, density_burek, width, label='Burek et al.', color='lightgray', alpha=0.7)
+    rects3 = ax.bar(x + width, density_burek, width, label='Burek et al. + Okolwicz et al.', color=comp_color, alpha=0.7)
 
     ax.set_xlabel('Brain Region', fontsize=title_fontsize)
     ax.set_ylabel('Soma Density (count per mm³)', fontsize=title_fontsize)
@@ -111,7 +111,7 @@ def plot_soma_density_per_brain_region(data_per_brain_region, density_burek_path
     plt.clf()
     plt.close()
 
-def plot_soma_density_per_brain_region_non_neurons_adjusted(data_per_brain_region, density_burek_path, output_dir, dark_mode=False, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
+def plot_soma_density_per_brain_region_non_neurons_adjusted(data_per_brain_region, density_burek_path, output_dir, dark_mode=False, left_color='skyblue', right_color='salmon', comp_color='lightgray', tick_fontsize=10, title_fontsize=12):
     ratios = {'HVC': {"neurons": 55226759,
         "non_neurons": 23316119}, 'LMAN': {"neurons": 55226759,
         "non_neurons": 23316119}, 'RA': {"neurons": 55226759,
@@ -144,7 +144,7 @@ def plot_soma_density_per_brain_region_non_neurons_adjusted(data_per_brain_regio
     fig, ax = plt.subplots(figsize=(12, 6))
     rects1 = ax.bar(x - width, soma_densities_l, width, label='Left Hemisphere', color=left_color)
     rects2 = ax.bar(x, soma_densities_r, width, label='Right Hemisphere', color=right_color)
-    rects3 = ax.bar(x + width, density_burek, width, label='Burek et al.', color='lightgray', alpha=0.7)
+    rects3 = ax.bar(x + width, density_burek, width, label='Burek et al. + Okolwicz et al.', color=comp_color, alpha=0.7)
 
     ax.set_xlabel('Brain Region', fontsize=title_fontsize)
     ax.set_ylabel('Soma Density (count per mm³)', fontsize=title_fontsize)
@@ -165,6 +165,7 @@ def main():
     parser.add_argument('--dark_mode', action='store_true', help='Enable dark mode with black background and white labels')
     parser.add_argument('--left_color', type=color_type, default='0.7529,0.6471,0.3882', help='Color for left hemisphere (default: skyblue). Can be named color, hex, or RGB tuple like "0.5,0.5,0.5"')
     parser.add_argument('--right_color', type=color_type, default='0.3451,0.3137,0.6824', help='Color for right hemisphere (default: salmon). Can be named color, hex, or RGB tuple like "0.5,0.5,0.5"')
+    parser.add_argument('--comp_color', type=color_type, default='0.8784,0.6275,0.5294', help='Color for comparison (default: lightgray). Can be named color, hex, or RGB tuple like "0.5,0.5,0.5"')
     parser.add_argument('--tick_fontsize', type=int, default=16, help='Font size for tick labels (default: 10)')
     parser.add_argument('--title_fontsize', type=int, default=18, help='Font size for axis titles and plot title (default: 12)')
     args = parser.parse_args()
@@ -172,6 +173,7 @@ def main():
     dark_mode = args.dark_mode
     left_color = args.left_color
     right_color = args.right_color
+    comp_color = args.comp_color
     tick_fontsize = args.tick_fontsize
     title_fontsize = args.title_fontsize
     
@@ -188,8 +190,8 @@ def main():
 
     # Do something with the retrieved data, e.g., plot it or save it to a file
     
-    plot_soma_density_per_brain_region(data_per_brain_region, density_burek_path, output_dir, dark_mode=dark_mode, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
-    plot_soma_density_per_brain_region_non_neurons_adjusted(data_per_brain_region, density_burek_path, output_dir, dark_mode=dark_mode, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
+    plot_soma_density_per_brain_region(data_per_brain_region, density_burek_path, output_dir, dark_mode=dark_mode, left_color=left_color, right_color=right_color, comp_color=comp_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
+    plot_soma_density_per_brain_region_non_neurons_adjusted(data_per_brain_region, density_burek_path, output_dir, dark_mode=dark_mode, left_color=left_color, right_color=right_color, comp_color=comp_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
 
     
 
