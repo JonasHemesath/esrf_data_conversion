@@ -7,6 +7,7 @@ from tqdm import tqdm
 from cloudvolume import CloudVolume
 from scipy.spatial import QhullError
 import json
+import sys
 
 # Globals shared by worker processes when using multiprocessing
 _global_soma = None
@@ -250,12 +251,12 @@ class SomaDataGenerator:
                     continue
                 yield row
 
-    def iter_rows_serial(self, show_progress=True):
+    def iter_rows_serial(self, show_progress=True, debug_mode=False):
         """
         Yields (index, label, brain_region, surface_area, volume, convex_hull_volume, min_radius, max_radius, nearest_distance, nearest_radius, radius_ratio, brain_area) serially.
         """
         iterator = enumerate(self.soma_labels)
-        if show_progress:
+        if show_progress and not debug_mode:
             iterator = tqdm(iterator, total=self.num_label, desc="Processing somata")
         for index, label in iterator:
             row = self._compute_row_serial(label, index)
@@ -285,6 +286,8 @@ class SomaDataGenerator:
             )
             mm[:] = 0.0
 
+        debug_mode = debug_samples > 0
+        
         # Choose computation mode (streaming)
         if self.parallel:
             row_iter = self.iter_rows_parallel(
@@ -293,7 +296,7 @@ class SomaDataGenerator:
                 show_progress=self.show_progress,
             )
         else:
-            row_iter = self.iter_rows_serial(show_progress=self.show_progress)
+            row_iter = self.iter_rows_serial(show_progress=self.show_progress, debug_mode=debug_mode)
 
         os.makedirs(os.path.dirname(output_file_csv) or ".", exist_ok=True)
         written = 0
@@ -310,8 +313,10 @@ class SomaDataGenerator:
                     val_xyz = _to_scalar(self.brain_areas[int(pos_mip_xyz[0]), int(pos_mip_xyz[1]), int(pos_mip_xyz[2])])
                     val_zyx = _to_scalar(self.brain_areas[int(pos_mip_xyz[2]), int(pos_mip_xyz[1]), int(pos_mip_xyz[0])])
                     val_yxz = _to_scalar(self.brain_areas[int(pos_mip_xyz[1]), int(pos_mip_xyz[0]), int(pos_mip_xyz[2])])
-                    print(f"Label {label}: centroid=({centroid_x:.0f}, {centroid_y:.0f}, {centroid_z:.0f}), pos_mip={pos_mip_xyz}")
-                    print(f"  brain_region={int(brain_region)}, brain_area (xyz)={int(val_xyz)}, (zyx)={int(val_zyx)}, (yxz)={int(val_yxz)}, expected={int(brain_area)}")
+                    
+                    print(f"Label {label}: centroid=({centroid_x:.0f}, {centroid_y:.0f}, {centroid_z:.0f}), pos_mip={pos_mip_xyz}", flush=True)
+                    print(f"  brain_region={int(brain_region)}, brain_area (xyz)={int(val_xyz)}, (zyx)={int(val_zyx)}, (yxz)={int(val_yxz)}, expected={int(brain_area)}", flush=True)
+                    sys.stdout.flush()
                     debug_count += 1
                 
                 # Write to memmap
