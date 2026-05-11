@@ -258,11 +258,28 @@ class SomaDataGenerator:
         iterator = enumerate(self.soma_labels)
         if show_progress and not debug_mode:
             iterator = tqdm(iterator, total=self.num_label, desc="Processing somata")
+        
         for index, label in iterator:
-            row = self._compute_row_serial(label, index)
-            if row is None:
+            if debug_mode and index < 5:
+                print(f"=== DEBUG iter_rows_serial: Processing label {label} (index {index})", flush=True)
+                sys.stdout.flush()
+            try:
+                row = self._compute_row_serial(label, index)
+                if row is None:
+                    if debug_mode and index < 5:
+                        print(f"=== DEBUG iter_rows_serial: label {label} returned None", flush=True)
+                        sys.stdout.flush()
+                    continue
+                yield row
+                if debug_mode and index < 5:
+                    print(f"=== DEBUG iter_rows_serial: label {label} yielded successfully", flush=True)
+                    sys.stdout.flush()
+            except Exception as e:
+                print(f"=== ERROR in iter_rows_serial for label {label}: {type(e).__name__}: {e}", flush=True)
+                import traceback
+                traceback.print_exc()
+                sys.stdout.flush()
                 continue
-            yield row
 
     def save_soma_data(self, output_file_csv, output_file_np=None, flush_every=200000, debug_samples=10):
         """
