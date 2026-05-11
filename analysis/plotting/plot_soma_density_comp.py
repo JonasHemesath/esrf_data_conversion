@@ -121,13 +121,14 @@ def plot_soma_density_per_brain_region_non_neurons_adjusted(data_per_brain_regio
     soma_densities_l = []
     soma_densities_r = []
     density_burek = []
+    density_burek_non_neurons = []
     with open(density_burek_path, 'r') as f:
         density_burek_dict = json.load(f)
     for brain_region_name, hemispheres in data_per_brain_region.items():
         if brain_region_name not in density_burek_dict.keys():
             continue
         density_burek.append(density_burek_dict[brain_region_name]['mean'] * 1e6)  # Convert from count/1000µm³ to count/mm³
-        density_burek_non_neurons = density_burek_dict[brain_region_name]['mean'] * 1e6 * (ratios[brain_region_name]['non_neurons'] / ratios[brain_region_name]['neurons'])  # Convert from count/1000µm³ to count/mm³
+        density_burek_non_neurons.append(density_burek_dict[brain_region_name]['mean'] * 1e6 * (ratios[brain_region_name]['non_neurons'] / ratios[brain_region_name]['neurons']))  # Convert from count/1000µm³ to count/mm³
         brain_region_names.append(brain_region_name)
         region_volume_l = hemispheres['l']['brain_region_volume']  # in µm³
         region_volume_r = hemispheres['r']['brain_region_volume']  # in µm³
