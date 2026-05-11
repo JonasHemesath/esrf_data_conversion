@@ -126,7 +126,8 @@ def plot_soma_density_per_brain_region_non_neurons_adjusted(data_per_brain_regio
     for brain_region_name, hemispheres in data_per_brain_region.items():
         if brain_region_name not in density_burek_dict.keys():
             continue
-        density_burek.append(density_burek_dict[brain_region_name]['mean'] * 1e6 * (1 + ratios[brain_region_name]['non_neurons'] / ratios[brain_region_name]['neurons']))  # Convert from count/1000µm³ to count/mm³
+        density_burek.append(density_burek_dict[brain_region_name]['mean'] * 1e6)  # Convert from count/1000µm³ to count/mm³
+        density_burek_non_neurons = density_burek_dict[brain_region_name]['mean'] * 1e6 * (ratios[brain_region_name]['non_neurons'] / ratios[brain_region_name]['neurons'])  # Convert from count/1000µm³ to count/mm³
         brain_region_names.append(brain_region_name)
         region_volume_l = hemispheres['l']['brain_region_volume']  # in µm³
         region_volume_r = hemispheres['r']['brain_region_volume']  # in µm³
@@ -144,7 +145,8 @@ def plot_soma_density_per_brain_region_non_neurons_adjusted(data_per_brain_regio
     fig, ax = plt.subplots(figsize=(12, 6))
     rects1 = ax.bar(x - width, soma_densities_l, width, label='Left Hemisphere', color=left_color)
     rects2 = ax.bar(x, soma_densities_r, width, label='Right Hemisphere', color=right_color)
-    rects3 = ax.bar(x + width, density_burek, width, label='Burek et al. + Okolwicz et al.', color=comp_color, alpha=0.7)
+    rects3 = ax.bar(x + width, density_burek, width, label='Burek et al.', color=comp_color)
+    rects4 = ax.bar(x + width, density_burek_non_neurons, width, bottom=density_burek, label='Non-Neurons estimated (Olkowics et al.)', color=comp_color, alpha=0.7)
 
     ax.set_xlabel('Brain Region', fontsize=title_fontsize)
     ax.set_ylabel('Soma Density (count per mm³)', fontsize=title_fontsize)
