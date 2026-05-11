@@ -140,6 +140,10 @@ class SomaDataGenerator:
         self.bv = CloudVolume(bv_path)
         self.brain_areas = CloudVolume(self.brain_areas_path)
 
+        print("Brain regions shape:", self.brain_regions[:,:,:].shape)
+        print("Brain areas shape:", self.brain_areas[:,:,:].shape)
+        print("Unique brain areas:", np.unique(self.brain_areas[:,:,:]))
+
         if soma_labels_file is not None:
             self.soma_labels = np.load(soma_labels_file)
             self.num_label = self.soma_labels.shape[0]
