@@ -1,4 +1,3 @@
-from cProfile import label
 import os
 import json
 import numpy as np
@@ -6,13 +5,15 @@ import trimesh
 from tqdm import tqdm
 from cloudvolume import CloudVolume
 from scipy.spatial import QhullError
-import json
-import sys
 
 # Globals shared by worker processes when using multiprocessing
 _global_soma = None
 _global_brain_regions = None
+_global_brain_areas = None
+_global_bv = None
 _global_brain_regions_mip = None
+_global_brain_region_labels = None
+_global_skeletons = None
 
 
 def _to_scalar(x):
@@ -24,20 +25,34 @@ def _to_scalar(x):
     return a.reshape(-1)[0].item()
 
 
-def _init_worker(brain_regions_path, soma_path, bv_path, brain_regions_mip, region_labels_path, brain_areas_path):
+def _init_worker(
+    brain_regions_path,
+    brain_areas_path,
+    soma_path,
+    bv_path,
+    brain_regions_mip,
+    region_labels_path,
+):
     """Initializer for worker processes.
 
     The worker processes need their own CloudVolume handles (they are not picklable).
     """
-    global _global_soma, _global_brain_regions, _global_bv, _global_brain_regions_mip, _global_brain_region_labels, _global_skeletons, _global_brain_areas
+    global _global_soma, _global_brain_regions, _global_brain_areas, _global_bv
+    global _global_brain_regions_mip, _global_brain_region_labels, _global_skeletons
+
     _global_soma = CloudVolume(soma_path)
     _global_brain_regions = CloudVolume(brain_regions_path)
     _global_brain_areas = CloudVolume(brain_areas_path)
     _global_bv = CloudVolume(bv_path)
     _global_brain_regions_mip = brain_regions_mip
+
     with open(region_labels_path, "r") as f:
         _global_brain_region_labels = json.load(f)
-    _global_skeletons = {int(label): _global_bv.skeleton.get(int(label)) for label in _global_brain_region_labels.keys()}
+
+    _global_skeletons = {
+        int(label): _global_bv.skeleton.get(int(label))
+        for label in _global_brain_region_labels.keys()
+    }
 
 
 def _compute_soma_row_for_label(label_index):
@@ -45,11 +60,13 @@ def _compute_soma_row_for_label(label_index):
     Compute soma data for a single label in a worker process.
 
     Returns:
-      (index, label, brain_region, surface_area, volume, convex_hull_volume)
+      (index, label, brain_region, brain_area, surface_area, volume, convex_hull_volume,
+       min_radius, max_radius, centroid_x, centroid_y, centroid_z,
+       nearest_distance, nearest_radius, radius_ratio)
     or None if unavailable/failed.
     """
     label, index = label_index
-    if _global_soma is None or _global_brain_regions is None:
+    if _global_soma is None or _global_brain_regions is None or _global_brain_areas is None:
         raise RuntimeError("Worker not initialized. Call _init_worker first.")
 
     try:
@@ -73,13 +90,11 @@ def _compute_soma_row_for_label(label_index):
         brain_region = _to_scalar(
             _global_brain_regions[int(pos_mip[0]), int(pos_mip[1]), int(pos_mip[2])]
         )
-
         brain_area = _to_scalar(
             _global_brain_areas[int(pos_mip[0]), int(pos_mip[1]), int(pos_mip[2])]
         )
 
         surface_area = float(mesh.area)
-
         volume = float(mesh.volume) if mesh.is_watertight else 0.0
 
         try:
@@ -89,25 +104,53 @@ def _compute_soma_row_for_label(label_index):
         except Exception:
             convex_hull_volume = 0.0
 
-        min_radius = np.min(np.linalg.norm(mesh.vertices - centroid, axis=1)).astype(np.float64)
-        max_radius = np.max(np.linalg.norm(mesh.vertices - centroid, axis=1)).astype(np.float64)
+        min_radius = np.min(np.linalg.norm(mesh.vertices - centroid, axis=1)).astype(
+            np.float64
+        )
+        max_radius = np.max(np.linalg.norm(mesh.vertices - centroid, axis=1)).astype(
+            np.float64
+        )
+        radius_ratio = max_radius / min_radius if min_radius > 0 else float("inf")
 
-        radius_ratio = max_radius / min_radius if min_radius > 0 else float('inf')
+        brain_region_skeleton = _global_skeletons.get(int(brain_region), None)
 
-        brain_region_skeleton = _global_skeletons[int(brain_region)]
         # Calculate distance from soma centroid to nearest point on the skeleton
         if brain_region_skeleton is not None and len(brain_region_skeleton.vertices) > 0:
             distances = np.linalg.norm(brain_region_skeleton.vertices - centroid, axis=1)
             nearest_distance = np.min(distances)
         else:
-            nearest_distance = float('nan')
+            distances = None
+            nearest_distance = float("nan")
+
         # Get BV radius at the nearest skeleton point
-        if brain_region_skeleton is not None and len(brain_region_skeleton.vertices) > 0 and brain_region_skeleton.radius is not None and len(brain_region_skeleton.radius) > 0:
+        if (
+            brain_region_skeleton is not None
+            and len(brain_region_skeleton.vertices) > 0
+            and brain_region_skeleton.radius is not None
+            and len(brain_region_skeleton.radius) > 0
+            and distances is not None
+        ):
             nearest_radius = brain_region_skeleton.radius[np.argmin(distances)]
         else:
-            nearest_radius = float('nan')
+            nearest_radius = float("nan")
 
-        return (int(index),int(label), int(brain_region), surface_area, volume, convex_hull_volume, min_radius, max_radius, int(centroid[0]), int(centroid[1]), int(centroid[2]), nearest_distance, nearest_radius, radius_ratio, int(brain_area))
+        return (
+            int(index),
+            int(label),
+            int(brain_region),
+            int(brain_area),
+            surface_area,
+            volume,
+            convex_hull_volume,
+            float(min_radius),
+            float(max_radius),
+            int(centroid[0]),
+            int(centroid[1]),
+            int(centroid[2]),
+            float(nearest_distance),
+            float(nearest_radius),
+            float(radius_ratio),
+        )
 
     except Exception:
         # Avoid crashing the entire pool on a single bad label.
@@ -130,33 +173,23 @@ class SomaDataGenerator:
         soma_labels_file=None,
     ):
         self.brain_regions_path = brain_regions_path
+        self.brain_areas_path = brain_areas_path
         self.soma_path = soma_path
         self.bv_path = bv_path
         self.brain_regions_mip = brain_regions_mip
         self.brain_region_labels_path = brain_regions_labels_path
-        self.brain_areas_path = brain_areas_path
+
         # These handles are used for the non-parallel code path only.
         self.brain_regions = CloudVolume(brain_regions_path)
+        self.brain_areas = CloudVolume(brain_areas_path)
         self.soma = CloudVolume(soma_path)
         self.bv = CloudVolume(bv_path)
-        self.brain_areas = CloudVolume(self.brain_areas_path)
-
-        print("Brain regions shape:", self.brain_regions[:,:,:].shape)
-        print("Brain areas shape:", self.brain_areas[:,:,:].shape)
-        print("Unique brain areas:", np.unique(self.brain_areas[:,:,:]))
 
         if soma_labels_file is not None:
             self.soma_labels = np.load(soma_labels_file)
-            print(f"DEBUG: Loaded soma_labels from {soma_labels_file}", flush=True)
-            print(f"DEBUG: soma_labels shape: {self.soma_labels.shape}", flush=True)
-            print(f"DEBUG: soma_labels dtype: {self.soma_labels.dtype}", flush=True)
-            print(f"DEBUG: First 10 labels: {self.soma_labels[:10]}", flush=True)
-            print(f"DEBUG: Min label: {self.soma_labels.min()}, Max label: {self.soma_labels.max()}", flush=True)
-            sys.stdout.flush()
             self.num_label = self.soma_labels.shape[0]
         else:
             self.num_label = self.get_max_soma_label(soma_path)
-            # IMPORTANT: use range instead of building a huge list
             self.soma_labels = range(1, self.num_label + 1)
 
         self.num_workers = num_workers
@@ -180,7 +213,9 @@ class SomaDataGenerator:
             for k in ("instance_number", "num_instances", "n_instances", "count"):
                 if k in labels_info and isinstance(labels_info[k], int):
                     return labels_info[k]
-        raise ValueError(f"Unrecognized instance_number.json format: {type(labels_info)} {labels_info}")
+        raise ValueError(
+            f"Unrecognized instance_number.json format: {type(labels_info)} {labels_info}"
+        )
 
     def _compute_row_serial(self, label, index):
         """Serial version of the worker computation. Returns same tuple or None."""
@@ -202,9 +237,8 @@ class SomaDataGenerator:
             brain_region = _to_scalar(
                 self.brain_regions[int(pos_mip[0]), int(pos_mip[1]), int(pos_mip[2])]
             )
-
             brain_area = _to_scalar(
-                 self.brain_areas[int(pos_mip[0]), int(pos_mip[1]), int(pos_mip[2])]
+                self.brain_areas[int(pos_mip[0]), int(pos_mip[1]), int(pos_mip[2])]
             )
 
             surface_area = float(mesh.area)
@@ -217,27 +251,55 @@ class SomaDataGenerator:
             except Exception:
                 convex_hull_volume = 0.0
 
-            min_radius = np.min(np.linalg.norm(mesh.vertices - centroid, axis=1)).astype(np.float64)
-            max_radius = np.max(np.linalg.norm(mesh.vertices - centroid, axis=1)).astype(np.float64)
-
-            radius_ratio = max_radius / min_radius if min_radius > 0 else float('inf')
+            min_radius = np.min(np.linalg.norm(mesh.vertices - centroid, axis=1)).astype(
+                np.float64
+            )
+            max_radius = np.max(np.linalg.norm(mesh.vertices - centroid, axis=1)).astype(
+                np.float64
+            )
+            radius_ratio = max_radius / min_radius if min_radius > 0 else float("inf")
 
             brain_region_skeleton = self.bv.skeleton.get(int(brain_region))
             if brain_region_skeleton is not None and len(brain_region_skeleton.vertices) > 0:
                 distances = np.linalg.norm(brain_region_skeleton.vertices - centroid, axis=1)
                 nearest_distance = np.min(distances)
-                nearest_radius = brain_region_skeleton.radius[np.argmin(distances)] if brain_region_skeleton.radius is not None and len(brain_region_skeleton.radius) > 0 else float('nan')
+                nearest_radius = (
+                    brain_region_skeleton.radius[np.argmin(distances)]
+                    if brain_region_skeleton.radius is not None
+                    and len(brain_region_skeleton.radius) > 0
+                    else float("nan")
+                )
             else:
-                nearest_distance = float('nan')
-                nearest_radius = float('nan')
+                nearest_distance = float("nan")
+                nearest_radius = float("nan")
 
-            return (int(index), int(label), int(brain_region), surface_area, volume, convex_hull_volume, min_radius, max_radius, int(centroid[0]), int(centroid[1]), int(centroid[2]), nearest_distance, nearest_radius, radius_ratio, int(brain_area))
+            return (
+                int(index),
+                int(label),
+                int(brain_region),
+                int(brain_area),
+                surface_area,
+                volume,
+                convex_hull_volume,
+                float(min_radius),
+                float(max_radius),
+                int(centroid[0]),
+                int(centroid[1]),
+                int(centroid[2]),
+                float(nearest_distance),
+                float(nearest_radius),
+                float(radius_ratio),
+            )
         except Exception:
             return None
 
     def iter_rows_parallel(self, num_workers=None, chunksize=10, show_progress=True):
         """
-        Yields (index, label, brain_region, surface_area, volume, convex_hull_volume, min_radius, max_radius, nearest_distance, nearest_radius, radius_ratio, brain_area) in parallel.
+        Yields:
+          (index, label, brain_region, brain_area, surface_area, volume, convex_hull_volume,
+           min_radius, max_radius, centroid_x, centroid_y, centroid_z,
+           nearest_distance, nearest_radius, radius_ratio)
+        in parallel.
         """
         import multiprocessing
 
@@ -247,65 +309,61 @@ class SomaDataGenerator:
         with multiprocessing.Pool(
             processes=num_workers,
             initializer=_init_worker,
-            initargs=(self.brain_regions_path, self.soma_path, self.bv_path, self.brain_regions_mip, self.brain_region_labels_path, self.brain_areas_path),
+            initargs=(
+                self.brain_regions_path,
+                self.brain_areas_path,
+                self.soma_path,
+                self.bv_path,
+                self.brain_regions_mip,
+                self.brain_region_labels_path,
+            ),
         ) as pool:
-            iterator = pool.imap_unordered(_compute_soma_row_for_label, [(label, i) for i, label in enumerate(self.soma_labels)], chunksize=chunksize)
+            iterator = pool.imap_unordered(
+                _compute_soma_row_for_label,
+                [(label, i) for i, label in enumerate(self.soma_labels)],
+                chunksize=chunksize,
+            )
             if show_progress:
-                iterator = tqdm(iterator, total=self.num_label, desc="Processing somata (parallel)")
+                iterator = tqdm(
+                    iterator, total=self.num_label, desc="Processing somata (parallel)"
+                )
             for row in iterator:
                 if row is None:
                     continue
                 yield row
 
-    def iter_rows_serial(self, show_progress=True, debug_mode=False):
+    def iter_rows_serial(self, show_progress=True):
         """
-        Yields (index, label, brain_region, surface_area, volume, convex_hull_volume, min_radius, max_radius, nearest_distance, nearest_radius, radius_ratio, brain_area) serially.
+        Yields:
+          (index, label, brain_region, brain_area, surface_area, volume, convex_hull_volume,
+           min_radius, max_radius, centroid_x, centroid_y, centroid_z,
+           nearest_distance, nearest_radius, radius_ratio)
+        serially.
         """
         iterator = enumerate(self.soma_labels)
-        if show_progress and not debug_mode:
+        if show_progress:
             iterator = tqdm(iterator, total=self.num_label, desc="Processing somata")
-        
         for index, label in iterator:
-            if debug_mode and index < 5:
-                print(f"=== DEBUG iter_rows_serial: Processing label {label} (index {index})", flush=True)
-                sys.stdout.flush()
-            try:
-                row = self._compute_row_serial(label, index)
-                if row is None:
-                    if debug_mode and index < 5:
-                        print(f"=== DEBUG iter_rows_serial: label {label} returned None", flush=True)
-                        sys.stdout.flush()
-                    continue
-                yield row
-                if debug_mode and index < 5:
-                    print(f"=== DEBUG iter_rows_serial: label {label} yielded successfully", flush=True)
-                    sys.stdout.flush()
-            except Exception as e:
-                print(f"=== ERROR in iter_rows_serial for label {label}: {type(e).__name__}: {e}", flush=True)
-                import traceback
-                traceback.print_exc()
-                sys.stdout.flush()
+            row = self._compute_row_serial(label, index)
+            if row is None:
                 continue
+            yield row
 
-    def save_soma_data(self, output_file_csv, output_file_np=None, flush_every=200000, debug_samples=10):
+    def save_soma_data(self, output_file_csv, output_file_np=None, flush_every=200000):
         """
         Stream results directly to:
           - CSV (line by line)
           - and optionally a .npy memory-mapped array on disk (updated as results arrive)
 
         The .npy array has shape (num_label+1, 15) and columns:
-          [label, brain_region, surface_area, volume, convex_hull_volume, min_radius, max_radius, centroid_x, centroid_y, centroid_z, nearest_distance, nearest_radius, radius_ratio, brain_area]
+          [index, label, brain_region, brain_area, surface_area, volume, convex_hull_volume,
+           min_radius, max_radius, centroid_x, centroid_y, centroid_z,
+           nearest_distance, nearest_radius, radius_ratio]
 
         Rows for labels that fail/miss will remain all zeros.
         """
-        print(f"=== DEBUG: save_soma_data called with debug_samples={debug_samples}", flush=True)
-        sys.stdout.flush()
-        
         mm = None
         if output_file_np is not None:
-            print(f"=== DEBUG: Creating memmap at {output_file_np}", flush=True)
-            sys.stdout.flush()
-            # Creates a real .npy file that is memory-mapped for writing.
             mm = np.lib.format.open_memmap(
                 output_file_np,
                 mode="w+",
@@ -313,89 +371,110 @@ class SomaDataGenerator:
                 shape=(self.num_label + 1, 15),
             )
             mm[:] = 0.0
-            print(f"=== DEBUG: Memmap created", flush=True)
-            sys.stdout.flush()
 
-        debug_mode = debug_samples > 0
-        print(f"=== DEBUG: debug_mode={debug_mode}, parallel={self.parallel}", flush=True)
-        sys.stdout.flush()
-        
         # Choose computation mode (streaming)
         if self.parallel:
-            print(f"=== DEBUG: Using parallel mode", flush=True)
-            sys.stdout.flush()
             row_iter = self.iter_rows_parallel(
                 num_workers=self.num_workers,
                 chunksize=self.chunksize,
                 show_progress=self.show_progress,
             )
         else:
-            print(f"=== DEBUG: Using serial mode", flush=True)
-            sys.stdout.flush()
-            row_iter = self.iter_rows_serial(show_progress=self.show_progress, debug_mode=debug_mode)
+            row_iter = self.iter_rows_serial(show_progress=self.show_progress)
 
         os.makedirs(os.path.dirname(output_file_csv) or ".", exist_ok=True)
         written = 0
-        debug_count = 0
 
-        print(f"=== DEBUG: Starting to iterate over rows", flush=True)
-        sys.stdout.flush()
+        with open(output_file_csv, "w") as f:
+            # No header to match your previous output format
+            for (
+                index,
+                label,
+                brain_region,
+                brain_area,
+                surface_area,
+                volume,
+                convex_hull_volume,
+                min_radius,
+                max_radius,
+                centroid_x,
+                centroid_y,
+                centroid_z,
+                nearest_distance,
+                nearest_radius,
+                radius_ratio,
+            ) in row_iter:
+                if mm is not None:
+                    mm[index, :] = (
+                        index,
+                        label,
+                        brain_region,
+                        brain_area,
+                        surface_area,
+                        volume,
+                        convex_hull_volume,
+                        min_radius,
+                        max_radius,
+                        centroid_x,
+                        centroid_y,
+                        centroid_z,
+                        nearest_distance,
+                        nearest_radius,
+                        radius_ratio,
+                    )
 
-        try:
-            with open(output_file_csv, "w") as f:
-                # No header to match your previous output format
-                for (index, label, brain_region, surface_area, volume, convex_hull_volume, min_radius, max_radius, centroid_x, centroid_y, centroid_z, nearest_distance, nearest_radius, radius_ratio, brain_area) in row_iter:
-                    # Debug: print first N samples to diagnose coordinate/axis issues
-                    if debug_count < debug_samples:
-                        scale = (2 ** self.brain_regions_mip) * 728.0
-                        pos_mip_xyz = np.floor(np.array([centroid_x, centroid_y, centroid_z]) / scale).astype(np.int64)
-                        # Try different axis orders
-                        val_xyz = _to_scalar(self.brain_areas[int(pos_mip_xyz[0]), int(pos_mip_xyz[1]), int(pos_mip_xyz[2])])
-                        val_zyx = _to_scalar(self.brain_areas[int(pos_mip_xyz[2]), int(pos_mip_xyz[1]), int(pos_mip_xyz[0])])
-                        val_yxz = _to_scalar(self.brain_areas[int(pos_mip_xyz[1]), int(pos_mip_xyz[0]), int(pos_mip_xyz[2])])
-                        
-                        print(f"Label {label}: centroid=({centroid_x:.0f}, {centroid_y:.0f}, {centroid_z:.0f}), pos_mip={pos_mip_xyz}", flush=True)
-                        print(f"  brain_region={int(brain_region)}, brain_area (xyz)={int(val_xyz)}, (zyx)={int(val_zyx)}, (yxz)={int(val_yxz)}, expected={int(brain_area)}", flush=True)
-                        sys.stdout.flush()
-                        debug_count += 1
-                    
-                    # Write to memmap
-                    if mm is not None:
-                        mm[index, :] = (index, label, brain_region, surface_area, volume, convex_hull_volume, min_radius, max_radius, centroid_x, centroid_y, centroid_z, nearest_distance, nearest_radius, radius_ratio, brain_area)
+                f.write(
+                    f"{index},{label},{brain_region},{brain_area},{surface_area},{volume},"
+                    f"{convex_hull_volume},{min_radius},{max_radius},{centroid_x},{centroid_y},"
+                    f"{centroid_z},{nearest_distance},{nearest_radius},{radius_ratio}\n"
+                )
+                written += 1
 
-                    # Write to CSV
-                    f.write(f"{index},{label},{brain_region},{surface_area},{volume},{convex_hull_volume},{min_radius},{max_radius},{centroid_x},{centroid_y},{centroid_z},{nearest_distance},{nearest_radius},{radius_ratio},{brain_area}\n")
-                    written += 1
-
-                    if mm is not None and (written % flush_every == 0):
-                        mm.flush()
-        except Exception as e:
-            print(f"=== ERROR: {type(e).__name__}: {e}", flush=True)
-            import traceback
-            traceback.print_exc()
-            sys.stdout.flush()
-            raise
+                if mm is not None and (written % flush_every == 0):
+                    mm.flush()
 
         if mm is not None:
             mm.flush()
-        
-        print(f"=== DEBUG: Finished! Wrote {written} rows", flush=True)
-        sys.stdout.flush()
 
 
 if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description="Generate soma data")
-    parser.add_argument("--brain_regions_path", type=str, required=True, help="Path to the brain regions file")
-    parser.add_argument("--brain_areas_path", type=str, required=True, help="Path to the brain areas file")
+    parser.add_argument(
+        "--brain_regions_path",
+        type=str,
+        required=True,
+        help="Path to the brain regions file",
+    )
+    parser.add_argument(
+        "--brain_areas_path",
+        type=str,
+        required=True,
+        help="Path to the brain areas file (sampled at soma centroid like brain_regions)",
+    )
     parser.add_argument("--soma_path", type=str, required=True, help="Path to the soma file")
-    parser.add_argument("--brain_regions_mip", type=int, required=True, help="MIP level of the brain regions data")
-    parser.add_argument("--soma_labels_file", type=str, default=None, help="Optional path to a .npy file containing an array of soma labels to process (overrides automatic max label detection)")
+    parser.add_argument(
+        "--brain_regions_mip",
+        type=int,
+        required=True,
+        help="MIP level used to sample brain_regions and brain_areas",
+    )
+    parser.add_argument(
+        "--soma_labels_file",
+        type=str,
+        default=None,
+        help="Optional path to a .npy file containing an array of soma labels to process (overrides automatic max label detection)",
+    )
     parser.add_argument("--output_file_csv", type=str, required=True, help="Path to the output CSV file")
     parser.add_argument("--output_file_np", type=str, default=None, help="Path to the output NP file (optional)")
     parser.add_argument("--bv_path", type=str, required=True, help="Path to the blood vessel data file")
-    parser.add_argument("--brain_regions_labels_path", type=str, required=True, help="Path to the brain region labels JSON file")
+    parser.add_argument(
+        "--brain_regions_labels_path",
+        type=str,
+        required=True,
+        help="Path to the brain region labels JSON file",
+    )
     parser.add_argument(
         "--num_workers",
         type=int,
@@ -410,12 +489,6 @@ if __name__ == "__main__":
         type=int,
         default=200000,
         help="Flush memmap to disk every N written rows (only if --output_file_np is used)",
-    )
-    parser.add_argument(
-        "--debug_samples",
-        type=int,
-        default=10,
-        help="Number of sample soma to print debug info for (to diagnose coordinate mismatches)",
     )
 
     args = parser.parse_args()
@@ -433,4 +506,8 @@ if __name__ == "__main__":
         show_progress=not args.no_progress,
         soma_labels_file=args.soma_labels_file,
     )
-    soma_data_generator.save_soma_data(args.output_file_csv, args.output_file_np, flush_every=args.flush_every, debug_samples=args.debug_samples)
+    soma_data_generator.save_soma_data(
+        args.output_file_csv,
+        args.output_file_np,
+        flush_every=args.flush_every,
+    )
