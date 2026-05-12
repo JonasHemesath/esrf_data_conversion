@@ -85,7 +85,7 @@ def plot_soma_counts_per_brain_region(data_per_brain_region, output_dir, left_co
     width = 0.35
     fig, ax = plt.subplots(figsize=(12, 6))
     rects1 = ax.bar(x - width/2, soma_counts, width, label='Ours', color=left_color)
-    rects2 = ax.bar(x + width/2, ref_soma_counts, width, label='Olkowics et al.', color=right_color)
+    rects2 = ax.bar(x + width/2, ref_soma_counts, width, label='Olkowicz et al.', color=right_color)
     
     ax.set_xlabel('Brain Region', fontsize=title_fontsize)
     ax.set_ylabel('Soma Count', fontsize=title_fontsize)
@@ -127,8 +127,8 @@ def plot_soma_counts_per_brain_region_stacked_ref(data_per_brain_region, output_
     rects1 = ax.bar(x - width/2, soma_counts, width, label='Ours', color=our_color)
     
     # Plot reference data as stacked bars
-    rects2 = ax.bar(x + width/2, ref_neuron_counts, width, label='Neurons (Olkowics et al.)', color=neuron_color)
-    rects3 = ax.bar(x + width/2, ref_non_neuron_counts, width, bottom=ref_neuron_counts, label='Non-Neurons (Olkowics et al.)', color=non_neuron_color, alpha=0.7)
+    rects2 = ax.bar(x + width/2, ref_neuron_counts, width, label='Neurons (Olkowicz et al.)', color=neuron_color)
+    rects3 = ax.bar(x + width/2, ref_non_neuron_counts, width, bottom=ref_neuron_counts, label='Non-Neurons (Olkowicz et al.)', color=non_neuron_color, alpha=0.7)
     
     ax.set_xlabel('Brain Region', fontsize=title_fontsize)
     ax.set_ylabel('Soma Count', fontsize=title_fontsize)
