@@ -60,7 +60,7 @@ def make_output_path(output_dir, filename, dark_mode=False):
     return path
 
 
-def plot_volume_density_barplot(bv_density_brain_region_dict, brain_region_labels, output_dir, dark_mode=False, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
+def plot_volume_density_barplot(bv_density_brain_region_dict, brain_region_labels, output_dir, dark_mode=False, left_color='skyblue', right_color='salmon', tick_fontsize=16, title_fontsize=18):
     brain_region_names = []
     densities_l = []
     densities_r = []

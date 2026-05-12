@@ -72,7 +72,7 @@ def make_output_path(output_dir, filename, dark_mode=False):
         return f"{base}_dark{ext}"
     return path
 
-def plot_soma_counts_per_brain_region(data_per_brain_region, output_dir, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12, dark_mode=False):
+def plot_soma_counts_per_brain_region(data_per_brain_region, output_dir, left_color='skyblue', right_color='salmon', tick_fontsize=16, title_fontsize=18, dark_mode=False):
     brain_region_names = []
     soma_counts = []
     ref_soma_counts = []
