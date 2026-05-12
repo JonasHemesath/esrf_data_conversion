@@ -77,45 +77,131 @@ def make_output_path(output_dir, filename, dark_mode=False):
         return f"{base}_dark{ext}"
     return path
 
-def plot_violin(data_l, data_r, brain_region_names, ylabel, title, output_path, dark_mode=False, show_outliers=True, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
-    # Prepare data for violin plot: list of arrays for each group
+def plot_violin(
+    data_l, data_r, brain_region_names, ylabel, title, output_path,
+    dark_mode=False, show_outliers=True,
+    left_color='skyblue', right_color='salmon',
+    tick_fontsize=10, title_fontsize=12
+):
+    """
+    data_l/data_r: lists of 1D arrays (can be empty). brain_region_names matches these lists.
+    """
     data = []
     labels = []
     positions = []
-    pos = 0
-    for i, name in enumerate(brain_region_names):
-        data.append(data_l[i])
-        labels.append(f'{name} L')
-        positions.append(pos)
-        pos += 1
-        data.append(data_r[i])
-        labels.append(f'{name} R')
-        positions.append(pos)
-        pos += 1.5  # Space between regions
-    
-    fig, ax = plt.subplots(figsize=(16, 8))
-    bp = ax.violin(data, positions=positions, widths=0.6)
-    
-    # Color the boxes
-    colors = [left_color, right_color] * len(brain_region_names)
-    for patch, color in zip(bp['boxes'], colors):
-        patch.set_facecolor(color)
-    
-    # Set median line color for visibility in dark mode
-    median_color = 'white' if dark_mode else 'black'
-    for median in bp['medians']:
-        median.set_color(median_color)
+    colors = []
 
-    ax.set_xlabel('Brain Region and Hemisphere', fontsize=title_fontsize)
+    pos = 0.0
+    for i, name in enumerate(brain_region_names):
+        lvals = np.asarray(data_l[i]).ravel() if i < len(data_l) else np.array([])
+        rvals = np.asarray(data_r[i]).ravel() if i < len(data_r) else np.array([])
+
+        # Keep only finite values
+        lvals = lvals[np.isfinite(lvals)]
+        rvals = rvals[np.isfinite(rvals)]
+
+        # Add left group if there is data
+        if lvals.size > 0:
+            data.append(lvals)
+            labels.append(f"{name} L")
+            positions.append(pos)
+            colors.append(left_color)
+            pos += 1.0
+
+        # Add right group if there is data
+        if rvals.size > 0:
+            data.append(rvals)
+            labels.append(f"{name} R")
+            positions.append(pos)
+            colors.append(right_color)
+            pos += 1.0
+
+        # extra spacing between regions (only if at least one side existed)
+        if (lvals.size > 0) or (rvals.size > 0):
+            pos += 0.5
+
+    if len(data) == 0:
+        print(f"[WARN] No data available for violin plot: {output_path}")
+        return
+
+    fig, ax = plt.subplots(figsize=(16, 8))
+
+    vp = ax.violinplot(
+        data,
+        positions=positions,
+        widths=0.7,
+        showmeans=False,
+        showmedians=True,
+        showextrema=show_outliers,  # this shows min/max bars, not "outliers" like a boxplot
+    )
+
+    # Color violin bodies
+    for body, c in zip(vp["bodies"], colors):
+        body.set_facecolor(c)
+        body.set_edgecolor("black" if not dark_mode else "white")
+        body.set_alpha(0.9)
+
+    # Median line color (LineCollection)
+    median_color = "white" if dark_mode else "black"
+    if "cmedians" in vp and vp["cmedians"] is not None:
+        vp["cmedians"].set_color(median_color)
+        vp["cmedians"].set_linewidth(2.0)
+
+    # Extrema/bar colors for visibility
+    for k in ("cbars", "cmins", "cmaxes"):
+        if k in vp and vp[k] is not None:
+            vp[k].set_color(median_color)
+            vp[k].set_linewidth(1.5)
+
+    ax.set_title(title, fontsize=title_fontsize)
+    ax.set_xlabel("Brain Region and Hemisphere", fontsize=title_fontsize)
     ax.set_ylabel(ylabel, fontsize=title_fontsize)
+
     ax.set_xticks(positions)
     ax.set_xticklabels(labels, rotation=90, fontsize=tick_fontsize)
-    ax.tick_params(axis='y', labelsize=tick_fontsize)
-    
+    ax.tick_params(axis="y", labelsize=tick_fontsize)
+
     plt.tight_layout()
-    plt.savefig(output_path)
-    plt.clf()
+    plt.savefig(output_path, dpi=300, bbox_inches="tight")
     plt.close()
+
+
+def plot_radii_violin(
+    data_per_brain_region, output_dir,
+    dark_mode=False, show_outliers=True,
+    left_color='skyblue', right_color='salmon',
+    tick_fontsize=10, title_fontsize=12
+):
+    brain_region_names = []
+    radii_l = []
+    radii_r = []
+
+    for brain_region_name, hemispheres in data_per_brain_region.items():
+        l = hemispheres.get("l", {})
+        r = hemispheres.get("r", {})
+        lvals = np.asarray(l.get("radii", np.array([]))).ravel()
+        rvals = np.asarray(r.get("radii", np.array([]))).ravel()
+
+        # keep the region only if there is at least some data on either side
+        if lvals.size == 0 and rvals.size == 0:
+            continue
+
+        brain_region_names.append(brain_region_name)
+        radii_l.append(lvals)
+        radii_r.append(rvals)
+
+    plot_violin(
+        radii_l, radii_r, brain_region_names,
+        ylabel="Blood Vessel Radius (µm)",
+        title="Blood Vessel Radius Distribution per Brain Region and Hemisphere",
+        output_path=make_output_path(output_dir, "BV_radii_violin.png", dark_mode),
+        dark_mode=dark_mode,
+        show_outliers=show_outliers,
+        left_color=left_color,
+        right_color=right_color,
+        tick_fontsize=tick_fontsize,
+        title_fontsize=title_fontsize
+    )
 
 def plot_boxplot(data_l, data_r, brain_region_names, ylabel, title, output_path, dark_mode=False, show_outliers=True, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
     # Prepare data for boxplot: list of arrays for each group
