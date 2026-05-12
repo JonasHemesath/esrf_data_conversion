@@ -72,7 +72,7 @@ def make_output_path(output_dir, filename, dark_mode=False):
         return f"{base}_dark{ext}"
     return path
 
-def plot_soma_counts_per_brain_region(data_per_brain_region, output_dir, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
+def plot_soma_counts_per_brain_region(data_per_brain_region, output_dir, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12, dark_mode=False):
     brain_region_names = []
     soma_counts = []
     ref_soma_counts = []
@@ -95,11 +95,14 @@ def plot_soma_counts_per_brain_region(data_per_brain_region, output_dir, left_co
     ax.legend()
     
     plt.tight_layout()
-    plt.savefig(os.path.join(output_dir, 'soma_counts_per_brain_region.png'))
+    if dark_mode:
+        plt.savefig(os.path.join(output_dir, 'soma_counts_per_brain_region_dark.png'))
+    else:
+        plt.savefig(os.path.join(output_dir, 'soma_counts_per_brain_region.png'))
     plt.clf()
     plt.close()
 
-def plot_soma_counts_per_brain_region_stacked_ref(data_per_brain_region, output_dir, our_color='skyblue', neuron_color='salmon', non_neuron_color='lightsalmon', tick_fontsize=10, title_fontsize=12):
+def plot_soma_counts_per_brain_region_stacked_ref(data_per_brain_region, output_dir, our_color='skyblue', neuron_color='salmon', non_neuron_color='lightsalmon', tick_fontsize=10, title_fontsize=12, dark_mode=False):
     """
     Plot soma counts with our data as conventional bars and reference data as stacked bars.
     Reference data is split into neurons and non-neurons with different shading.
@@ -135,7 +138,10 @@ def plot_soma_counts_per_brain_region_stacked_ref(data_per_brain_region, output_
     ax.legend()
     
     plt.tight_layout()
-    plt.savefig(os.path.join(output_dir, 'soma_counts_per_brain_region_stacked_ref.png'))
+    if dark_mode:
+        plt.savefig(os.path.join(output_dir, 'soma_counts_per_brain_region_stacked_ref_dark.png'))
+    else:
+        plt.savefig(os.path.join(output_dir, 'soma_counts_per_brain_region_stacked_ref.png'))
     plt.clf()
     plt.close()
 
@@ -208,9 +214,8 @@ def main():
     data_per_brain_region = get_data_for_brain_region(brain_region_ref_data_path, brain_region_labels_path, soma_npy_path)
 
     # Do something with the retrieved data, e.g., plot it or save it to a file
-    plot_soma_counts_per_brain_region(data_per_brain_region, output_dir, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
-    plot_soma_counts_per_brain_region_stacked_ref(data_per_brain_region, output_dir, our_color=left_color, neuron_color=right_color, non_neuron_color=noneuron_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
-    
+    plot_soma_counts_per_brain_region(data_per_brain_region, output_dir, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize, dark_mode=dark_mode)
+    plot_soma_counts_per_brain_region_stacked_ref(data_per_brain_region, output_dir, our_color=left_color, neuron_color=right_color, non_neuron_color=noneuron_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize, dark_mode=dark_mode)
 
 
 if __name__ == "__main__":
