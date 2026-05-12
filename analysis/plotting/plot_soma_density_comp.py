@@ -147,7 +147,7 @@ def plot_soma_density_per_brain_region_non_neurons_adjusted(data_per_brain_regio
     fig, ax = plt.subplots(figsize=(12, 6))
     rects1 = ax.bar(x - width, soma_densities_l, width, label='Left Hemisphere', color=left_color)
     rects2 = ax.bar(x, soma_densities_r, width, label='Right Hemisphere', color=right_color)
-    rects3 = ax.bar(x + width, density_burek, width, label='Burek et al.', color=comp_color)
+    rects3 = ax.bar(x + width, density_burek, width, label='Neurons (Burek et al.)', color=comp_color)
     rects4 = ax.bar(x + width, density_burek_non_neurons, width, bottom=density_burek, label='Non-Neurons estimated (Olkowics et al.)', color=comp_color, alpha=0.7)
 
     ax.set_xlabel('Brain Region', fontsize=title_fontsize)
