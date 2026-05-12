@@ -219,7 +219,7 @@ def project_points_size_2D(data_per_brain_region, brain_region_name, hemisphere,
     return size_xy_avg, size_xz_avg, size_yz_avg
             
 
-def plot_soma_size_distribution_by_brain_region_heatmap(map_xy, map_xz, map_yz, brain_region_name, hemisphere, output_dir):
+def plot_soma_size_distribution_by_brain_region_heatmap(map_xy, map_xz, map_yz, brain_region_name, hemisphere, output_dir, dark_mode=False):
     plt.figure(figsize=(15, 5))
     plt.subplot(1, 3, 1)
     plt.imshow(map_xy.T, origin='lower', cmap='hot')
@@ -234,10 +234,24 @@ def plot_soma_size_distribution_by_brain_region_heatmap(map_xy, map_xz, map_yz, 
     plt.colorbar(label='Average Soma Volume (µm³)')
 
     plt.tight_layout()
-    plt.savefig(f"{output_dir}/{brain_region_name}_{hemisphere}_soma_size_distribution_heatmap.png")
+    if dark_mode:
+        plt.savefig(f"{output_dir}/{brain_region_name}_{hemisphere}_soma_size_distribution_heatmap_dark.png")
+    else:
+        plt.savefig(f"{output_dir}/{brain_region_name}_{hemisphere}_soma_size_distribution_heatmap.png")
     print(f"Saved soma size distribution heatmap for {brain_region_name} hemisphere {hemisphere} to {output_dir}/{brain_region_name}_{hemisphere}_soma_size_distribution_heatmap.png")
 
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='Generate smoothed contour plots for soma size by brain region.')
+    parser.add_argument('--dark_mode', action='store_true', help='Enable dark mode with black background and white labels')
+    return parser.parse_args()
+
 def main():
+    args = parse_args()
+    dark_mode = args.dark_mode
+    if dark_mode:
+        plt.style.use('dark_background')
+
     brain_regions_path = "/cajal/scratch/projects/xray/bm05/ng/zf13_hr2_brain_regions_v260409"
     brain_region_labels_path = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/brain_regions/brain_region_labels_v260409.json"
     soma_npy_path = "/cajal/scratch/projects/xray/bm05/ng/instances/new_04_2026/260306_Soma_distance_transform_multires_multipath_linearLR_soma_masked_260421/all_soma_data/all_soma_data_260427.npy"
@@ -254,7 +268,7 @@ def main():
                 rotated_points = rotate_points(center_points, direction="fixed2moving").astype(int)
                 translated_points = translate_points(rotated_points)
                 size_xy_avg, size_xz_avg, size_yz_avg = project_points_size_2D(data_per_brain_region, brain_region_name, hemisphere, translated_points)
-                plot_soma_size_distribution_by_brain_region_heatmap(size_xy_avg, size_xz_avg, size_yz_avg, brain_region_name, hemisphere, output_dir)
+                plot_soma_size_distribution_by_brain_region_heatmap(size_xy_avg, size_xz_avg, size_yz_avg, brain_region_name, hemisphere, output_dir, dark_mode=dark_mode)
 
 
 

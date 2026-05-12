@@ -268,7 +268,7 @@ def compute_smoothed_plane(coord_a, coord_b, values, grid_resolution=80, smoothi
 
 
 def create_contour_plots_physical_space(data_per_brain_region, brain_region_name, hemisphere, 
-                                        points_nm, output_dir, plane_masks, grid_resolution=80, smoothing_sigma=2.0):
+                                        points_nm, output_dir, plane_masks, grid_resolution=80, smoothing_sigma=2.0, dark_mode=False):
     """Create filled contour plots in physical space using smoothed 2D maps."""
     if brain_region_name not in data_per_brain_region:
         return
@@ -330,6 +330,8 @@ def create_contour_plots_physical_space(data_per_brain_region, brain_region_name
 
     plt.tight_layout()
     output_file = f"{output_dir}/{brain_region_name}_{hemisphere}_soma_size_distribution_contours.png"
+    if dark_mode:
+        output_file = f"{output_dir}/{brain_region_name}_{hemisphere}_soma_size_distribution_contours_dark.png"
     plt.savefig(output_file, dpi=150)
     print(f"Saved contour plot for {brain_region_name} hemisphere {hemisphere} to {output_file}")
     plt.close()
@@ -341,11 +343,15 @@ def parse_args():
                         help='Number of bins along each axis for the 2D smoothing grid (default: 80)')
     parser.add_argument('--smoothing-sigma', type=float, default=2.0,
                         help='Gaussian smoothing sigma applied to the binned maps (default: 2.0)')
+    parser.add_argument('--dark_mode', action='store_true', help='Enable dark mode with black background and white labels')
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
+    dark_mode = args.dark_mode
+    if dark_mode:
+        plt.style.use('dark_background')
     brain_regions_path = "/cajal/scratch/projects/xray/bm05/ng/zf13_hr2_brain_regions_v260409"
     brain_region_labels_path = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/brain_regions/brain_region_labels_v260409.json"
     soma_npy_path = "/cajal/scratch/projects/xray/bm05/ng/instances/new_04_2026/260306_Soma_distance_transform_multires_multipath_linearLR_soma_masked_260421/all_soma_data/all_soma_data_260427.npy"
@@ -382,6 +388,7 @@ def main():
                     plane_masks,
                     grid_resolution=args.grid_resolution,
                     smoothing_sigma=args.smoothing_sigma,
+                    dark_mode=dark_mode,
                 )
 
 
