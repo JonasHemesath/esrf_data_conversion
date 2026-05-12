@@ -125,7 +125,7 @@ def plot_soma_counts_per_brain_region_stacked_ref(data_per_brain_region, output_
     
     # Plot reference data as stacked bars
     rects2 = ax.bar(x + width/2, ref_neuron_counts, width, label='Neurons (Olkowics et al.)', color=neuron_color)
-    rects3 = ax.bar(x + width/2, ref_non_neuron_counts, width, bottom=ref_neuron_counts, label='Non-Neurons (Olkowics et al.)', color=non_neuron_color)
+    rects3 = ax.bar(x + width/2, ref_non_neuron_counts, width, bottom=ref_neuron_counts, label='Non-Neurons (Olkowics et al.)', color=non_neuron_color, alpha=0.7)
     
     ax.set_xlabel('Brain Region', fontsize=title_fontsize)
     ax.set_ylabel('Soma Count', fontsize=title_fontsize)
@@ -181,8 +181,9 @@ def main():
     parser = argparse.ArgumentParser(description='Plot soma data per brain region')
     parser.add_argument('--show_outliers', action='store_true', help='Whether to show outliers in the boxplots')
     parser.add_argument('--dark_mode', action='store_true', help='Enable dark mode with black background and white labels')
-    parser.add_argument('--left_color', type=color_type, default='0.7529,0.6471,0.3882', help='Color for left hemisphere (default: skyblue). Can be named color, hex, or RGB tuple like "0.5,0.5,0.5"')
-    parser.add_argument('--right_color', type=color_type, default='0.3451,0.3137,0.6824', help='Color for right hemisphere (default: salmon). Can be named color, hex, or RGB tuple like "0.5,0.5,0.5"')
+    #parser.add_argument('--left_color', type=color_type, default='0.7529,0.6471,0.3882', help='Color for left hemisphere (default: skyblue). Can be named color, hex, or RGB tuple like "0.5,0.5,0.5"')
+    parser.add_argument('--left_color', type=color_type, default='0.3451,0.3137,0.6824', help='Color for left hemisphere (default: skyblue). Can be named color, hex, or RGB tuple like "0.5,0.5,0.5"')
+    parser.add_argument('--right_color', type=color_type, default='darkorange', help='Color for right hemisphere (default: salmon). Can be named color, hex, or RGB tuple like "0.5,0.5,0.5"')
     parser.add_argument('--tick_fontsize', type=int, default=16, help='Font size for tick labels (default: 10)')
     parser.add_argument('--title_fontsize', type=int, default=18, help='Font size for axis titles and plot title (default: 12)')
     args = parser.parse_args()
@@ -190,7 +191,8 @@ def main():
     dark_mode = args.dark_mode
     left_color = args.left_color
     right_color = args.right_color
-    noneuron_color = tuple(np.array(right_color) * 0.7) if isinstance(right_color, tuple) else 'light' + right_color
+    #noneuron_color = tuple(np.array(right_color) * 0.7) if isinstance(right_color, tuple) else 'light' + right_color
+    noneuron_color = right_color
     tick_fontsize = args.tick_fontsize
     title_fontsize = args.title_fontsize
     
