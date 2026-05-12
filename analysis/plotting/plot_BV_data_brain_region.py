@@ -77,6 +77,45 @@ def make_output_path(output_dir, filename, dark_mode=False):
         return f"{base}_dark{ext}"
     return path
 
+def plot_violin(data_l, data_r, brain_region_names, ylabel, title, output_path, dark_mode=False, show_outliers=True, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
+    # Prepare data for violin plot: list of arrays for each group
+    data = []
+    labels = []
+    positions = []
+    pos = 0
+    for i, name in enumerate(brain_region_names):
+        data.append(data_l[i])
+        labels.append(f'{name} L')
+        positions.append(pos)
+        pos += 1
+        data.append(data_r[i])
+        labels.append(f'{name} R')
+        positions.append(pos)
+        pos += 1.5  # Space between regions
+    
+    fig, ax = plt.subplots(figsize=(16, 8))
+    bp = ax.violin(data, positions=positions, patch_artist=True, widths=0.6)
+    
+    # Color the boxes
+    colors = [left_color, right_color] * len(brain_region_names)
+    for patch, color in zip(bp['boxes'], colors):
+        patch.set_facecolor(color)
+    
+    # Set median line color for visibility in dark mode
+    median_color = 'white' if dark_mode else 'black'
+    for median in bp['medians']:
+        median.set_color(median_color)
+
+    ax.set_xlabel('Brain Region and Hemisphere', fontsize=title_fontsize)
+    ax.set_ylabel(ylabel, fontsize=title_fontsize)
+    ax.set_xticks(positions)
+    ax.set_xticklabels(labels, rotation=90, fontsize=tick_fontsize)
+    ax.tick_params(axis='y', labelsize=tick_fontsize)
+    
+    plt.tight_layout()
+    plt.savefig(output_path)
+    plt.clf()
+    plt.close()
 
 def plot_boxplot(data_l, data_r, brain_region_names, ylabel, title, output_path, dark_mode=False, show_outliers=True, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
     # Prepare data for boxplot: list of arrays for each group
@@ -117,6 +156,19 @@ def plot_boxplot(data_l, data_r, brain_region_names, ylabel, title, output_path,
     plt.savefig(output_path)
     plt.clf()
     plt.close()
+
+def plot_radii_violin(data_per_brain_region, output_dir, dark_mode=False, show_outliers=True, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
+    brain_region_names = []
+    radii_l = []
+    radii_r = []
+    for brain_region_name, hemispheres in data_per_brain_region.items():
+        brain_region_names.append(brain_region_name)
+        radii_l.append(hemispheres['l']['radii'])
+        radii_r.append(hemispheres['r']['radii'])
+    
+    plot_violin(radii_l, radii_r, brain_region_names, 
+                'Blood Vessel Radius (µm)', 'Blood Vessel Radius Distribution per Brain Region and Hemisphere',
+                make_output_path(output_dir, 'BV_radii_violin.png', dark_mode), dark_mode=dark_mode, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
 
 def plot_radii_boxplot(data_per_brain_region, output_dir, dark_mode=False, show_outliers=True, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
     brain_region_names = []
