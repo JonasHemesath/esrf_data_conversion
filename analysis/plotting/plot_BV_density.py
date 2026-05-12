@@ -188,7 +188,7 @@ def main():
         with open(os.path.join(data_output_path, "BV_density_per_brain_region.json"), "w") as f:
             json.dump(bv_density_brain_region_dict, f)
 
-    plot_volume_density_barplot(bv_density_brain_region_dict, brain_region_labels, plot_output_path, dark_mode=dark_mode, left_color=(0.7529, 0.6471, 0.3882), right_color=(0.3451, 0.3137, 0.6824), tick_fontsize=10, title_fontsize=12)
+    plot_volume_density_barplot(bv_density_brain_region_dict, brain_region_labels, plot_output_path, dark_mode=dark_mode, left_color=(0.7529, 0.6471, 0.3882), right_color=(0.3451, 0.3137, 0.6824), tick_fontsize=16, title_fontsize=18)
     print("All done!")
 
 if __name__ == "__main__":
