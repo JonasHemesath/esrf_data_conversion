@@ -94,7 +94,7 @@ def plot_violin(data_l, data_r, brain_region_names, ylabel, title, output_path, 
         pos += 1.5  # Space between regions
     
     fig, ax = plt.subplots(figsize=(16, 8))
-    bp = ax.violin(data, positions=positions, patch_artist=True, widths=0.6)
+    bp = ax.violin(data, positions=positions, widths=0.6)
     
     # Color the boxes
     colors = [left_color, right_color] * len(brain_region_names)
