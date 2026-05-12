@@ -199,7 +199,7 @@ def main():
     #brain_regions_path = "/cajal/scratch/projects/xray/bm05/ng/brain_areas_v260415"
     brain_region_ref_data_path = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/brain_regions/brain_areas_Olkowicz_et_al.json"
     brain_region_labels_path = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/brain_regions/brain_areas_labels_for Olkowicz.json"
-    soma_npy_path = "/cajal/scratch/projects/xray/bm05/ng/instances/new_04_2026/260306_Soma_distance_transform_multires_multipath_linearLR_soma_masked_260421/all_soma_data/all_soma_data_260508_brain_areas.npy"
+    soma_npy_path = "/cajal/scratch/projects/xray/bm05/ng/instances/new_04_2026/260306_Soma_distance_transform_multires_multipath_linearLR_soma_masked_260421/all_soma_data/all_soma_data_260511_brain_areas.npy"
     output_dir = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/plotting/plots/soma_number_comparison_Olkowicz"
     os.makedirs(output_dir, exist_ok=True)
 
