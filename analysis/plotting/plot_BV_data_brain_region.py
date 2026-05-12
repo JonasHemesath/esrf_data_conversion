@@ -294,6 +294,7 @@ def main():
 
     # Plot boxplots
     plot_radii_boxplot(data_per_brain_region, output_dir, dark_mode=dark_mode, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
+    plot_radii_violin(data_per_brain_region, output_dir, dark_mode=dark_mode, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
     plot_branch_degrees_boxplot(data_per_brain_region, output_dir, dark_mode=dark_mode, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
     
     # Plot histograms for each region and hemisphere
