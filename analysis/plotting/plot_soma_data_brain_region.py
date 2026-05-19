@@ -191,6 +191,7 @@ def plot_violin(
         showmeans=False,
         showmedians=True,
         showextrema=show_outliers,  # this shows min/max bars, not "outliers" like a boxplot
+        quantiles=[0.01, 0.99]  # Show 1st and 99th percentiles as "extrema" if showing outliers
     )
 
     # Color violin bodies
