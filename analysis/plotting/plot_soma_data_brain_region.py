@@ -135,6 +135,94 @@ def plot_soma_density_per_brain_region(data_per_brain_region, output_dir, left_c
     plt.clf()
     plt.close()
 
+def plot_violin(
+    data_l, data_r, brain_region_names, ylabel, title, output_path,
+    dark_mode=False, show_outliers=True,
+    left_color='skyblue', right_color='salmon',
+    tick_fontsize=10, title_fontsize=12
+):
+    """
+    data_l/data_r: lists of 1D arrays (can be empty). brain_region_names matches these lists.
+    """
+    data = []
+    labels = []
+    positions = []
+    colors = []
+
+    pos = 0.0
+    for i, name in enumerate(brain_region_names):
+        lvals = np.asarray(data_l[i]).ravel() if i < len(data_l) else np.array([])
+        rvals = np.asarray(data_r[i]).ravel() if i < len(data_r) else np.array([])
+
+        # Keep only finite values
+        lvals = lvals[np.isfinite(lvals)]
+        rvals = rvals[np.isfinite(rvals)]
+
+        # Add left group if there is data
+        if lvals.size > 0:
+            data.append(lvals)
+            labels.append(f"{name} L")
+            positions.append(pos)
+            colors.append(left_color)
+            pos += 1.0
+
+        # Add right group if there is data
+        if rvals.size > 0:
+            data.append(rvals)
+            labels.append(f"{name} R")
+            positions.append(pos)
+            colors.append(right_color)
+            pos += 1.0
+
+        # extra spacing between regions (only if at least one side existed)
+        if (lvals.size > 0) or (rvals.size > 0):
+            pos += 0.5
+
+    if len(data) == 0:
+        print(f"[WARN] No data available for violin plot: {output_path}")
+        return
+
+    fig, ax = plt.subplots(figsize=(16, 8))
+
+    vp = ax.violinplot(
+        data,
+        positions=positions,
+        widths=0.7,
+        showmeans=False,
+        showmedians=True,
+        showextrema=show_outliers,  # this shows min/max bars, not "outliers" like a boxplot
+    )
+
+    # Color violin bodies
+    for body, c in zip(vp["bodies"], colors):
+        body.set_facecolor(c)
+        body.set_edgecolor("black" if not dark_mode else "white")
+        body.set_alpha(0.9)
+
+    # Median line color (LineCollection)
+    median_color = "white" if dark_mode else "black"
+    if "cmedians" in vp and vp["cmedians"] is not None:
+        vp["cmedians"].set_color(median_color)
+        vp["cmedians"].set_linewidth(2.0)
+
+    # Extrema/bar colors for visibility
+    for k in ("cbars", "cmins", "cmaxes"):
+        if k in vp and vp[k] is not None:
+            vp[k].set_color(median_color)
+            vp[k].set_linewidth(1.5)
+
+    
+    ax.set_xlabel("Brain Region and Hemisphere", fontsize=title_fontsize)
+    ax.set_ylabel(ylabel, fontsize=title_fontsize)
+
+    ax.set_xticks(positions)
+    ax.set_xticklabels(labels, rotation=90, fontsize=tick_fontsize)
+    ax.tick_params(axis="y", labelsize=tick_fontsize)
+
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=300, bbox_inches="tight")
+    plt.close()
+
 def plot_boxplot(data_l, data_r, brain_region_names, ylabel, title, output_path, dark_mode=False, show_outliers=True, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
     # Prepare data for boxplot: list of arrays for each group
     data = []
@@ -187,6 +275,9 @@ def plot_soma_surface_area_per_brain_region(data_per_brain_region, output_dir, d
     plot_boxplot(surface_areas_l, surface_areas_r, brain_region_names, 
                  'Soma Surface Area (µm²)', 'Soma Surface Area Distribution per Brain Region and Hemisphere',
                  make_output_path(output_dir, 'soma_surface_area_per_brain_region_boxplot.png', dark_mode), dark_mode=dark_mode, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
+    plot_violin(surface_areas_l, surface_areas_r, brain_region_names,
+                'Soma Surface Area (µm²)', 'Soma Surface Area Distribution per Brain Region and Hemisphere',
+                make_output_path(output_dir, 'soma_surface_area_per_brain_region_violin.png', dark_mode), dark_mode=dark_mode, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
 
 def plot_soma_volume_per_brain_region(data_per_brain_region, output_dir, dark_mode=False, show_outliers=True, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
     brain_region_names = []
@@ -200,7 +291,10 @@ def plot_soma_volume_per_brain_region(data_per_brain_region, output_dir, dark_mo
     plot_boxplot(volumes_l, volumes_r, brain_region_names, 
                  'Soma Volume (µm³)', 'Soma Volume Distribution per Brain Region and Hemisphere',
                  make_output_path(output_dir, 'soma_volume_per_brain_region_boxplot.png', dark_mode), dark_mode=dark_mode, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
-
+    plot_violin(volumes_l, volumes_r, brain_region_names,
+                'Soma Volume (µm³)', 'Soma Volume Distribution per Brain Region and Hemisphere',
+                make_output_path(output_dir, 'soma_volume_per_brain_region_violin.png', dark_mode), dark_mode=dark_mode, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
+    
 def plot_soma_convex_hull_volume_per_brain_region(data_per_brain_region, output_dir, dark_mode=False, show_outliers=True, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
     brain_region_names = []
     convex_hull_volumes_l = []
@@ -213,6 +307,9 @@ def plot_soma_convex_hull_volume_per_brain_region(data_per_brain_region, output_
     plot_boxplot(convex_hull_volumes_l, convex_hull_volumes_r, brain_region_names, 
                  'Soma Convex Hull Volume (µm³)', 'Soma Convex Hull Volume Distribution per Brain Region and Hemisphere',
                  make_output_path(output_dir, 'soma_convex_hull_volume_per_brain_region_boxplot.png', dark_mode), dark_mode=dark_mode, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
+    plot_violin(convex_hull_volumes_l, convex_hull_volumes_r, brain_region_names,
+                'Soma Convex Hull Volume (µm³)', 'Soma Convex Hull Volume Distribution per Brain Region and Hemisphere',
+                make_output_path(output_dir, 'soma_convex_hull_volume_per_brain_region_violin.png', dark_mode), dark_mode=dark_mode, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
 
 def plot_soma_max_radius_per_brain_region(data_per_brain_region, output_dir, dark_mode=False, show_outliers=True, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
     brain_region_names = []
@@ -226,7 +323,10 @@ def plot_soma_max_radius_per_brain_region(data_per_brain_region, output_dir, dar
     plot_boxplot(max_radii_l, max_radii_r, brain_region_names, 
                  'Soma Max Radius (µm)', 'Soma Max Radius Distribution per Brain Region and Hemisphere',
                  make_output_path(output_dir, 'soma_max_radius_per_brain_region_boxplot.png', dark_mode), dark_mode=dark_mode, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
-
+    plot_violin(max_radii_l, max_radii_r, brain_region_names,
+                'Soma Max Radius (µm)', 'Soma Max Radius Distribution per Brain Region and Hemisphere',
+                make_output_path(output_dir, 'soma_max_radius_per_brain_region_violin.png', dark_mode), dark_mode=dark_mode, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
+    
 def plot_soma_min_radius_per_brain_region(data_per_brain_region, output_dir, dark_mode=False, show_outliers=True, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
     brain_region_names = []
     min_radii_l = []
@@ -239,6 +339,9 @@ def plot_soma_min_radius_per_brain_region(data_per_brain_region, output_dir, dar
     plot_boxplot(min_radii_l, min_radii_r, brain_region_names, 
                  'Soma Min Radius (µm)', 'Soma Min Radius Distribution per Brain Region and Hemisphere',
                  make_output_path(output_dir, 'soma_min_radius_per_brain_region_boxplot.png', dark_mode), dark_mode=dark_mode, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
+    plot_violin(min_radii_l, min_radii_r, brain_region_names,
+                'Soma Min Radius (µm)', 'Soma Min Radius Distribution per Brain Region and Hemisphere',
+                make_output_path(output_dir, 'soma_min_radius_per_brain_region_violin.png', dark_mode), dark_mode=dark_mode, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
 
 def plot_soma_nearest_distance_BV_per_brain_region(data_per_brain_region, output_dir, dark_mode=False, show_outliers=True, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
     brain_region_names = []
@@ -252,6 +355,9 @@ def plot_soma_nearest_distance_BV_per_brain_region(data_per_brain_region, output
     plot_boxplot(distances_l, distances_r, brain_region_names, 
                  'Soma Nearest Distance to BV (µm)', 'Soma Nearest Distance to Blood Vessel Distribution per Brain Region and Hemisphere',
                  make_output_path(output_dir, 'soma_nearest_distance_BV_per_brain_region_boxplot.png', dark_mode), dark_mode=dark_mode, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
+    plot_violin(distances_l, distances_r, brain_region_names,
+                'Soma Nearest Distance to BV (µm)', 'Soma Nearest Distance to Blood Vessel Distribution per Brain Region and Hemisphere',
+                make_output_path(output_dir, 'soma_nearest_distance_BV_per_brain_region_violin.png', dark_mode), dark_mode=dark_mode, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
 
 def plot_soma_nearest_radius_BV_per_brain_region(data_per_brain_region, output_dir, dark_mode=False, show_outliers=True, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
     brain_region_names = []
@@ -265,7 +371,10 @@ def plot_soma_nearest_radius_BV_per_brain_region(data_per_brain_region, output_d
     plot_boxplot(radii_l, radii_r, brain_region_names, 
                  'Soma Nearest Radius to BV (µm)', 'Soma Nearest Radius to Blood Vessel Distribution per Brain Region and Hemisphere',
                  make_output_path(output_dir, 'soma_nearest_radius_BV_per_brain_region_boxplot.png', dark_mode), dark_mode=dark_mode, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
-
+    plot_violin(radii_l, radii_r, brain_region_names,
+                'Soma Nearest Radius to BV (µm)', 'Soma Nearest Radius to Blood Vessel Distribution per Brain Region and Hemisphere',
+                make_output_path(output_dir, 'soma_nearest_radius_BV_per_brain_region_violin.png', dark_mode), dark_mode=dark_mode, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
+    
 def plot_soma_radius_ratio_min_max_per_brain_region(data_per_brain_region, output_dir, dark_mode=False, show_outliers=True, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
     brain_region_names = []
     ratios_l = []
@@ -278,6 +387,9 @@ def plot_soma_radius_ratio_min_max_per_brain_region(data_per_brain_region, outpu
     plot_boxplot(ratios_l, ratios_r, brain_region_names, 
                  'Soma Radius Ratio (max/min)', 'Soma Radius Ratio Distribution per Brain Region and Hemisphere',
                  make_output_path(output_dir, 'soma_radius_ratio_min_max_per_brain_region_boxplot.png', dark_mode), dark_mode=dark_mode, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
+    plot_violin(ratios_l, ratios_r, brain_region_names,
+                'Soma Radius Ratio (max/min)', 'Soma Radius Ratio Distribution per Brain Region and Hemisphere',
+                make_output_path(output_dir, 'soma_radius_ratio_min_max_per_brain_region_violin.png', dark_mode), dark_mode=dark_mode, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
 
 def main():
     parser = argparse.ArgumentParser(description='Plot soma data per brain region')
