@@ -137,7 +137,7 @@ def plot_soma_density_per_brain_region(data_per_brain_region, output_dir, left_c
 
 def plot_violin(
     data_l, data_r, brain_region_names, ylabel, title, output_path,
-    dark_mode=False, show_outliers=True,
+    dark_mode=False, show_outliers=False,
     left_color='skyblue', right_color='salmon',
     tick_fontsize=10, title_fontsize=12
 ):
