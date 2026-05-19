@@ -79,9 +79,9 @@ def make_output_path(output_dir, filename, dark_mode=False):
 
 def plot_violin(
     data_l, data_r, brain_region_names, ylabel, title, output_path,
-    dark_mode=False, show_outliers=True,
+    dark_mode=False, show_outliers=False,
     left_color='skyblue', right_color='salmon',
-    tick_fontsize=10, title_fontsize=12
+    tick_fontsize=10, title_fontsize=12, quantiles_to_show=[0.00, 0.99]
 ):
     """
     data_l/data_r: lists of 1D arrays (can be empty). brain_region_names matches these lists.
@@ -99,6 +99,15 @@ def plot_violin(
         # Keep only finite values
         lvals = lvals[np.isfinite(lvals)]
         rvals = rvals[np.isfinite(rvals)]
+
+        if quantiles_to_show is not None:
+            q_l = np.quantile(lvals, quantiles_to_show) if lvals.size > 0 else None
+            q_r = np.quantile(rvals, quantiles_to_show) if rvals.size > 0 else None
+            # Filter out values outside the quantiles if showing outliers
+            if q_l is not None:
+                lvals = lvals[(lvals >= q_l[0]) & (lvals <= q_l[1])]
+            if q_r is not None:
+                rvals = rvals[(rvals >= q_r[0]) & (rvals <= q_r[1])]
 
         # Add left group if there is data
         if lvals.size > 0:
@@ -133,6 +142,7 @@ def plot_violin(
         showmeans=False,
         showmedians=True,
         showextrema=show_outliers,  # this shows min/max bars, not "outliers" like a boxplot
+        #quantiles=[[0.01, 0.99] for _ in data]  # Show 1st and 99th percentiles as "extrema" if showing outliers
     )
 
     # Color violin bodies
@@ -153,13 +163,16 @@ def plot_violin(
             vp[k].set_color(median_color)
             vp[k].set_linewidth(1.5)
 
-    ax.set_title(title, fontsize=title_fontsize)
+    
     ax.set_xlabel("Brain Region and Hemisphere", fontsize=title_fontsize)
     ax.set_ylabel(ylabel, fontsize=title_fontsize)
 
     ax.set_xticks(positions)
     ax.set_xticklabels(labels, rotation=90, fontsize=tick_fontsize)
     ax.tick_params(axis="y", labelsize=tick_fontsize)
+
+    if quantiles_to_show is not None:
+        output_path = output_path.replace(".png", f"_quantiles_{int(quantiles_to_show[0]*100)}-{int(quantiles_to_show[1]*100)}.png")
 
     plt.tight_layout()
     plt.savefig(output_path, dpi=300, bbox_inches="tight")
