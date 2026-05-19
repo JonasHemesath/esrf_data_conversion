@@ -139,7 +139,7 @@ def plot_violin(
     data_l, data_r, brain_region_names, ylabel, title, output_path,
     dark_mode=False, show_outliers=False,
     left_color='skyblue', right_color='salmon',
-    tick_fontsize=10, title_fontsize=12, quantiles_to_show=[0.01, 0.99]
+    tick_fontsize=10, title_fontsize=12, quantiles_to_show=[0.00, 0.99]
 ):
     """
     data_l/data_r: lists of 1D arrays (can be empty). brain_region_names matches these lists.
