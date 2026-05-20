@@ -8,6 +8,61 @@ import argparse
 from scipy import stats
 from itertools import combinations
 
+def p_adjust_bh(pvals):
+    """Benjamini-Hochberg FDR adjustment. Returns adjusted p-values (q-values)."""
+    p = np.asarray(pvals, dtype=float)
+    m = p.size
+    order = np.argsort(p)
+    ranked = p[order]
+
+    # BH: p_i * m / i
+    i = np.arange(1, m + 1)
+    q = ranked * m / i
+
+    # enforce monotonicity: q_i = min_{j>=i} q_j
+    q = np.minimum.accumulate(q[::-1])[::-1]
+    q = np.clip(q, 0, 1)
+
+    out = np.empty_like(q)
+    out[order] = q
+    return out
+
+def p_adjust_holm(pvals):
+    """Holm-Bonferroni FWER adjustment. Returns adjusted p-values."""
+    p = np.asarray(pvals, dtype=float)
+    m = p.size
+    order = np.argsort(p)
+    ranked = p[order]
+
+    # Holm: (m - i + 1) * p_i
+    mult = (m - np.arange(m))
+    adj = ranked * mult
+
+    # enforce monotonicity: adj_i = max_{j<=i} adj_j
+    adj = np.maximum.accumulate(adj)
+    adj = np.clip(adj, 0, 1)
+
+    out = np.empty_like(adj)
+    out[order] = adj
+    return out
+
+def add_p_adjust(df, method="bh", alpha=0.05):
+    p = df["p_value"].to_numpy()
+
+    if method == "bh":
+        p_adj = p_adjust_bh(p)
+    elif method == "holm":
+        p_adj = p_adjust_holm(p)
+    elif method == "bonferroni":
+        p_adj = np.clip(p * len(p), 0, 1)
+    else:
+        raise ValueError("method must be 'bh', 'holm', or 'bonferroni'")
+
+    df = df.copy()
+    df["p_adj"] = p_adj
+    df["significant_adj"] = np.where(p_adj < alpha, "Yes", "No")
+    return df
+
 def get_brain_region_mesh(brain_regions, brain_region_label):
     # This function retrieves the mesh for a given brain region label
     
@@ -247,6 +302,7 @@ def main():
     print("\nPerforming pairwise Mann-Whitney U tests between different brain regions...")
     for metric in metrics:
         pairwise_df = pairwise_mann_whitney_test(data_per_brain_region, metric)
+        pairwise_df = add_p_adjust(pairwise_df, method="bh", alpha=0.05)  # or method="holm"
         results_dict[f'{metric}_pairwise_mwu'] = pairwise_df
         print(f"Performed pairwise tests for {metric}")
 
