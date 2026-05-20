@@ -16,7 +16,7 @@ def get_brain_region_mesh(brain_regions, brain_region_label):
         return trimesh.Trimesh(vertices=mesh.vertices, faces=mesh.faces)
     return None
 
-def get_data_for_brain_region(brain_regions_path, brain_region_labels_path, soma_npy_path):
+def get_data_for_brain_region(brain_regions_path, brain_region_labels_path, soma_npy_path, BV_data_dir):
     brain_regions = CloudVolume(brain_regions_path)
     with open(brain_region_labels_path, 'r') as f:
         brain_region_labels = json.load(f)
@@ -26,6 +26,10 @@ def get_data_for_brain_region(brain_regions_path, brain_region_labels_path, soma
     data_per_brain_region = {}
     for k, v in brain_region_labels.items():
         print(f"Processing brain region label: {k}")
+        bv_radius_path = os.path.join(BV_data_dir, f'radius_per_vertex_brain_region_{brain_region_label}.npy')
+        if os.path.exists(bv_radius_path):
+            bv_radius = np.load(bv_radius_path)
+            print(f"Loaded BV radius data for brain region {k} with shape: {bv_radius.shape}")
         brain_region_label = int(k)
         brain_region_name = v[0]
         brain_region_hemisphere = v[1]
@@ -48,6 +52,7 @@ def get_data_for_brain_region(brain_regions_path, brain_region_labels_path, soma
             "soma_convex_hull_volume": soma_data_in_region[:, 5] / 1e9,  # Convert nm³ to µm³
             "soma_min_radius": soma_data_in_region[:, 6] / 1e3,  # Convert nm to µm
             "soma_max_radius": soma_data_in_region[:, 7] / 1e3,  # Convert nm to µm
+            "bv_radius": bv_radius if os.path.exists(bv_radius_path) else None,
         }
     return data_per_brain_region
 
@@ -197,11 +202,12 @@ def main():
     
     brain_regions_path = "/cajal/scratch/projects/xray/bm05/ng/zf13_hr2_brain_regions_v260409"
     brain_region_labels_path = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/brain_regions/brain_region_labels_v260409.json"
-    soma_npy_path = "/cajal/scratch/projects/xray/bm05/ng/instances/new_04_2026/260306_Soma_distance_transform_multires_multipath_linearLR_soma_masked_260421/all_soma_data/all_soma_data.npy"
+    soma_npy_path = "/cajal/scratch/projects/xray/bm05/ng/instances/new_04_2026/260306_Soma_distance_transform_multires_multipath_linearLR_soma_masked_260421/all_soma_data/all_soma_data_260505_with_closest_for_regions.npy"
+    BV_data_dir = "/cajal/scratch/projects/xray/bm05/ng/BV_testing/260304_Myelin_BV_multires_multipath_linearLR_BV_masked_brain_regions/analysis_results"
     output_dir = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/statistiks/results"
     os.makedirs(output_dir, exist_ok=True)
 
-    data_per_brain_region = get_data_for_brain_region(brain_regions_path, brain_region_labels_path, soma_npy_path)
+    data_per_brain_region = get_data_for_brain_region(brain_regions_path, brain_region_labels_path, soma_npy_path, BV_data_dir)
 
     # Define metrics to analyze
     metrics = [
