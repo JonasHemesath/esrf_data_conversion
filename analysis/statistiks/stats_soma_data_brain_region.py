@@ -92,14 +92,14 @@ def test_normality(data_per_brain_region, metric):
             data = hemispheres[hemisphere][metric]
             
             # Shapiro-Wilk test
-            statistic, p_value = stats.shapiro(data)
+            statistic, p_value = stats.normaltest(data)
             
             result_dict = {
                 'metric': metric,
                 'brain_region': brain_region_name,
                 'hemisphere': hemisphere,
-                'shapiro_statistic': statistic,
-                'shapiro_p_value': p_value,
+                'D_Agostino_Pearson_omnibus_statistic': statistic,
+                'D_Agostino_Pearson_omnibus_p_value': p_value,
                 'is_normal': 'Yes' if p_value > 0.05 else 'No',
                 'n': len(data),
             }
