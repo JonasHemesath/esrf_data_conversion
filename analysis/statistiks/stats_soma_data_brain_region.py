@@ -215,7 +215,8 @@ def main():
         'soma_volume',
         'soma_convex_hull_volume',
         'soma_min_radius',
-        'soma_max_radius'
+        'soma_max_radius',
+        "bv_radius"
     ]
 
     results_dict = {}
