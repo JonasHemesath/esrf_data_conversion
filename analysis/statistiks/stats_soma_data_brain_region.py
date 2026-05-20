@@ -26,7 +26,7 @@ def get_data_for_brain_region(brain_regions_path, brain_region_labels_path, soma
     data_per_brain_region = {}
     for k, v in brain_region_labels.items():
         print(f"Processing brain region label: {k}")
-        bv_radius_path = os.path.join(BV_data_dir, f'radius_per_vertex_brain_region_{brain_region_label}.npy')
+        bv_radius_path = os.path.join(BV_data_dir, f'radius_per_vertex_brain_region_{k}.npy')
         if os.path.exists(bv_radius_path):
             bv_radius = np.load(bv_radius_path)
             print(f"Loaded BV radius data for brain region {k} with shape: {bv_radius.shape}")
