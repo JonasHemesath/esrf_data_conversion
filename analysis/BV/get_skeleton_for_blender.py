@@ -50,6 +50,7 @@ if __name__ == "__main__":
             label = int(brain_region_label)
             skeleton = bv.skeleton.get(label)
             filtered_skeleton = filter_by_radius(skeleton, radius_filter[0], radius_filter[1])
+            print(f"Original skeleton has {len(skeleton.vertices)} vertices and {len(skeleton.edges)} edges, filtered skeleton has {len(filtered_skeleton.vertices)} vertices and {len(filtered_skeleton.edges)} edges")
             filtered_graph_dict["graphs"].append({"name": label, "nodes": [{"id": i, "pos": [float(vertex[0]), float(vertex[1]), float(vertex[2])], "radius": float(filtered_skeleton.radii[i])} for i, vertex in enumerate(filtered_skeleton.vertices)], "edges": [[float(edge[0]), float(edge[1])] for edge in filtered_skeleton.edges]})
         
         output_path = f"{output_dir}/skeleton_graphs_radius_{radius_filter[0]}_{radius_filter[1]}.json"
