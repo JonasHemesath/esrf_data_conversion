@@ -24,7 +24,7 @@ if __name__ == "__main__":
         print(f"Processing brain region {brain_region_label}...")
         label = int(brain_region_label)
         skeleton = bv.skeleton.get(label)
-        graph_dict["graphs"].append({"name": label, "nodes": [{"id": i, "pos": vertex.tolist(), "radius": skeleton.radii[i]} for i, vertex in enumerate(skeleton.vertices)], "edges": [[edge[0], edge[1]] for edge in skeleton.edges]})
+        graph_dict["graphs"].append({"name": label, "nodes": [{"id": i, "pos": [float(vertex[0]), float(vertex[1]), float(vertex[2])], "radius": float(skeleton.radii[i])} for i, vertex in enumerate(skeleton.vertices)], "edges": [[float(edge[0]), float(edge[1])] for edge in skeleton.edges]})
 
     output_path = f"{output_dir}/skeleton_graphs.json"
     with open(output_path, "w") as f:
