@@ -414,10 +414,15 @@ if __name__ == "__main__":
                 **test
             }
             rows.append(row)
+            try:
 
-            print(f"  label {label}: edges={row.get('n_edges')} seg={row.get('n_segments')} "
-                  f"mean=({row.get('mean_x2'):.3f},{row.get('mean_y2'):.3f},{row.get('mean_z2'):.3f}) "
-                  f"p={row.get('p'):.4g}")
+                print(f"  label {label}: edges={row.get('n_edges')} seg={row.get('n_segments')} "
+                    f"mean=({row.get('mean_x2'):.3f},{row.get('mean_y2'):.3f},{row.get('mean_z2'):.3f}) "
+                    f"p={row.get('p'):.4g}")
+            except TypeError:
+                print(f"  label {label}: edges={row.get('n_edges')} seg={row.get('n_segments')} "
+                    f"mean=({row.get('mean_x2')},{row.get('mean_y2')},{row.get('mean_z2')}) "
+                    f"p={row.get('p')}")
 
     # FDR correction across all tests performed
     pvals = [r.get("p", np.nan) for r in rows]
