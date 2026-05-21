@@ -10,7 +10,7 @@ def filter_by_radius(skeleton, min_radius, max_radius):
     valid_vertices_mask = (skeleton.radius >= min_radius) & (skeleton.radius <= max_radius)
     valid_vertices_idx = np.where(valid_vertices_mask)[0]
     skeleton.vertices[valid_vertices_mask, :] = [0, 0, 0]
-    skeleton.radius = skeleton.radius[valid_vertices_idx]
+    #skeleton.radius = skeleton.radius[valid_vertices_idx]
     edges_valid_mask = np.isin(skeleton.edges, valid_vertices_idx)
     edges_valid_idx = edges_valid_mask[:,0] & edges_valid_mask[:,1] 
     skeleton.edges = skeleton.edges[edges_valid_idx,:]
