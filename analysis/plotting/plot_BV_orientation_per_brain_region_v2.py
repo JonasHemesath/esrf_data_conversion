@@ -331,6 +331,7 @@ if __name__ == "__main__":
 
             try:
                 skeleton = bv.skeleton.get(label)
+                print(set(skeleton.radii))
             except Exception as ex:
                 print(f"    Could not load skeleton for label {label}: {ex}")
                 continue
