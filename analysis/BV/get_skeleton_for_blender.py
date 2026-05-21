@@ -57,7 +57,7 @@ if __name__ == "__main__":
     brain_region_labels_path = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/brain_regions/brain_region_labels_v260409.json"
     BV_path = "/cajal/scratch/projects/xray/bm05/ng/BV_testing/260304_Myelin_BV_multires_multipath_linearLR_BV_masked_brain_regions"
     output_dir = "/cajal/scratch/projects/xray/bm05/ng/BV_testing/260304_Myelin_BV_multires_multipath_linearLR_BV_masked_brain_regions/analysis_results"
-    radius_filters = [[0, 7000], [7000, 10000000], [15000, 10000000]]
+    radius_filters = [[0, 7000], [7000, 10000000], [15000, 10000000], [5000, 10000000]]
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
