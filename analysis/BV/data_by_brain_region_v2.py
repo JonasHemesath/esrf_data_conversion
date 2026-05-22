@@ -187,7 +187,16 @@ def main():
         )
         print(radius_per_segment.shape)
         radius_segment_output_path = f"{output_dir}/radius_per_segment_brain_region_{brain_region_label}.npy"
-        np.save(radius_segment_output_path, radius_per_segment)
+        radius_per_segment_mat = np.column_stack([
+            radius_per_segment["segment_id"],
+            radius_per_segment["mean_radius"],
+            radius_per_segment["n_vertices"],
+            radius_per_segment["start_node"],
+            radius_per_segment["end_node"],
+        ]).astype(np.float32)
+
+        np.save(radius_segment_output_path, radius_per_segment_mat)
+        #np.save(radius_segment_output_path, radius_per_segment)
 
         print(f"  Saved {len(segments)} segments to: {radius_segment_output_path}")
 
