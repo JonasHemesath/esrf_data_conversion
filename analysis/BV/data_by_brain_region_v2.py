@@ -185,7 +185,7 @@ def main():
         radius_per_segment = compute_radius_per_segment(
             skeleton_graph, segments, skeleton.radius
         )
-
+        print(radius_per_segment.shape)
         radius_segment_output_path = f"{output_dir}/radius_per_segment_brain_region_{brain_region_label}.npy"
         np.save(radius_segment_output_path, radius_per_segment)
 
