@@ -38,7 +38,8 @@ def get_data_for_brain_region(brain_regions_path, brain_region_labels_path, BV_d
         brain_region_hemisphere = v[1]
         
         branch_points_path = os.path.join(BV_data_dir, f'branch_points_brain_region_{brain_region_label}.npy')
-        radii_path = os.path.join(BV_data_dir, f'radius_per_vertex_brain_region_{brain_region_label}.npy')
+        #radii_path = os.path.join(BV_data_dir, f'radius_per_vertex_brain_region_{brain_region_label}.npy')
+        radii_path = os.path.join(BV_data_dir, f'radius_per_segment_brain_region_{brain_region_label}.npy')
         
         if not os.path.exists(branch_points_path) or not os.path.exists(radii_path):
             print(f"Data files not found for brain region {brain_region_label}, skipping.")
@@ -48,10 +49,12 @@ def get_data_for_brain_region(brain_regions_path, brain_region_labels_path, BV_d
         radii = np.load(radii_path)
         
         # Filter radii > 0
-        radii = radii[radii[:, 3] > 0]
+        #radii = radii[radii[:, 3] > 0]
+        radii = radii[radii[:, 1] > 0]
         
         branch_degrees = branch_points[:, 1]
-        radii_values = radii[:, 3] / 1e3  # Convert nm to µm
+        #radii_values = radii[:, 3] / 1e3  # Convert nm to µm
+        radii_values = radii[:, 1] / 1e3  # Convert nm to µm
         
         if brain_region_name not in data_per_brain_region:
             data_per_brain_region[brain_region_name] = {
