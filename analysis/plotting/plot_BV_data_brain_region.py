@@ -47,6 +47,7 @@ def get_data_for_brain_region(brain_regions_path, brain_region_labels_path, BV_d
         
         branch_points = np.load(branch_points_path)
         radii = np.load(radii_path)
+        print(radii.shape)
         
         # Filter radii > 0
         #radii = radii[radii[:, 3] > 0]
