@@ -111,6 +111,7 @@ def get_data_for_brain_region(brain_regions_path, brain_region_labels_path, soma
             "soma_min_radius": soma_data_in_region[:, 6] / 1e3,  # Convert nm to µm
             "soma_max_radius": soma_data_in_region[:, 7] / 1e3,  # Convert nm to µm
             "bv_radius": bv_radius if os.path.exists(bv_radius_path) else None,
+            "soma_avg_radius": np.mean(soma_data_in_region[:, 6:8], axis=1) / 1e3
         }
     return data_per_brain_region
 
@@ -274,7 +275,8 @@ def main():
         'soma_convex_hull_volume',
         'soma_min_radius',
         'soma_max_radius',
-        "bv_radius"
+        "bv_radius",
+        "soma_avg_radius"
     ]
 
     results_dict = {}

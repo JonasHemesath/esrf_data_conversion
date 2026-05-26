@@ -356,6 +356,35 @@ def plot_soma_min_radius_per_brain_region(data_per_brain_region, output_dir, dar
                 'Soma Min Radius (µm)', 'Soma Min Radius Distribution per Brain Region and Hemisphere',
                 make_output_path(output_dir, 'soma_min_radius_per_brain_region_violin.png', dark_mode), dark_mode=dark_mode, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
 
+def plot_soma_avg_radius_per_brain_region(data_per_brain_region, output_dir, dark_mode=False, show_outliers=True, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
+    brain_region_names = []
+    min_radii_l = []
+    min_radii_r = []
+    for brain_region_name, hemispheres in data_per_brain_region.items():
+        brain_region_names.append(brain_region_name)
+        min_radii_l.append(hemispheres['l']['soma_min_radius'])
+        min_radii_r.append(hemispheres['r']['soma_min_radius'])
+
+    max_radii_l = []
+    max_radii_r = []
+    for brain_region_name, hemispheres in data_per_brain_region.items():
+        brain_region_names.append(brain_region_name)
+        max_radii_l.append(hemispheres['l']['soma_max_radius'])
+        max_radii_r.append(hemispheres['r']['soma_max_radius'])
+
+    avg_radii_l = []
+    avg_radii_r = []
+    for i in range(len(max_radii_l)):
+        avg_radii_l.append([(e[0] + e[1]) / 2 for e in zip(min_radii_l[i], max_radii_l[i])])
+        avg_radii_r.append([(e[0] + e[1]) / 2 for e in zip(min_radii_r[i], max_radii_r[i])])
+    
+    plot_boxplot(avg_radii_l, avg_radii_r, brain_region_names, 
+                 'Soma Radius (µm)', 'Soma Radius Distribution per Brain Region and Hemisphere',
+                 make_output_path(output_dir, 'soma_avg_radius_per_brain_region_boxplot.png', dark_mode), dark_mode=dark_mode, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
+    plot_violin(avg_radii_l, avg_radii_r, brain_region_names,
+                'Soma Radius (µm)', 'Soma Radius Distribution per Brain Region and Hemisphere',
+                make_output_path(output_dir, 'soma_avg_radius_per_brain_region_violin.png', dark_mode), dark_mode=dark_mode, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
+
 def plot_soma_nearest_distance_BV_per_brain_region(data_per_brain_region, output_dir, dark_mode=False, show_outliers=True, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
     brain_region_names = []
     distances_l = []
