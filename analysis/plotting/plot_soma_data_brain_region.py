@@ -63,6 +63,7 @@ def get_data_for_brain_region(brain_regions_path, brain_region_labels_path, soma
             "soma_nearest_distance_BV": soma_data_in_region[:, 11] / 1e3,  # Convert nm to µm
             "soma_nearest_radius_BV": soma_data_in_region[:, 12] / 1e3,  # Convert nm to µm
             "soma_radius_ratio_min_max": soma_data_in_region[:, 13],  # Unitless
+            "soma_avg_radius": np.mean(soma_data_in_region[:, 6:8], axis=1) / 1e3,
         }
     return data_per_brain_region
 
@@ -358,25 +359,13 @@ def plot_soma_min_radius_per_brain_region(data_per_brain_region, output_dir, dar
 
 def plot_soma_avg_radius_per_brain_region(data_per_brain_region, output_dir, dark_mode=False, show_outliers=True, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
     brain_region_names = []
-    min_radii_l = []
-    min_radii_r = []
-    for brain_region_name, hemispheres in data_per_brain_region.items():
-        brain_region_names.append(brain_region_name)
-        min_radii_l.append(hemispheres['l']['soma_min_radius'])
-        min_radii_r.append(hemispheres['r']['soma_min_radius'])
-
-    max_radii_l = []
-    max_radii_r = []
-    for brain_region_name, hemispheres in data_per_brain_region.items():
-        brain_region_names.append(brain_region_name)
-        max_radii_l.append(hemispheres['l']['soma_max_radius'])
-        max_radii_r.append(hemispheres['r']['soma_max_radius'])
-
     avg_radii_l = []
     avg_radii_r = []
-    for i in range(len(max_radii_l)):
-        avg_radii_l.append([(e[0] + e[1]) / 2 for e in zip(min_radii_l[i], max_radii_l[i])])
-        avg_radii_r.append([(e[0] + e[1]) / 2 for e in zip(min_radii_r[i], max_radii_r[i])])
+    for brain_region_name, hemispheres in data_per_brain_region.items():
+        brain_region_names.append(brain_region_name)
+        avg_radii_l.append(hemispheres['l']['soma_avg_radius'])
+        avg_radii_r.append(hemispheres['r']['soma_avg_radius'])
+    
     
     plot_boxplot(avg_radii_l, avg_radii_r, brain_region_names, 
                  'Soma Radius (µm)', 'Soma Radius Distribution per Brain Region and Hemisphere',
