@@ -470,6 +470,7 @@ def main():
     plot_soma_nearest_distance_BV_per_brain_region(data_per_brain_region, output_dir, dark_mode=dark_mode, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
     plot_soma_nearest_radius_BV_per_brain_region(data_per_brain_region, output_dir, dark_mode=dark_mode, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
     plot_soma_radius_ratio_min_max_per_brain_region(data_per_brain_region, output_dir, dark_mode=dark_mode, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
+    plot_soma_avg_radius_per_brain_region(data_per_brain_region, output_dir, dark_mode=dark_mode, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
 
 
 if __name__ == "__main__":
