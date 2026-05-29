@@ -33,6 +33,7 @@ def get_data_for_brain_region(brain_areas_data_path, brain_region_labels_path, s
         brain_areas_data = json.load(f)
     print("Loaded brain region labels:", brain_region_labels)
     soma_data = np.load(soma_npy_path)
+    print("NUmber of valid somata in the dataset:", soma_data[soma_data[:, 5] > 0].shape[0])
     print("Loaded soma data with shape:", soma_data.shape)
     print(np.unique(soma_data[:,3]))  # Unique brain region labels in soma data
     data_per_brain_region = {}
