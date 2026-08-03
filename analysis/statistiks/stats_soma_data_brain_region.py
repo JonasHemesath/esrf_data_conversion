@@ -221,12 +221,18 @@ def kruskal_wallis_test(data_per_brain_region, metric):
     region_arrays = [region_data[name] for name in region_names]
     
     statistic, p_value = stats.kruskal(*region_arrays)
+
+    # Effect size: epsilon-squared for Kruskal-Wallis
+    n_total = sum(len(arr) for arr in region_arrays)
+    h = statistic
+    epsilon_squared = h / (n_total - 1)
     
     result_dict = {
         'metric': metric,
         'statistic': statistic,
         'p_value': p_value,
         'p_value_significant': 'Yes' if p_value < 0.05 else 'No',
+        'effect_size_epsilon_squared': epsilon_squared,
         'n_regions': len(region_names),
     }
     
