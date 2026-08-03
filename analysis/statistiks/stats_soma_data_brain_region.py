@@ -206,6 +206,33 @@ def hemisphere_comparison(data_per_brain_region, metric):
     
     return pd.DataFrame(hemisphere_results)
 
+def kruskal_wallis_test(data_per_brain_region, metric):
+    """Perform a Kruskal-Wallis test across brain regions for a given metric."""
+    
+    region_data = {}
+    for brain_region_name, hemispheres in data_per_brain_region.items():
+        combined_data = np.concatenate([
+            hemispheres['l'][metric],
+            hemispheres['r'][metric]
+        ])
+        region_data[brain_region_name] = combined_data
+    
+    region_names = list(region_data.keys())
+    region_arrays = [region_data[name] for name in region_names]
+    
+    statistic, p_value = stats.kruskal(*region_arrays)
+    
+    result_dict = {
+        'metric': metric,
+        'statistic': statistic,
+        'p_value': p_value,
+        'p_value_significant': 'Yes' if p_value < 0.05 else 'No',
+        'n_regions': len(region_names),
+    }
+    
+    return pd.DataFrame([result_dict])
+
+
 def pairwise_mann_whitney_test(data_per_brain_region, metric):
     """Perform pairwise Mann-Whitney U tests between different brain regions for a given metric"""
     
@@ -301,6 +328,13 @@ def main():
         summary_df = compute_summary_statistics(data_per_brain_region, metric)
         results_dict[f'{metric}_summary_stats'] = summary_df
         print(f"Computed summary statistics for {metric}")
+
+    # Perform omnibus Kruskal-Wallis test before pairwise Mann-Whitney U tests
+    print("\nPerforming Kruskal-Wallis tests across brain regions...")
+    for metric in metrics:
+        kruskal_df = kruskal_wallis_test(data_per_brain_region, metric)
+        results_dict[f'{metric}_kruskal_wallis'] = kruskal_df
+        print(f"Performed Kruskal-Wallis test for {metric}")
 
     # Perform pairwise Mann-Whitney U tests between different brain regions
     print("\nPerforming pairwise Mann-Whitney U tests between different brain regions...")
