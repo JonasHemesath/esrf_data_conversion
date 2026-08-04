@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FixedLocator, FixedFormatter
 from cloudvolume import CloudVolume
 import trimesh
 import json
@@ -181,7 +182,9 @@ def plot_violin(
         output_path = output_path.replace(".png", f"_quantiles_{int(quantiles_to_show[0]*100)}-{int(quantiles_to_show[1]*100)}.png")
     ax.set_yscale('log')
     ax.set_ylim(bottom=1)
-    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _: f'{y:g}'))
+    tick_values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    ax.yaxis.set_major_locator(FixedLocator(tick_values))
+    ax.yaxis.set_major_formatter(FixedFormatter([f'{v:g}' for v in tick_values]))
     plt.tight_layout()
     plt.savefig(output_path, dpi=300, bbox_inches="tight")
     plt.close()
