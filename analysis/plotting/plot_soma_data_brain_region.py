@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FixedLocator, FixedFormatter
 from cloudvolume import CloudVolume
 import trimesh
 import json
@@ -232,13 +233,16 @@ def plot_violin(
 
     ax.set_xticks(positions)
     ax.set_xticklabels(labels, rotation=90, fontsize=tick_fontsize)
-    ax.tick_params(axis="y", labelsize=tick_fontsize)
+    ax.tick_params(axis="y", which="both", labelsize=tick_fontsize, length=5)
     for spine in ['top', 'right']:
         ax.spines[spine].set_visible(False)
 
     if quantiles_to_show is not None:
         output_path = output_path.replace(".png", f"_quantiles_{int(quantiles_to_show[0]*100)}-{int(quantiles_to_show[1]*100)}.png")
-    plt.yscale('log')
+    ax.set_yscale('log')
+    tick_values = [1, 10]
+    ax.yaxis.set_major_locator(FixedLocator(tick_values))
+    ax.yaxis.set_major_formatter(FixedFormatter([f'{v:g}' for v in tick_values]))
     plt.tight_layout()
     plt.savefig(output_path, dpi=300, bbox_inches="tight")
     plt.close()
