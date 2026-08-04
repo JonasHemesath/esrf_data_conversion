@@ -362,6 +362,8 @@ def plot_branch_density_per_brain_region(data_per_brain_region, output_dir, dark
     ax.set_xticklabels(brain_region_names, rotation=90, fontsize=tick_fontsize)
     ax.tick_params(axis='y', labelsize=tick_fontsize)
     ax.legend()
+    for spine in ['top', 'right']:
+        ax.spines[spine].set_visible(False)
     
     plt.tight_layout()
     plt.savefig(make_output_path(output_dir, 'BV_branch_density_per_brain_region.png', dark_mode))
