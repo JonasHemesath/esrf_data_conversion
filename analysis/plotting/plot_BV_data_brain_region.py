@@ -381,7 +381,7 @@ def main():
     parser.add_argument('--left_color', type=color_type, default='0.7529,0.6471,0.3882', help='Color for left hemisphere (default: skyblue). Can be named color, hex, or RGB tuple like "0.5,0.5,0.5"')
     parser.add_argument('--right_color', type=color_type, default='0.3451,0.3137,0.6824', help='Color for right hemisphere (default: salmon). Can be named color, hex, or RGB tuple like "0.5,0.5,0.5"')
     parser.add_argument('--tick_fontsize', type=int, default=18, help='Font size for tick labels (default: 16)')
-    parser.add_argument('--title_fontsize', type=int, default=22, help='Font size for axis titles and plot title (default: 18)')
+    parser.add_argument('--title_fontsize', type=int, default=20, help='Font size for axis titles and plot title (default: 18)')
     parser.add_argument('--legend_fontsize', type=int, default=16, help='Font size for legend labels (default: 16)')
     args = parser.parse_args()
     show_outliers = args.show_outliers
