@@ -169,7 +169,7 @@ def plot_violin(
 
     
     ax.set_xlabel("Brain Region and Hemisphere", fontsize=title_fontsize)
-    ax.set_ylabel(ylabel, fontsize=title_fontsize)
+    ax.set_ylabel(f"{ylabel} (log scale)", fontsize=title_fontsize)
 
     ax.set_xticks(positions)
     ax.set_xticklabels(labels, rotation=90, fontsize=tick_fontsize)
@@ -179,7 +179,9 @@ def plot_violin(
 
     if quantiles_to_show is not None:
         output_path = output_path.replace(".png", f"_quantiles_{int(quantiles_to_show[0]*100)}-{int(quantiles_to_show[1]*100)}.png")
-    plt.yscale('log')
+    ax.set_yscale('log')
+    ax.set_ylim(bottom=1e-3)
+    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _: f'{y:g}'))
     plt.tight_layout()
     plt.savefig(output_path, dpi=300, bbox_inches="tight")
     plt.close()
