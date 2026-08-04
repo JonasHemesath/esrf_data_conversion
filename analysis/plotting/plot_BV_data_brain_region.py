@@ -337,7 +337,7 @@ def plot_histograms_for_region(data, brain_region_name, hemisphere, output_dir, 
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
     plt.close()
 
-def plot_branch_density_per_brain_region(data_per_brain_region, output_dir, dark_mode=False, left_color='skyblue', right_color='salmon', tick_fontsize=16, title_fontsize=18):
+def plot_branch_density_per_brain_region(data_per_brain_region, output_dir, dark_mode=False, left_color='skyblue', right_color='salmon', tick_fontsize=16, title_fontsize=18, legend_fontsize=16):
     brain_region_names = []
     densities_l = []
     densities_r = []
@@ -365,7 +365,7 @@ def plot_branch_density_per_brain_region(data_per_brain_region, output_dir, dark
     ax.set_xticks(x)
     ax.set_xticklabels(brain_region_names, rotation=90, fontsize=tick_fontsize)
     ax.tick_params(axis='y', labelsize=tick_fontsize)
-    ax.legend()
+    ax.legend(fontsize=legend_fontsize)
     for spine in ['top', 'right']:
         ax.spines[spine].set_visible(False)
     
