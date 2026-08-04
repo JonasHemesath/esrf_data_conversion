@@ -174,7 +174,7 @@ def plot_violin(
 
     ax.set_xticks(positions)
     ax.set_xticklabels(labels, rotation=90, fontsize=tick_fontsize)
-    ax.tick_params(axis="y", labelsize=tick_fontsize)
+    ax.tick_params(axis="y", labelsize=tick_fontsize, length=8)
     for spine in ['top', 'right']:
         ax.spines[spine].set_visible(False)
 
