@@ -94,6 +94,8 @@ def plot_soma_counts_per_brain_region(data_per_brain_region, output_dir, left_co
     ax.set_xticklabels(brain_region_names, rotation=90, fontsize=tick_fontsize)
     ax.tick_params(axis='y', labelsize=tick_fontsize)
     ax.legend(fontsize=legend_fontsize)
+    for spine in ['top', 'right']:
+        ax.spines[spine].set_visible(False)
     
     plt.tight_layout()
     if dark_mode:
@@ -137,6 +139,8 @@ def plot_soma_counts_per_brain_region_stacked_ref(data_per_brain_region, output_
     ax.set_xticklabels(brain_region_names, rotation=90, fontsize=tick_fontsize)
     ax.tick_params(axis='y', labelsize=tick_fontsize)
     ax.legend(fontsize=legend_fontsize)
+    for spine in ['top', 'right']:
+        ax.spines[spine].set_visible(False)
     
     plt.tight_layout()
     if dark_mode:
@@ -175,6 +179,8 @@ def plot_soma_density_per_brain_region(data_per_brain_region, output_dir, left_c
     ax.set_xticklabels(brain_region_names, rotation=90, fontsize=tick_fontsize)
     ax.tick_params(axis='y', labelsize=tick_fontsize)
     ax.legend(fontsize=legend_fontsize)
+    for spine in ['top', 'right']:
+        ax.spines[spine].set_visible(False)
     
     plt.tight_layout()
     plt.savefig(os.path.join(output_dir, 'soma_density_per_brain_region.png'))

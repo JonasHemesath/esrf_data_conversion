@@ -174,6 +174,8 @@ def plot_violin(
     ax.set_xticks(positions)
     ax.set_xticklabels(labels, rotation=90, fontsize=tick_fontsize)
     ax.tick_params(axis="y", labelsize=tick_fontsize)
+    for spine in ['top', 'right']:
+        ax.spines[spine].set_visible(False)
 
     if quantiles_to_show is not None:
         output_path = output_path.replace(".png", f"_quantiles_{int(quantiles_to_show[0]*100)}-{int(quantiles_to_show[1]*100)}.png")
@@ -254,6 +256,8 @@ def plot_boxplot(data_l, data_r, brain_region_names, ylabel, title, output_path,
     ax.set_xticks(positions)
     ax.set_xticklabels(labels, rotation=90, fontsize=tick_fontsize)
     ax.tick_params(axis='y', labelsize=tick_fontsize)
+    for spine in ['top', 'right']:
+        ax.spines[spine].set_visible(False)
     
     plt.tight_layout()
     plt.savefig(output_path)

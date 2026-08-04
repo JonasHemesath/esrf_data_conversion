@@ -104,6 +104,8 @@ def plot_soma_density_per_brain_region(data_per_brain_region, density_burek_path
     ax.set_xticklabels(brain_region_names, rotation=90, fontsize=tick_fontsize)
     ax.tick_params(axis='y', labelsize=tick_fontsize)
     ax.legend(fontsize=legend_fontsize)
+    for spine in ['top', 'right']:
+        ax.spines[spine].set_visible(False)
     
     plt.tight_layout()
     filename = 'soma_density_per_brain_region_burek_comp_dark.png' if dark_mode else 'soma_density_per_brain_region_burek_comp.png'
@@ -156,6 +158,8 @@ def plot_soma_density_per_brain_region_non_neurons_adjusted(data_per_brain_regio
     ax.set_xticklabels(brain_region_names, rotation=90, fontsize=tick_fontsize)
     ax.tick_params(axis='y', labelsize=tick_fontsize)
     ax.legend(fontsize=legend_fontsize)
+    for spine in ['top', 'right']:
+        ax.spines[spine].set_visible(False)
     
     plt.tight_layout()
     filename = 'soma_density_per_brain_region_burek_comp_adjusted_dark.png' if dark_mode else 'soma_density_per_brain_region_burek_comp_adjusted.png'

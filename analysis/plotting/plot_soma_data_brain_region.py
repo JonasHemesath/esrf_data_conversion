@@ -74,7 +74,7 @@ def make_output_path(output_dir, filename, dark_mode=False):
         return f"{base}_dark{ext}"
     return path
 
-def plot_soma_counts_per_brain_region(data_per_brain_region, output_dir, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
+def plot_soma_counts_per_brain_region(data_per_brain_region, output_dir, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12, legend_fontsize=10):
     brain_region_names = []
     soma_counts_l = []
     soma_counts_r = []
@@ -94,14 +94,16 @@ def plot_soma_counts_per_brain_region(data_per_brain_region, output_dir, left_co
     ax.set_xticks(x)
     ax.set_xticklabels(brain_region_names, rotation=90, fontsize=tick_fontsize)
     ax.tick_params(axis='y', labelsize=tick_fontsize)
-    ax.legend()
+    ax.legend(fontsize=legend_fontsize)
+    for spine in ['top', 'right']:
+        ax.spines[spine].set_visible(False)
     
     plt.tight_layout()
     plt.savefig(os.path.join(output_dir, 'soma_counts_per_brain_region.png'))
     plt.clf()
     plt.close()
 
-def plot_soma_density_per_brain_region(data_per_brain_region, output_dir, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
+def plot_soma_density_per_brain_region(data_per_brain_region, output_dir, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12, legend_fontsize=10):
     brain_region_names = []
     soma_densities_l = []
     soma_densities_r = []
@@ -129,7 +131,9 @@ def plot_soma_density_per_brain_region(data_per_brain_region, output_dir, left_c
     ax.set_xticks(x)
     ax.set_xticklabels(brain_region_names, rotation=90, fontsize=tick_fontsize)
     ax.tick_params(axis='y', labelsize=tick_fontsize)
-    ax.legend()
+    ax.legend(fontsize=legend_fontsize)
+    for spine in ['top', 'right']:
+        ax.spines[spine].set_visible(False)
     
     plt.tight_layout()
     plt.savefig(os.path.join(output_dir, 'soma_density_per_brain_region.png'))
@@ -273,6 +277,8 @@ def plot_boxplot(data_l, data_r, brain_region_names, ylabel, title, output_path,
     ax.set_xticks(positions)
     ax.set_xticklabels(labels, rotation=90, fontsize=tick_fontsize)
     ax.tick_params(axis='y', labelsize=tick_fontsize)
+    for spine in ['top', 'right']:
+        ax.spines[spine].set_visible(False)
     
     plt.tight_layout()
     plt.savefig(output_path)
@@ -432,6 +438,7 @@ def main():
     parser.add_argument('--right_color', type=color_type, default='0.3451,0.3137,0.6824', help='Color for right hemisphere (default: salmon). Can be named color, hex, or RGB tuple like "0.5,0.5,0.5"')
     parser.add_argument('--tick_fontsize', type=int, default=18, help='Font size for tick labels (default: 10)')
     parser.add_argument('--title_fontsize', type=int, default=22, help='Font size for axis titles and plot title (default: 12)')
+    parser.add_argument('--legends_fontsize', type=int, default=16, help='Font size for legends (default: 10)')
     args = parser.parse_args()
     show_outliers = args.show_outliers
     dark_mode = args.dark_mode
@@ -439,7 +446,7 @@ def main():
     right_color = args.right_color
     tick_fontsize = args.tick_fontsize
     title_fontsize = args.title_fontsize
-    
+    legend_fontsize = args.legends_fontsize
     if dark_mode:
         plt.style.use('dark_background')
     brain_regions_path = "/cajal/scratch/projects/xray/bm05/ng/zf13_hr2_brain_regions_v260409"
@@ -451,8 +458,8 @@ def main():
     data_per_brain_region = get_data_for_brain_region(brain_regions_path, brain_region_labels_path, soma_npy_path)
 
     # Do something with the retrieved data, e.g., plot it or save it to a file
-    plot_soma_counts_per_brain_region(data_per_brain_region, output_dir, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
-    plot_soma_density_per_brain_region(data_per_brain_region, output_dir, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
+    plot_soma_counts_per_brain_region(data_per_brain_region, output_dir, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize, legend_fontsize=legend_fontsize)
+    plot_soma_density_per_brain_region(data_per_brain_region, output_dir, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize, legend_fontsize=legend_fontsize)
     plot_soma_surface_area_per_brain_region(data_per_brain_region, output_dir, dark_mode=dark_mode, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
     plot_soma_volume_per_brain_region(data_per_brain_region, output_dir, dark_mode=dark_mode, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
     plot_soma_convex_hull_volume_per_brain_region(data_per_brain_region, output_dir, dark_mode=dark_mode, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
