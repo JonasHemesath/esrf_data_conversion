@@ -180,7 +180,7 @@ def plot_violin(
     if quantiles_to_show is not None:
         output_path = output_path.replace(".png", f"_quantiles_{int(quantiles_to_show[0]*100)}-{int(quantiles_to_show[1]*100)}.png")
     ax.set_yscale('log')
-    ax.set_ylim(bottom=1e-3)
+    ax.set_ylim(bottom=1)
     ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _: f'{y:g}'))
     plt.tight_layout()
     plt.savefig(output_path, dpi=300, bbox_inches="tight")
