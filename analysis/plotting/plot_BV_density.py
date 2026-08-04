@@ -60,7 +60,7 @@ def make_output_path(output_dir, filename, dark_mode=False):
     return path
 
 
-def plot_volume_density_barplot(bv_density_brain_region_dict, brain_region_labels, output_dir, dark_mode=False, left_color='skyblue', right_color='salmon', tick_fontsize=16, title_fontsize=18):
+def plot_volume_density_barplot(bv_density_brain_region_dict, brain_region_labels, output_dir, dark_mode=False, left_color='skyblue', right_color='salmon', tick_fontsize=16, title_fontsize=18, legend_fontsize=16):
     brain_region_names = []
     densities_l = []
     densities_r = []
@@ -87,7 +87,9 @@ def plot_volume_density_barplot(bv_density_brain_region_dict, brain_region_label
     ax.set_xticks(x)
     ax.set_xticklabels(brain_region_names, rotation=90, fontsize=tick_fontsize)
     ax.tick_params(axis='y', labelsize=tick_fontsize)
-    ax.legend()
+    ax.legend(fontsize=legend_fontsize)
+    for spine in ['top', 'right']:
+        ax.spines[spine].set_visible(False)
     
     plt.tight_layout()
     plt.savefig(make_output_path(output_dir, 'BV_volume_density_per_brain_region.png', dark_mode))
@@ -147,7 +149,7 @@ def main():
     brain_regions_path = "/cajal/scratch/projects/xray/bm05/ng/zf13_hr2_brain_regions_v260409"
     brain_region_labels_path = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/brain_regions/brain_region_labels_v260409.json"
     data_output_path = "/cajal/scratch/projects/xray/bm05/ng/BV_testing/260304_Myelin_BV_multires_multipath_linearLR_BV_masked_brain_regions/analysis_results/"
-    plot_output_path = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/plotting/plots/BV_density_per_brain_region/"
+    plot_output_path = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/plotting/plots/BV_density_per_brain_region_new/"
     brain_region_mip = 5
 
     os.makedirs(data_output_path, exist_ok=True)
@@ -188,7 +190,7 @@ def main():
         with open(os.path.join(data_output_path, "BV_density_per_brain_region.json"), "w") as f:
             json.dump(bv_density_brain_region_dict, f)
 
-    plot_volume_density_barplot(bv_density_brain_region_dict, brain_region_labels, plot_output_path, dark_mode=dark_mode, left_color=(0.7529, 0.6471, 0.3882), right_color=(0.3451, 0.3137, 0.6824), tick_fontsize=16, title_fontsize=18)
+    plot_volume_density_barplot(bv_density_brain_region_dict, brain_region_labels, plot_output_path, dark_mode=dark_mode, left_color=(0.7529, 0.6471, 0.3882), right_color=(0.3451, 0.3137, 0.6824), tick_fontsize=18, title_fontsize=22, legend_fontsize=16)
     print("All done!")
 
 if __name__ == "__main__":

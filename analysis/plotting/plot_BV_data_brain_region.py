@@ -378,6 +378,7 @@ def main():
     parser.add_argument('--right_color', type=color_type, default='0.3451,0.3137,0.6824', help='Color for right hemisphere (default: salmon). Can be named color, hex, or RGB tuple like "0.5,0.5,0.5"')
     parser.add_argument('--tick_fontsize', type=int, default=18, help='Font size for tick labels (default: 16)')
     parser.add_argument('--title_fontsize', type=int, default=22, help='Font size for axis titles and plot title (default: 18)')
+    parser.add_argument('--legend_fontsize', type=int, default=16, help='Font size for legend labels (default: 16)')
     args = parser.parse_args()
     show_outliers = args.show_outliers
     dark_mode = args.dark_mode
@@ -385,7 +386,7 @@ def main():
     right_color = args.right_color
     tick_fontsize = args.tick_fontsize
     title_fontsize = args.title_fontsize
-    
+    legend_fontsize = args.legend_fontsize
     if dark_mode:
         plt.style.use('dark_background')
     
@@ -410,7 +411,7 @@ def main():
                                      tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
     
     # Plot branch density
-    plot_branch_density_per_brain_region(data_per_brain_region, output_dir, dark_mode=dark_mode, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
+    plot_branch_density_per_brain_region(data_per_brain_region, output_dir, dark_mode=dark_mode, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize, legend_fontsize=legend_fontsize)
 
 
 if __name__ == "__main__":

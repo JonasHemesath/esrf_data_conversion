@@ -68,7 +68,7 @@ def get_data_for_brain_region(brain_regions_path, brain_region_labels_path, soma
 
 
 
-def plot_soma_density_per_brain_region(data_per_brain_region, density_burek_path, output_dir, dark_mode=False, left_color='skyblue', right_color='salmon', comp_color='lightgray', tick_fontsize=10, title_fontsize=12):
+def plot_soma_density_per_brain_region(data_per_brain_region, density_burek_path, output_dir, dark_mode=False, left_color='skyblue', right_color='salmon', comp_color='lightgray', tick_fontsize=10, title_fontsize=12, legend_fontsize=16):
     brain_region_names = []
     soma_densities_l = []
     soma_densities_r = []
@@ -103,7 +103,7 @@ def plot_soma_density_per_brain_region(data_per_brain_region, density_burek_path
     ax.set_xticks(x)
     ax.set_xticklabels(brain_region_names, rotation=90, fontsize=tick_fontsize)
     ax.tick_params(axis='y', labelsize=tick_fontsize)
-    ax.legend()
+    ax.legend(fontsize=legend_fontsize)
     
     plt.tight_layout()
     filename = 'soma_density_per_brain_region_burek_comp_dark.png' if dark_mode else 'soma_density_per_brain_region_burek_comp.png'
@@ -111,7 +111,7 @@ def plot_soma_density_per_brain_region(data_per_brain_region, density_burek_path
     plt.clf()
     plt.close()
 
-def plot_soma_density_per_brain_region_non_neurons_adjusted(data_per_brain_region, density_burek_path, output_dir, dark_mode=False, left_color='skyblue', right_color='salmon', comp_color='lightgray', tick_fontsize=10, title_fontsize=12):
+def plot_soma_density_per_brain_region_non_neurons_adjusted(data_per_brain_region, density_burek_path, output_dir, dark_mode=False, left_color='skyblue', right_color='salmon', comp_color='lightgray', tick_fontsize=10, title_fontsize=12, legend_fontsize=16):
     ratios = {'HVC': {"neurons": 55226759,
         "non_neurons": 23316119}, 'LMAN': {"neurons": 55226759,
         "non_neurons": 23316119}, 'RA': {"neurons": 55226759,
@@ -155,7 +155,7 @@ def plot_soma_density_per_brain_region_non_neurons_adjusted(data_per_brain_regio
     ax.set_xticks(x)
     ax.set_xticklabels(brain_region_names, rotation=90, fontsize=tick_fontsize)
     ax.tick_params(axis='y', labelsize=tick_fontsize)
-    ax.legend()
+    ax.legend(fontsize=legend_fontsize)
     
     plt.tight_layout()
     filename = 'soma_density_per_brain_region_burek_comp_adjusted_dark.png' if dark_mode else 'soma_density_per_brain_region_burek_comp_adjusted.png'
@@ -171,8 +171,9 @@ def main():
     parser.add_argument('--right_color', type=color_type, default='0.3451,0.3137,0.6824', help='Color for right hemisphere (default: salmon). Can be named color, hex, or RGB tuple like "0.5,0.5,0.5"')
     #parser.add_argument('--comp_color', type=color_type, default='0.7490,0.4118,0.2588', help='Color for comparison (default: lightgray). Can be named color, hex, or RGB tuple like "0.5,0.5,0.5"')
     parser.add_argument('--comp_color', type=color_type, default='orange', help='Color for comparison (default: lightgray). Can be named color, hex, or RGB tuple like "0.5,0.5,0.5"')
-    parser.add_argument('--tick_fontsize', type=int, default=16, help='Font size for tick labels (default: 10)')
-    parser.add_argument('--title_fontsize', type=int, default=18, help='Font size for axis titles and plot title (default: 12)')
+    parser.add_argument('--tick_fontsize', type=int, default=18, help='Font size for tick labels (default: 10)')
+    parser.add_argument('--title_fontsize', type=int, default=22, help='Font size for axis titles and plot title (default: 12)')
+    parser.add_argument('--legend_fontsize', type=int, default=16, help='Font size for legend labels (default: 16)')
     args = parser.parse_args()
     show_outliers = args.show_outliers
     dark_mode = args.dark_mode
@@ -181,6 +182,7 @@ def main():
     comp_color = args.comp_color
     tick_fontsize = args.tick_fontsize
     title_fontsize = args.title_fontsize
+    legend_fontsize = args.legend_fontsize
     
     if dark_mode:
         plt.style.use('dark_background')
@@ -188,15 +190,15 @@ def main():
     brain_region_labels_path = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/brain_regions/brain_region_labels_v260409.json"
     density_burek_path = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/brain_regions/soma_density_burek_et_al.json"
     soma_npy_path = "/cajal/scratch/projects/xray/bm05/ng/instances/new_04_2026/260306_Soma_distance_transform_multires_multipath_linearLR_soma_masked_260421/all_soma_data/all_soma_data_260505_with_closest_for_regions.npy"
-    output_dir = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/plotting/plots/soma_data_per_brain_region"
+    output_dir = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/plotting/plots/soma_data_per_brain_region_new"
     os.makedirs(output_dir, exist_ok=True)
 
     data_per_brain_region = get_data_for_brain_region(brain_regions_path, brain_region_labels_path, soma_npy_path)
 
     # Do something with the retrieved data, e.g., plot it or save it to a file
     
-    plot_soma_density_per_brain_region(data_per_brain_region, density_burek_path, output_dir, dark_mode=dark_mode, left_color=left_color, right_color=right_color, comp_color=comp_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
-    plot_soma_density_per_brain_region_non_neurons_adjusted(data_per_brain_region, density_burek_path, output_dir, dark_mode=dark_mode, left_color=left_color, right_color=right_color, comp_color=comp_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
+    plot_soma_density_per_brain_region(data_per_brain_region, density_burek_path, output_dir, dark_mode=dark_mode, left_color=left_color, right_color=right_color, comp_color=comp_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize, legend_fontsize=legend_fontsize)
+    plot_soma_density_per_brain_region_non_neurons_adjusted(data_per_brain_region, density_burek_path, output_dir, dark_mode=dark_mode, left_color=left_color, right_color=right_color, comp_color=comp_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize, legend_fontsize=legend_fontsize)
 
     
 

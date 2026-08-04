@@ -73,7 +73,7 @@ def make_output_path(output_dir, filename, dark_mode=False):
         return f"{base}_dark{ext}"
     return path
 
-def plot_soma_counts_per_brain_region(data_per_brain_region, output_dir, left_color='skyblue', right_color='salmon', tick_fontsize=16, title_fontsize=18, dark_mode=False):
+def plot_soma_counts_per_brain_region(data_per_brain_region, output_dir, left_color='skyblue', right_color='salmon', tick_fontsize=16, title_fontsize=18, dark_mode=False, legend_fontsize=16):
     brain_region_names = []
     soma_counts = []
     ref_soma_counts = []
@@ -93,7 +93,7 @@ def plot_soma_counts_per_brain_region(data_per_brain_region, output_dir, left_co
     ax.set_xticks(x)
     ax.set_xticklabels(brain_region_names, rotation=90, fontsize=tick_fontsize)
     ax.tick_params(axis='y', labelsize=tick_fontsize)
-    ax.legend()
+    ax.legend(fontsize=legend_fontsize)
     
     plt.tight_layout()
     if dark_mode:
@@ -103,7 +103,7 @@ def plot_soma_counts_per_brain_region(data_per_brain_region, output_dir, left_co
     plt.clf()
     plt.close()
 
-def plot_soma_counts_per_brain_region_stacked_ref(data_per_brain_region, output_dir, our_color='skyblue', neuron_color='salmon', non_neuron_color='lightsalmon', tick_fontsize=10, title_fontsize=12, dark_mode=False):
+def plot_soma_counts_per_brain_region_stacked_ref(data_per_brain_region, output_dir, our_color='skyblue', neuron_color='salmon', non_neuron_color='lightsalmon', tick_fontsize=10, title_fontsize=12, dark_mode=False, legend_fontsize=16):
     """
     Plot soma counts with our data as conventional bars and reference data as stacked bars.
     Reference data is split into neurons and non-neurons with different shading.
@@ -136,7 +136,7 @@ def plot_soma_counts_per_brain_region_stacked_ref(data_per_brain_region, output_
     ax.set_xticks(x)
     ax.set_xticklabels(brain_region_names, rotation=90, fontsize=tick_fontsize)
     ax.tick_params(axis='y', labelsize=tick_fontsize)
-    ax.legend()
+    ax.legend(fontsize=legend_fontsize)
     
     plt.tight_layout()
     if dark_mode:
@@ -146,7 +146,7 @@ def plot_soma_counts_per_brain_region_stacked_ref(data_per_brain_region, output_
     plt.clf()
     plt.close()
 
-def plot_soma_density_per_brain_region(data_per_brain_region, output_dir, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12):
+def plot_soma_density_per_brain_region(data_per_brain_region, output_dir, left_color='skyblue', right_color='salmon', tick_fontsize=10, title_fontsize=12, legend_fontsize=16):
     brain_region_names = []
     soma_densities_l = []
     soma_densities_r = []
@@ -174,7 +174,7 @@ def plot_soma_density_per_brain_region(data_per_brain_region, output_dir, left_c
     ax.set_xticks(x)
     ax.set_xticklabels(brain_region_names, rotation=90, fontsize=tick_fontsize)
     ax.tick_params(axis='y', labelsize=tick_fontsize)
-    ax.legend()
+    ax.legend(fontsize=legend_fontsize)
     
     plt.tight_layout()
     plt.savefig(os.path.join(output_dir, 'soma_density_per_brain_region.png'))
@@ -191,8 +191,9 @@ def main():
     #parser.add_argument('--left_color', type=color_type, default='0.7529,0.6471,0.3882', help='Color for left hemisphere (default: skyblue). Can be named color, hex, or RGB tuple like "0.5,0.5,0.5"')
     parser.add_argument('--left_color', type=color_type, default='0.3451,0.3137,0.6824', help='Color for left hemisphere (default: skyblue). Can be named color, hex, or RGB tuple like "0.5,0.5,0.5"')
     parser.add_argument('--right_color', type=color_type, default='darkorange', help='Color for right hemisphere (default: salmon). Can be named color, hex, or RGB tuple like "0.5,0.5,0.5"')
-    parser.add_argument('--tick_fontsize', type=int, default=16, help='Font size for tick labels (default: 10)')
-    parser.add_argument('--title_fontsize', type=int, default=18, help='Font size for axis titles and plot title (default: 12)')
+    parser.add_argument('--tick_fontsize', type=int, default=18, help='Font size for tick labels (default: 10)')
+    parser.add_argument('--title_fontsize', type=int, default=22, help='Font size for axis titles and plot title (default: 12)')
+    parser.add_argument('--legend_fontsize', type=int, default=16, help='Font size for legend labels (default: 16)')
     args = parser.parse_args()
     show_outliers = args.show_outliers
     dark_mode = args.dark_mode
@@ -202,6 +203,7 @@ def main():
     noneuron_color = right_color
     tick_fontsize = args.tick_fontsize
     title_fontsize = args.title_fontsize
+    legend_fontsize = args.legend_fontsize
     
     if dark_mode:
         plt.style.use('dark_background')
@@ -209,14 +211,14 @@ def main():
     brain_region_ref_data_path = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/brain_regions/brain_areas_Olkowicz_et_al.json"
     brain_region_labels_path = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/brain_regions/brain_areas_labels_for Olkowicz.json"
     soma_npy_path = "/cajal/scratch/projects/xray/bm05/ng/instances/new_04_2026/260306_Soma_distance_transform_multires_multipath_linearLR_soma_masked_260421/all_soma_data/all_soma_data_260511_brain_areas.npy"
-    output_dir = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/plotting/plots/soma_number_comparison_Olkowicz"
+    output_dir = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/plotting/plots/soma_number_comparison_Olkowicz_new"
     os.makedirs(output_dir, exist_ok=True)
 
     data_per_brain_region = get_data_for_brain_region(brain_region_ref_data_path, brain_region_labels_path, soma_npy_path)
 
     # Do something with the retrieved data, e.g., plot it or save it to a file
-    plot_soma_counts_per_brain_region(data_per_brain_region, output_dir, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize, dark_mode=dark_mode)
-    plot_soma_counts_per_brain_region_stacked_ref(data_per_brain_region, output_dir, our_color=left_color, neuron_color=right_color, non_neuron_color=noneuron_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize, dark_mode=dark_mode)
+    plot_soma_counts_per_brain_region(data_per_brain_region, output_dir, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize, dark_mode=dark_mode, legend_fontsize=legend_fontsize)
+    plot_soma_counts_per_brain_region_stacked_ref(data_per_brain_region, output_dir, our_color=left_color, neuron_color=right_color, non_neuron_color=noneuron_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize, dark_mode=dark_mode, legend_fontsize=legend_fontsize)
 
 
 if __name__ == "__main__":
