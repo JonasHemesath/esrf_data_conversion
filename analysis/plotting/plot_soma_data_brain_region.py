@@ -140,7 +140,7 @@ def plot_violin(
     data_l, data_r, brain_region_names, ylabel, title, output_path,
     dark_mode=False, show_outliers=False,
     left_color='skyblue', right_color='salmon',
-    tick_fontsize=10, title_fontsize=12, quantiles_to_show=[0.00, 0.99]
+    tick_fontsize=10, title_fontsize=12, quantiles_to_show=None
 ):
     """
     data_l/data_r: lists of 1D arrays (can be empty). brain_region_names matches these lists.
@@ -232,7 +232,7 @@ def plot_violin(
 
     if quantiles_to_show is not None:
         output_path = output_path.replace(".png", f"_quantiles_{int(quantiles_to_show[0]*100)}-{int(quantiles_to_show[1]*100)}.png")
-
+    plt.yscale('log')
     plt.tight_layout()
     plt.savefig(output_path, dpi=300, bbox_inches="tight")
     plt.close()
@@ -443,7 +443,7 @@ def main():
     brain_regions_path = "/cajal/scratch/projects/xray/bm05/ng/zf13_hr2_brain_regions_v260409"
     brain_region_labels_path = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/brain_regions/brain_region_labels_v260409.json"
     soma_npy_path = "/cajal/scratch/projects/xray/bm05/ng/instances/new_04_2026/260306_Soma_distance_transform_multires_multipath_linearLR_soma_masked_260421/all_soma_data/all_soma_data_260505_with_closest_for_regions.npy"
-    output_dir = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/plotting/plots/soma_data_per_brain_region"
+    output_dir = "/cajal/nvmescratch/users/johem/esrf_data_conversion/analysis/plotting/plots/soma_data_per_brain_region_log_scale"
     os.makedirs(output_dir, exist_ok=True)
 
     data_per_brain_region = get_data_for_brain_region(brain_regions_path, brain_region_labels_path, soma_npy_path)
