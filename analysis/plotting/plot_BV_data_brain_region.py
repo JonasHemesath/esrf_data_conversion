@@ -170,7 +170,7 @@ def plot_violin(
 
     
     ax.set_xlabel("Brain Region and Hemisphere", fontsize=title_fontsize)
-    ax.set_ylabel(f"{ylabel} (log scale)", fontsize=title_fontsize)
+    #ax.set_ylabel(f"{ylabel} (log scale)", fontsize=title_fontsize)
 
     ax.set_xticks(positions)
     ax.set_xticklabels(labels, rotation=90, fontsize=tick_fontsize)
