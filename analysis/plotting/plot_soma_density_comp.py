@@ -198,6 +198,9 @@ def main():
     os.makedirs(output_dir, exist_ok=True)
 
     data_per_brain_region = get_data_for_brain_region(brain_regions_path, brain_region_labels_path, soma_npy_path)
+    for brain_region_name, hemispheres in data_per_brain_region.items():
+        for hemisphere, data in hemispheres.items():
+            print(f"{brain_region_name} - {hemisphere.upper()} Hemisphere: Soma Count = {data['soma_count']}, Brain Region Volume = {data['brain_region_volume']:.2f} µm³")
 
     # Do something with the retrieved data, e.g., plot it or save it to a file
     
