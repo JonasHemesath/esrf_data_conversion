@@ -12,7 +12,7 @@ def main():
 
     
 
-    np_vol = np.load(args.output)
+    np_vol = np.load(args.output, allow_pickle=True)
     tifffile.imwrite(args.output.replace('.npy', '.tif'), np_vol, dtype=np.float32, imagej=True)
 
 
