@@ -82,7 +82,7 @@ def process_block_worker(args):
      lz0, lz1, ly0, ly1, lx0, lx1, out_path, nz, ny, nx) = args
     try:
         vol = CloudVolume(input_url, progress=False, mip=0)
-        arr = read_cutout_try(vol, z0, z1, y0, y1, x0, x1)
+        arr = np.squeeze(read_cutout_try(vol, z0, z1, y0, y1, x0, x1))
 
         if arr.ndim == 4:
             if arr.shape[-1] <= 4:
@@ -92,8 +92,8 @@ def process_block_worker(args):
         else:
             occ = arr.astype(bool)
 
-        # open memmap in r+ and write results for this block
-        mm = np.memmap(out_path, dtype=np.float32, mode='r+', shape=(nz, ny, nx))
+        # open .npy-backed memmap in r+ and write results for this block
+        mm = np.lib.format.open_memmap(out_path, mode='r+', dtype=np.float32, shape=(nz, ny, nx))
         for li_z in range(lz0, lz1):
             oz0 = (li_z - lz0) * scale
             oz1 = oz0 + scale
@@ -134,12 +134,13 @@ def compute_lowres_density(vol, scale: int, out_path: str, lowres_chunk: Tuple[i
     nz = math.ceil(zsize / scale)
     ny = math.ceil(ysize / scale)
     nx = math.ceil(xsize / scale)
+    print(f"Volume size: {zsize}x{ysize}x{xsize}, downsampled to {nz}x{ny}x{nx} with scale {scale}")
 
-    # create memmap for output density values (float32, values 0..1)
+    # create .npy-backed memmap for output density values (float32, values 0..1)
     out_dir = os.path.dirname(out_path)
     if out_dir and not os.path.exists(out_dir):
         os.makedirs(out_dir)
-    out = np.memmap(out_path, dtype=np.float32, mode='w+', shape=(nz, ny, nx))
+    out = np.lib.format.open_memmap(out_path, mode='w+', dtype=np.float32, shape=(nz, ny, nx))
 
     cz, cy, cx = lowres_chunk
     blocks = []
@@ -163,7 +164,7 @@ def compute_lowres_density(vol, scale: int, out_path: str, lowres_chunk: Tuple[i
     if workers is None or workers <= 1:
         # serial execution using same logic as before
         for (lz0, lz1, z0, z1, ly0, ly1, y0, y1, lx0, lx1, x0, x1) in blocks:
-            arr = read_cutout_try(vol, z0, z1, y0, y1, x0, x1)
+            arr = np.squeeze(read_cutout_try(vol, z0, z1, y0, y1, x0, x1))
             if arr.ndim == 4:
                 if arr.shape[-1] <= 4:
                     occ = np.any(arr, axis=-1)
