@@ -61,20 +61,34 @@ def _get_volume_size(vol) -> Tuple[int,int,int]:
 
 
 def read_cutout_try(vol, z0, z1, y0, y1, x0, x1):
-    """Try several CloudVolume indexing patterns until one succeeds."""
-    # prefer z,y,x ordering
-    tries = [
-        lambda: vol[z0:z1, y0:y1, x0:x1],
-        lambda: vol[x0:x1, y0:y1, z0:z1],
-        lambda: vol.get_cutout((x0, x1), (y0, y1), (z0, z1)),
-    ]
-    for fn in tries:
-        try:
-            arr = fn()
-            return np.asarray(arr)
-        except Exception:
-            continue
-    raise RuntimeError('Unable to read cutout with available CloudVolume API patterns')
+    """Read a CloudVolume cutout in fixed z,y,x ordering only."""
+    try:
+        arr = vol[z0:z1, y0:y1, x0:x1]
+        return np.asarray(arr)
+    except Exception as exc:
+        raise RuntimeError('Unable to read cutout in z,y,x order') from exc
+
+
+def normalize_seg_block(arr):
+    """Normalize a block into a 3D boolean mask with shape (z,y,x)."""
+    arr = np.asarray(arr)
+    if arr.ndim == 4:
+        if arr.shape[-1] == 1:
+            arr = arr[..., 0]
+        elif arr.shape[0] == 1:
+            arr = arr[0, ...]
+        elif arr.shape[-1] in (2, 3, 4):
+            return np.any(arr, axis=-1)
+        elif arr.shape[0] in (2, 3, 4):
+            return np.any(arr, axis=0)
+        else:
+            raise RuntimeError(
+                f'Unexpected 4D cutout shape {arr.shape}; expected channel-first or channel-last with <=4 channels')
+
+    if arr.ndim != 3:
+        raise RuntimeError(f'Unexpected cutout shape {arr.shape}; expected 3D or 4D with channels')
+
+    return arr.astype(bool)
 
 
 def process_block_worker(args):
@@ -82,15 +96,8 @@ def process_block_worker(args):
      lz0, lz1, ly0, ly1, lx0, lx1, out_path, nz, ny, nx) = args
     try:
         vol = CloudVolume(input_url, progress=False, mip=0)
-        arr = np.squeeze(read_cutout_try(vol, z0, z1, y0, y1, x0, x1))
-
-        if arr.ndim == 4:
-            if arr.shape[-1] <= 4:
-                occ = np.any(arr, axis=-1)
-            else:
-                occ = arr.squeeze().astype(bool)
-        else:
-            occ = arr.astype(bool)
+        arr = read_cutout_try(vol, z0, z1, y0, y1, x0, x1)
+        occ = normalize_seg_block(arr)
 
         # open .npy-backed memmap in r+ and write results for this block
         mm = np.lib.format.open_memmap(out_path, mode='r+', dtype=np.float32, shape=(nz, ny, nx))
@@ -164,14 +171,8 @@ def compute_lowres_density(vol, scale: int, out_path: str, lowres_chunk: Tuple[i
     if workers is None or workers <= 1:
         # serial execution using same logic as before
         for (lz0, lz1, z0, z1, ly0, ly1, y0, y1, lx0, lx1, x0, x1) in blocks:
-            arr = np.squeeze(read_cutout_try(vol, z0, z1, y0, y1, x0, x1))
-            if arr.ndim == 4:
-                if arr.shape[-1] <= 4:
-                    occ = np.any(arr, axis=-1)
-                else:
-                    occ = arr.squeeze().astype(bool)
-            else:
-                occ = arr.astype(bool)
+            arr = read_cutout_try(vol, z0, z1, y0, y1, x0, x1)
+            occ = normalize_seg_block(arr)
 
             for li_z in range(lz0, lz1):
                 oz0 = (li_z - lz0) * scale
