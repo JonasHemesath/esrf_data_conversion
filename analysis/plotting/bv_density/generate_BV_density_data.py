@@ -129,10 +129,11 @@ def process_block_worker(args):
         return 0
 
 
-def compute_lowres_density(vol, scale: int, out_path: str, lowres_chunk: Tuple[int,int,int]=(64,512,512), workers: int = 1):
+def compute_lowres_density(vol, vol_path, scale: int, out_path: str, lowres_chunk: Tuple[int,int,int]=(64,512,512), workers: int = 1):
     """Compute low-res density and write to a memmap at out_path.
 
     - vol: CloudVolume instance
+    - vol_path: Path to the volume
     - scale: downsample factor (integer, e.g. 128)
     - out_path: .npy path for memmap
     - lowres_chunk: processing chunk size in low-res voxels (z,y,x)
@@ -205,7 +206,7 @@ def compute_lowres_density(vol, scale: int, out_path: str, lowres_chunk: Tuple[i
         # parallel execution: build args for worker processes
         worker_args = []
         for (lz0, lz1, z0, z1, ly0, ly1, y0, y1, lx0, lx1, x0, x1) in blocks:
-            worker_args.append((vol.path, scale, z0, z1, y0, y1, x0, x1,
+            worker_args.append((vol_path, scale, z0, z1, y0, y1, x0, x1,
                                 lz0, lz1, ly0, ly1, lx0, lx1, out_path, nz, ny, nx))
 
         with mp.Pool(processes=workers) as pool:
@@ -230,7 +231,7 @@ def main():
 
     scale = 2 ** args.exp
     vol = CloudVolume(args.input, progress=False, mip=0)
-    out = compute_lowres_density(vol, scale, args.output, lowres_chunk=tuple(args.chunk), workers=args.workers)
+    out = compute_lowres_density(vol, args.input, scale, args.output, lowres_chunk=tuple(args.chunk), workers=args.workers)
     print('Wrote low-res density memmap to', out)
 
     np_vol = np.load(args.output, mmap_mode='r')
