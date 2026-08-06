@@ -48,7 +48,7 @@ def _get_volume_size(vol) -> Tuple[int,int,int]:
                 continue
             if len(s) == 3:
                 # assume (z,y,x) or (x,y,z) - try to detect
-                if s[0] > 10000:  # likely z is first (rare)
+                if s[0] > 10000:  # likely z is first (rare)s
                     size = tuple(map(int, s))
                 else:
                     size = (int(s[2]), int(s[1]), int(s[0]))
