@@ -63,7 +63,7 @@ def _get_volume_size(vol) -> Tuple[int,int,int]:
 def read_cutout_try(vol, z0, z1, y0, y1, x0, x1):
     """Read a CloudVolume cutout in fixed z,y,x ordering only."""
     try:
-        arr = vol[z0:z1, y0:y1, x0:x1]
+        arr = vol[x0:x1, y0:y1, z0:z1]
         return np.asarray(arr)
     except Exception as exc:
         raise RuntimeError('Unable to read cutout in z,y,x order') from exc
