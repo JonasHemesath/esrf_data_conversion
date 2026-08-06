@@ -19,7 +19,7 @@ def main():
     if args.dtype == 'uint16':
         np_vol = np.clip(np_vol, 0, args.conv_max)
         np_vol = (np_vol / args.conv_max * 65535).astype(np.uint16)
-    tifffile.imwrite(args.output, np_vol, dtype=np.float32, imagej=True)
+        tifffile.imwrite(args.output, np_vol, dtype=np.uint16, imagej=True)
 
 
 if __name__ == '__main__':
