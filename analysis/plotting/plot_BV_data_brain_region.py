@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.patches import Patch
 from matplotlib.ticker import FixedLocator, FixedFormatter
 from cloudvolume import CloudVolume
 import trimesh
@@ -92,9 +93,10 @@ def plot_violin(
     data_l/data_r: lists of 1D arrays (can be empty). brain_region_names matches these lists.
     """
     data = []
-    labels = []
     positions = []
     colors = []
+    region_positions = []
+    region_labels = []
 
     pos = 0.0
     for i, name in enumerate(brain_region_names):
@@ -114,24 +116,25 @@ def plot_violin(
             if q_r is not None:
                 rvals = rvals[(rvals >= q_r[0]) & (rvals <= q_r[1])]
 
-        # Add left group if there is data
+        region_group_positions = []
+
         if lvals.size > 0:
             data.append(lvals)
-            labels.append(f"{name} L")
             positions.append(pos)
+            region_group_positions.append(pos)
             colors.append(left_color)
             pos += 1.0
 
-        # Add right group if there is data
         if rvals.size > 0:
             data.append(rvals)
-            labels.append(f"{name} R")
             positions.append(pos)
+            region_group_positions.append(pos)
             colors.append(right_color)
             pos += 1.0
 
-        # extra spacing between regions (only if at least one side existed)
-        if (lvals.size > 0) or (rvals.size > 0):
+        if region_group_positions:
+            region_positions.append(np.mean(region_group_positions))
+            region_labels.append(name)
             pos += 0.5
 
     if len(data) == 0:
@@ -169,12 +172,19 @@ def plot_violin(
             vp[k].set_linewidth(1.5)
 
     
-    ax.set_xlabel("Brain Region and Hemisphere", fontsize=title_fontsize)
+    ax.set_xlabel("Brain Region", fontsize=title_fontsize)
     ax.set_ylabel(f"{ylabel}", fontsize=title_fontsize)
 
-    ax.set_xticks(positions)
-    ax.set_xticklabels(labels, rotation=90, fontsize=tick_fontsize)
+    ax.set_xticks(region_positions)
+    ax.set_xticklabels(region_labels, rotation=90, fontsize=tick_fontsize)
     ax.tick_params(axis="y", which="both", labelsize=tick_fontsize, length=5)
+    ax.legend(
+        handles=[
+            Patch(facecolor=left_color, label="Left Hemisphere"),
+            Patch(facecolor=right_color, label="Right Hemisphere"),
+        ],
+        fontsize=title_fontsize,
+    )
     for spine in ['top', 'right']:
         ax.spines[spine].set_visible(False)
 
