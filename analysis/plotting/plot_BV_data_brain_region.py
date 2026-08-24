@@ -282,18 +282,18 @@ def plot_boxplot(data_l, data_r, brain_region_names, ylabel, title, output_path,
     plt.clf()
     plt.close()
 
-def plot_radii_violin(data_per_brain_region, output_dir, dark_mode=False, show_outliers=True, left_color='skyblue', right_color='salmon', tick_fontsize=16, title_fontsize=18):
-    brain_region_names = []
-    radii_l = []
-    radii_r = []
-    for brain_region_name, hemispheres in data_per_brain_region.items():
-        brain_region_names.append(brain_region_name)
-        radii_l.append(hemispheres['l']['radii'])
-        radii_r.append(hemispheres['r']['radii'])
-    
-    plot_violin(radii_l, radii_r, brain_region_names, 
-                'Blood Vessel Radius (µm)', 'Blood Vessel Radius Distribution per Brain Region and Hemisphere',
-                make_output_path(output_dir, 'BV_radii_violin.png', dark_mode), dark_mode=dark_mode, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
+#def plot_radii_violin(data_per_brain_region, output_dir, dark_mode=False, show_outliers=True, left_color='skyblue', right_color='salmon', tick_fontsize=16, title_fontsize=18, legend_fontsize=16):
+#    brain_region_names = []
+#    radii_l = []
+#    radii_r = []
+#    for brain_region_name, hemispheres in data_per_brain_region.items():
+#        brain_region_names.append(brain_region_name)
+#        radii_l.append(hemispheres['l']['radii'])
+#        radii_r.append(hemispheres['r']['radii'])
+#    
+#    plot_violin(radii_l, radii_r, brain_region_names, 
+#                'Blood Vessel Radius (µm)', 'Blood Vessel Radius Distribution per Brain Region and Hemisphere',
+#                make_output_path(output_dir, 'BV_radii_violin.png', dark_mode), dark_mode=dark_mode, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize, legend_fontsize=legend_fontsize)
 
 def plot_radii_boxplot(data_per_brain_region, output_dir, dark_mode=False, show_outliers=True, left_color='skyblue', right_color='salmon', tick_fontsize=16, title_fontsize=18):
     brain_region_names = []
