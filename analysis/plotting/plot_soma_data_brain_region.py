@@ -259,7 +259,7 @@ def plot_violin(
         ],
         fontsize=legend_fontsize,
         loc="upper right",
-        bbox_to_anchor=(1, 1.04),
+        bbox_to_anchor=(1, 1.1),
     )
     for spine in ['top', 'right']:
         ax.spines[spine].set_visible(False)
