@@ -142,7 +142,7 @@ def plot_violin(
         print(f"[WARN] No data available for violin plot: {output_path}")
         return
 
-    fig, ax = plt.subplots(figsize=(16, 8))
+    fig, ax = plt.subplots(figsize=(12, 6))
 
     vp = ax.violinplot(
         data,
@@ -256,7 +256,7 @@ def plot_boxplot(data_l, data_r, brain_region_names, ylabel, title, output_path,
         positions.append(pos)
         pos += 1.5  # Space between regions
     
-    fig, ax = plt.subplots(figsize=(16, 8))
+    fig, ax = plt.subplots(figsize=(12, 6))
     bp = ax.boxplot(data, positions=positions, patch_artist=True, widths=0.6, showfliers=show_outliers)
     
     # Color the boxes
