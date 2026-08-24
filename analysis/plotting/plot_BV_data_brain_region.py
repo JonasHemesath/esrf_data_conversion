@@ -87,7 +87,8 @@ def plot_violin(
     data_l, data_r, brain_region_names, ylabel, title, output_path,
     dark_mode=False, show_outliers=False,
     left_color='skyblue', right_color='salmon',
-    tick_fontsize=10, title_fontsize=12, quantiles_to_show=None
+    tick_fontsize=10, title_fontsize=12, legend_fontsize=10,
+    quantiles_to_show=None
 ):
     """
     data_l/data_r: lists of 1D arrays (can be empty). brain_region_names matches these lists.
@@ -183,7 +184,8 @@ def plot_violin(
             Patch(facecolor=left_color, label="Left Hemisphere"),
             Patch(facecolor=right_color, label="Right Hemisphere"),
         ],
-        fontsize=title_fontsize,
+        fontsize=legend_fontsize,
+        loc="upper right",
     )
     for spine in ['top', 'right']:
         ax.spines[spine].set_visible(False)
@@ -204,7 +206,7 @@ def plot_radii_violin(
     data_per_brain_region, output_dir,
     dark_mode=False, show_outliers=True,
     left_color='skyblue', right_color='salmon',
-    tick_fontsize=10, title_fontsize=12
+    tick_fontsize=10, title_fontsize=12, legend_fontsize=10
 ):
     brain_region_names = []
     radii_l = []
@@ -234,7 +236,8 @@ def plot_radii_violin(
         left_color=left_color,
         right_color=right_color,
         tick_fontsize=tick_fontsize,
-        title_fontsize=title_fontsize
+        title_fontsize=title_fontsize,
+        legend_fontsize=legend_fontsize
     )
 
 def plot_boxplot(data_l, data_r, brain_region_names, ylabel, title, output_path, dark_mode=False, show_outliers=True, left_color='skyblue', right_color='salmon', tick_fontsize=16, title_fontsize=18):
@@ -419,7 +422,7 @@ def main():
 
     # Plot boxplots
     plot_radii_boxplot(data_per_brain_region, output_dir, dark_mode=dark_mode, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
-    plot_radii_violin(data_per_brain_region, output_dir, dark_mode=dark_mode, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
+    plot_radii_violin(data_per_brain_region, output_dir, dark_mode=dark_mode, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize, legend_fontsize=legend_fontsize)
     plot_branch_degrees_boxplot(data_per_brain_region, output_dir, dark_mode=dark_mode, show_outliers=show_outliers, left_color=left_color, right_color=right_color, tick_fontsize=tick_fontsize, title_fontsize=title_fontsize)
     
     # Plot histograms for each region and hemisphere
